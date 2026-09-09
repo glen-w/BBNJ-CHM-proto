@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export const metadata: Metadata = {
-  title: "BBNJ Cl-HM",
+  title: "Clearing House — BBNJ",
   description: "Clearing-House Mechanism — submit, publish and notify across MGR, EIA and CBTMT.",
 };
 

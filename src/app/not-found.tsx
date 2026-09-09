@@ -12,9 +12,9 @@ export default function NotFound() {
       </a>
       <header className="border-b bg-card">
         <div className="mx-auto w-full max-w-6xl px-6 py-2.5">
-          <Link href="/" className="flex items-baseline gap-2 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
-            <span className="text-base font-semibold tracking-tight text-institutional">BBNJ Cl-HM</span>
-            <span className="text-xs text-muted-foreground">working desk</span>
+          <Link href="/" className="flex flex-col leading-tight focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+            <span className="text-xl font-semibold tracking-tight text-institutional">Clearing House</span>
+            <span className="text-sm text-muted-foreground">Biodiversity Beyond National Jurisdiction</span>
           </Link>
         </div>
       </header>
