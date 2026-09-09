@@ -336,27 +336,77 @@ export function SECRETARIAT_NOTICES(): SecretariatNotice[] {
   return getSeedPack().secretariatNotices;
 }
 
+/** Resolve a CSV seed key from the first `seed:csv:…` idempotency key on a record. */
+export function seedKeyForRecord(
+  db: { prepare: (sql: string) => { get: (...params: unknown[]) => unknown } },
+  recordId: string,
+): string | undefined {
+  const row = db
+    .prepare(
+      `SELECT idempotency_key AS k FROM events
+       WHERE record_id = ? AND idempotency_key LIKE 'seed:csv:%'
+       ORDER BY seq ASC LIMIT 1`,
+    )
+    .get(recordId) as { k: string } | undefined;
+  if (!row?.k) return undefined;
+  const full = row.k.slice("seed:csv:".length);
+  const pack = getSeedPack();
+  if (pack.provenanceBySeedKey.has(full) || pack.titleBySeedKey.has(full)) return full;
+  // Pack stages append `-<stage>` (e.g. eia-rocket-splashdown-screening).
+  for (const seedKey of pack.titleBySeedKey.keys()) {
+    if (full === seedKey || full.startsWith(`${seedKey}-`)) return seedKey;
+  }
+  return full;
+}
+
+/** Provenance badge from the record's seed key — never fuzzy title matching. */
+export function provenanceBadgeForRecord(
+  db: { prepare: (sql: string) => { get: (...params: unknown[]) => unknown } },
+  recordId: string,
+): ProvenanceBadge | undefined {
+  const seedKey = seedKeyForRecord(db, recordId);
+  if (!seedKey) return undefined;
+  return getSeedPack().provenanceBySeedKey.get(seedKey);
+}
+
+/** @deprecated Prefer provenanceBadgeForRecord — kept for call sites that only have a title. */
 export function provenanceBadgeForTitle(title: string): ProvenanceBadge | undefined {
   const pack = getSeedPack();
   for (const [seedKey, badge] of pack.provenanceBySeedKey) {
     const seedTitle = pack.titleBySeedKey.get(seedKey);
-    if (!seedTitle) continue;
-    if (title === seedTitle || title.includes(seedTitle.slice(0, 40)) || seedTitle.includes(title.slice(0, 40))) {
-      return badge;
-    }
+    if (seedTitle && title === seedTitle) return badge;
   }
-  // Interim TEMP label may appear without the full mirrored title.
   if (title.includes("BBNJ-MGR-TEMP-2026-001")) return "Interim (DOALOS)";
   return undefined;
 }
 
-export function agreementBasisExtrasForTitle(title: string): { extras: TreatyCite[]; footnotes: readonly string[] } {
-  const row = getSeedPack().eia.find((e) => title.includes(e.title.slice(0, 40)) || title === e.title);
+export function agreementBasisExtrasForRecord(
+  db: { prepare: (sql: string) => { get: (...params: unknown[]) => unknown } },
+  recordId: string,
+): { extras: TreatyCite[]; footnotes: readonly string[] } {
+  const seedKey = seedKeyForRecord(db, recordId);
+  const row = seedKey ? getSeedPack().eia.find((e) => e.seedKey === seedKey) : undefined;
   return { extras: [...(row?.agreementExtras ?? [])], footnotes: row?.agreementFootnotes ?? [] };
 }
 
+/** @deprecated Prefer agreementBasisExtrasForRecord. */
+export function agreementBasisExtrasForTitle(title: string): { extras: TreatyCite[]; footnotes: readonly string[] } {
+  const row = getSeedPack().eia.find((e) => e.title === title);
+  return { extras: [...(row?.agreementExtras ?? [])], footnotes: row?.agreementFootnotes ?? [] };
+}
+
+export function isIsaNotUndermineAbmtRecord(
+  db: { prepare: (sql: string) => { get: (...params: unknown[]) => unknown } },
+  recordId: string,
+): boolean {
+  const seedKey = seedKeyForRecord(db, recordId);
+  if (!seedKey) return false;
+  return getSeedPack().abmt.some((a) => a.seedKey === seedKey && a.isaCaption);
+}
+
+/** @deprecated Prefer isIsaNotUndermineAbmtRecord. */
 export function isIsaNotUndermineAbmt(title: string): boolean {
-  return getSeedPack().abmt.some((a) => a.isaCaption && (title === a.title || title.includes("CCZ representative habitats")));
+  return getSeedPack().abmt.some((a) => a.isaCaption && a.title === title);
 }
 
 export function csvKey(seedKey: string): string {

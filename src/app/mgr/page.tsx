@@ -12,7 +12,7 @@ import { fmtDate, stageLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { can } from "@/server/policy";
 import { listMgrBatches } from "@/server/queries";
-import { SEED_HONESTY, provenanceBadgeForTitle } from "@/server/seed-pack";
+import { SEED_HONESTY, provenanceBadgeForRecord } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -87,7 +87,7 @@ export default async function MgrPage({ searchParams }: Props) {
                       {b.title}
                     </Link>
                     {(() => {
-                      const badge = provenanceBadgeForTitle(b.title);
+                      const badge = provenanceBadgeForRecord(db, b.id);
                       return badge ? (
                         <div className="mt-1">
                           <ProvenanceBadge badge={badge} />

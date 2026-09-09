@@ -143,17 +143,29 @@ async function main() {
     }
   });
 
-  p0("FTS search — matches titles and hides non-visible rows", () => {
+  p0("FTS search — matches titles, hides non-visible rows, never leaks restricted/confidential to public", () => {
     const hitsPub = queries.searchRecords(db, pub(), { q: "marine" });
     assert.ok(hitsPub.length >= 0);
     for (const h of hitsPub) {
       assert.ok(queries.recordVisible(db, pub(), h.domain, h.id), `public hit ${h.id} must be visible`);
     }
+    const restrictedTitle = mgr.getMgrBatch(db, seedResult.mgr.restricted)!.title;
+    const restrictedHits = queries.searchRecords(db, pub(), { q: restrictedTitle.split(/\s+/)[0]! });
+    assert.ok(!restrictedHits.some((h) => h.id === seedResult.mgr.restricted), "public FTS must not return restricted batch");
+    const confidential = seedResult.mgr.confidential;
+    const confTitle = mgr.getMgrBatch(db, confidential)!.title;
+    const confHits = queries.searchRecords(db, pub(), { q: confTitle.split(/\s+/).slice(0, 2).join(" ") });
+    assert.ok(!confHits.some((h) => h.id === confidential), "public FTS must not return confidential batch");
+    const interimHits = queries.searchRecords(db, pub(), { q: "BBNJ-MGR-TEMP" });
+    assert.ok(
+      interimHits.some((h) => h.id === seedResult.rich.mgr.interimTemp && h.provenanceBadge === "Interim (DOALOS)"),
+      "search hits carry provenanceBadge from seed key, not title fuzzy match",
+    );
     const sec = queries.searchRecords(db, secretariat(), { q: "marine" });
     assert.ok(sec.length >= hitsPub.length, "secretariat sees at least public hits");
-    const match = queries.toFtsQuery('alpha beta');
+    const match = queries.toFtsQuery("alpha beta");
     assert.equal(match, '"alpha"* AND "beta"*');
-    assert.equal(queries.toFtsQuery(''), null);
+    assert.equal(queries.toFtsQuery(""), null);
   });
 
 
@@ -360,15 +372,17 @@ async function main() {
     assert.deepEqual(counts(), before);
   });
 
-  p0("rich CSV seed pack — interim TEMP MGR, three EIA storylines, published ABMT stub, extended AbnjBox", async () => {
+  p0("rich CSV seed pack — interim TEMP MGR, three EIA storylines, published ABMT stub, extended AbnjBox, neighbourhood density", async () => {
     const { AbnjBox } = await import("../src/lib/contracts/events");
     const abmtMod = await import("../src/server/abmt");
+    const seedPack = await import("../src/server/seed-pack");
     const interim = mgr.getMgrBatch(db, seedResult.rich.mgr.interimTemp)!;
     assert.match(interim.title, /BBNJ-MGR-TEMP-2026-001/);
     assert.ok(interim.bSbi);
     assert.ok(interim.publicRecordId);
     assert.notEqual(interim.bSbi, interim.publicRecordId);
     assert.match(String(interim.details.dataManagementPlan ?? ""), /bbnj-mgr-temp-2026-001/);
+    assert.equal(seedPack.provenanceBadgeForRecord(db, interim.id), "Interim (DOALOS)");
     const rocket = eia.getEiaActivity(db, seedResult.rich.eia.rocket)!;
     const cdr = eia.getEiaActivity(db, seedResult.rich.eia.marineCdr)!;
     const meso = eia.getEiaActivity(db, seedResult.rich.eia.mesopelagic)!;
@@ -377,6 +391,14 @@ async function main() {
     assert.match(meso.title, /mesopelagic/i);
     assert.equal(AbnjBox.safeParse(rocket.abnjBox).success, true);
     assert.equal(AbnjBox.safeParse("Sargasso Sea Core").success, true);
+    assert.equal(seedPack.provenanceBadgeForRecord(db, rocket.id), "Demo scenario");
+    // ≥2 published EIA per storyline AbnjBox (ribbon / neighbourhood stretch).
+    for (const box of [rocket.abnjBox, cdr.abnjBox, meso.abnjBox] as const) {
+      const publishedInBox = queries
+        .listEiaActivities(db, pub())
+        .filter((a) => a.abnjBox === box && a.publicRecordId);
+      assert.ok(publishedInBox.length >= 2, `${box} needs ≥2 published EIA for neighbourhood demos (got ${publishedInBox.length})`);
+    }
     const sargasso = abmtMod.getAbmtProposal(db, seedResult.rich.abmt.sargasso)!;
     assert.match(sargasso.publicRecordId ?? "", /^BBNJ-ABMT-/);
     const publishedAbmt = (db.prepare("SELECT COUNT(*) AS n FROM abmt_proposals WHERE public_record_id IS NOT NULL").get() as { n: number }).n;

@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
-import { ConfidentialityBadge, StatusChip } from "@/components/chips";
+import { ConfidentialityBadge, ProvenanceBadge, StatusChip } from "@/components/chips";
 import { ExportLinks } from "@/components/export-links";
 import { flashFrom } from "@/components/flash";
 import { Field, KeyFields, SubmitButton, selectClass } from "@/components/forms";
@@ -17,6 +17,7 @@ import { latestPackRow } from "@/server/outbox";
 import { can, hasRole } from "@/server/policy";
 import { listCbtmtRecords } from "@/server/queries";
 import { CBTMT_THEMES } from "@/server/seed";
+import { provenanceBadgeForRecord } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -40,8 +41,8 @@ export default async function CapacityPage({ searchParams }: Props) {
         <p className="max-w-3xl text-sm text-muted-foreground">
           Needs and offers are records with a pending → published pack. A <strong>match</strong> is a row (need, offer, rule, at) plus a{" "}
           <code>match_suggested</code> outbox event carrying the <code>matchId</code>. Matching is a <strong>deterministic shared-theme rule</strong>, not
-          brokerage and not ML: the rule only finds the pair. What the Secretariat then does with it is written by a person as a{" "}
-          <em>facilitation note</em> on the match.
+          brokerage and not ML: the rule only finds the pair. Human matchmaking is the Secretariat&apos;s{" "}
+          <em>facilitation note</em> on the match — theme-join alone is not facilitation.
         </p>
         <ExportLinks domain="cbtmt" />
       </div>
@@ -180,6 +181,10 @@ function Board({ title, items, p, kind }: { title: string; items: StoredCbtmtRec
                   {r.title}
                 </Link>
                 <span className="flex items-center gap-1">
+                  {(() => {
+                    const badge = provenanceBadgeForRecord(db, r.id);
+                    return badge ? <ProvenanceBadge badge={badge} /> : null;
+                  })()}
                   {status ? <StatusChip status={status} /> : null}
                   <ConfidentialityBadge tier={r.confidentiality} />
                 </span>

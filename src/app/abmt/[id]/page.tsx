@@ -17,7 +17,7 @@ import { submitAbmtAction } from "@/server/actions";
 import { getAbmtProposal } from "@/server/abmt";
 import { can } from "@/server/policy";
 import { packsOf, recordVisible, timelineOf } from "@/server/queries";
-import { isIsaNotUndermineAbmt, provenanceBadgeForTitle } from "@/server/seed-pack";
+import { isIsaNotUndermineAbmtRecord, provenanceBadgeForRecord } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -36,8 +36,8 @@ export default async function AbmtProposalPage({ params, searchParams }: Props) 
   const here = `/abmt/${id}`;
   const latest = packs.filter((e) => e.stage === "proposal_stub").sort((a, b) => b.seq - a.seq)[0];
   const canSubmit = owner && latest?.status === "draft";
-  const provenance = provenanceBadgeForTitle(proposal.title);
-  const isaCaption = isIsaNotUndermineAbmt(proposal.title);
+  const provenance = provenanceBadgeForRecord(db, id);
+  const isaCaption = isIsaNotUndermineAbmtRecord(db, id);
 
   return (
     <AppShell title={`ABMT proposal stub — ${proposal.title}`} flash={flash}>

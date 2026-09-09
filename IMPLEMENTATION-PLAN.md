@@ -1,6 +1,6 @@
 # Cl-HM day prototype — implementation plan (A–I)
 
-> **Historical day‑1 plan.** This document is the Ultra-day build plan as written before coding. It still describes “three logins”, a disabled ABMT tab, and schema assumptions that the running tree has outgrown. **Do not use it as product status.** Current truth: `README.md`, `SHIPPED-VS-DEFERRED.md`, `DEMO-SCRIPT.md`, `HARDENING.md` (v0.2 ledger), `CONTRACT-AMENDMENTS.md` (incl. adopted C9). Live schema is **v5**.
+> **Historical day‑1 plan.** This document is the Ultra-day build plan as written before coding. It still describes “three logins”, a disabled ABMT tab, and schema assumptions that the running tree has outgrown. **Do not use it as product status.** Current truth: `README.md`, `SHIPPED-VS-DEFERRED.md`, `DEMO-SCRIPT.md`, `HARDENING.md` (v0.2 ledger), `CONTRACT-AMENDMENTS.md` (incl. adopted C9). Live schema is **v6**.
 
 Deliverable of [proposal/PLANNING-AGENT-PROMPT.md](proposal/PLANNING-AGENT-PROMPT.md). The locks and [proposal/schemas/events.ts](proposal/schemas/events.ts) win on conflicts; deviations appear only under **Challenge** headings. Behavioural contracts only — no executable TypeScript or SQL in this document.
 

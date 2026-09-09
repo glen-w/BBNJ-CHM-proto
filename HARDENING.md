@@ -2,7 +2,7 @@
 
 Gap → change → test, per P0 item. Written before the code; kept in sync as shipped. Companion: `SHIPPED-VS-DEFERRED.md` (checklist against Session‑1 basic functions and the EOI preferential criteria).
 
-**Current product truth is schema v5 (EOI wave), not this file alone.** v0.2 landed schema **v4** and the eight P0 rows below. The EOI wave then moved the live schema to **v5** (`abmt_proposals`, facilitation notes, EIA `due_at`, MGR TK captions, C9 `non_state_uploader`) — see `README.md` § EOI wave and `SHIPPED-VS-DEFERRED.md`. Keep this document as the v0.2 hardening ledger; do not treat “schema v4” here as the running version.
+**Current product truth is schema v6 (EOI wave + FTS), not this file alone.** v0.2 landed schema **v4** and the eight P0 rows below. The EOI wave moved the live schema to **v5** (`abmt_proposals`, facilitation notes, EIA `due_at`, MGR TK captions, C9 `non_state_uploader`), then **v6** added FTS5 search — see `README.md` § EOI wave and `SHIPPED-VS-DEFERRED.md`. Keep this document as the v0.2 hardening ledger; do not treat “schema v4” here as the running version.
 
 Invariants that must survive every item: `bSbi` minted once at valid receipt and never equal to or replaced by `publicRecordId`; `proposal/schemas/events.ts` byte-identical to the app copy; outbox append-only; `reconcile()` clean; `replay-outbox` inserts nothing on a consistent DB; home page stays functions-first.
 

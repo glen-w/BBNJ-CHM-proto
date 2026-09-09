@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
-import { DomainBadge } from "@/components/chips";
+import { DomainBadge, ProvenanceBadge } from "@/components/chips";
 import { flashFrom } from "@/components/flash";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -109,6 +109,11 @@ export default async function SearchPage({ searchParams }: Props) {
                             <Link href={h.href} className="font-medium hover:underline">
                               {h.title}
                             </Link>
+                            {h.provenanceBadge ? (
+                              <div className="mt-1">
+                                <ProvenanceBadge badge={h.provenanceBadge} />
+                              </div>
+                            ) : null}
                           </TableCell>
                           <TableCell className="text-muted-foreground">{h.subtitle ?? "—"}</TableCell>
                           <TableCell>{stageLabel(h.stage)}</TableCell>

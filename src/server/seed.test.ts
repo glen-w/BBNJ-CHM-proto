@@ -10,10 +10,11 @@ import { getEiaActivity } from "@/server/eia";
 import { getMgrBatch } from "@/server/mgr";
 import { seedDatabase, seedIfEmpty } from "@/server/seed";
 import {
-  agreementBasisExtrasForTitle,
+  agreementBasisExtrasForRecord,
   clearSeedPackCache,
   getSeedPack,
-  isIsaNotUndermineAbmt,
+  isIsaNotUndermineAbmtRecord,
+  provenanceBadgeForRecord,
 } from "@/server/seed-pack";
 import { createHarness, type Harness } from "@/test/helpers";
 
@@ -117,15 +118,27 @@ describe("seed I/O", () => {
 
     // Mesopelagic Agreement-basis extras (Zotero 6K6WPBFQ as RFMO-gap / Part IV)
     const meso = getEiaActivity(h.db, ids.rich.eia.mesopelagic)!;
-    const basis = agreementBasisExtrasForTitle(meso.title);
+    const basis = agreementBasisExtrasForRecord(h.db, meso.id);
     expect(basis.extras.some((c) => /Part IV|Art 31/.test(c.article))).toBe(true);
     expect(basis.footnotes.some((f) => f.includes("6K6WPBFQ"))).toBe(true);
+    expect(provenanceBadgeForRecord(h.db, meso.id)).toBe("Demo scenario");
+    expect(provenanceBadgeForRecord(h.db, ids.rich.mgr.interimTemp)).toBe("Interim (DOALOS)");
 
     // ISA not-undermine caption only on the CCZ precautionary ABMT stub
     const ccz = getAbmtProposal(h.db, ids.rich.abmt.cczPrecaution)!;
-    expect(isIsaNotUndermineAbmt(ccz.title)).toBe(true);
-    expect(isIsaNotUndermineAbmt(sargasso.title)).toBe(false);
+    expect(isIsaNotUndermineAbmtRecord(h.db, ccz.id)).toBe(true);
+    expect(isIsaNotUndermineAbmtRecord(h.db, sargasso.id)).toBe(false);
     expect(ccz.publicRecordId).toMatch(/^BBNJ-ABMT-/);
+
+    // Neighbourhood density: ≥2 published EIA in each storyline AbnjBox
+    for (const box of [getEiaActivity(h.db, ids.rich.eia.rocket)!.abnjBox, getEiaActivity(h.db, ids.rich.eia.marineCdr)!.abnjBox, meso.abnjBox]) {
+      const n = (
+        h.db
+          .prepare(`SELECT COUNT(*) AS n FROM eia_activities WHERE abnj_box = ? AND public_record_id IS NOT NULL`)
+          .get(box) as { n: number }
+      ).n;
+      expect(n).toBeGreaterThanOrEqual(2);
+    }
 
     // Shared outbox: every rich MGR/EIA/ABMT record has at least one event row
     for (const recordId of [

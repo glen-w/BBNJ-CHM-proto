@@ -12,7 +12,7 @@ import { fmtDate, stageLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { can } from "@/server/policy";
 import { listAbmtProposals } from "@/server/queries";
-import { SEED_HONESTY, provenanceBadgeForTitle } from "@/server/seed-pack";
+import { SEED_HONESTY, provenanceBadgeForRecord } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -20,7 +20,8 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 export default async function AbmtPage({ searchParams }: Props) {
   const flash = await flashFrom(searchParams);
   const p = await getSessionUser();
-  const proposals = listAbmtProposals(getDb(), p);
+  const db = getDb();
+  const proposals = listAbmtProposals(db, p);
 
   return (
     <AppShell title="Area-based management tools (ABMT) — Part III" flash={flash}>
@@ -70,7 +71,7 @@ export default async function AbmtPage({ searchParams }: Props) {
                       {a.title}
                     </Link>
                     {(() => {
-                      const badge = provenanceBadgeForTitle(a.title);
+                      const badge = provenanceBadgeForRecord(db, a.id);
                       return badge ? (
                         <div className="mt-1">
                           <ProvenanceBadge badge={badge} />

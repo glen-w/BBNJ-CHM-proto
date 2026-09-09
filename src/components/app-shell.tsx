@@ -81,12 +81,15 @@ export async function AppShell({
             >
               <Image src="/bbnj-emblem.svg" alt="" width={40} height={40} className="shrink-0" unoptimized />
               <span className="flex min-w-0 flex-col gap-0.5">
-                <span className="text-[13px] font-semibold leading-snug tracking-tight text-foreground sm:text-sm">
+                <span className="hidden text-[13px] font-semibold leading-snug tracking-tight text-foreground md:block sm:text-sm">
                   Agreement on Marine Biological Diversity of Areas beyond National Jurisdiction
                 </span>
+                <span className="text-[13px] font-semibold leading-snug tracking-tight text-foreground md:hidden">
+                  BBNJ Agreement
+                </span>
                 <span className="flex flex-wrap items-baseline gap-x-2 text-xs text-muted-foreground">
-                  <span>BBNJ Agreement</span>
-                  <span aria-hidden="true" className="text-line">
+                  <span className="hidden md:inline">BBNJ Agreement</span>
+                  <span aria-hidden="true" className="hidden text-line md:inline">
                     ·
                   </span>
                   <span className="font-medium text-institutional">BBNJ Cl-HM</span>
@@ -124,7 +127,7 @@ export async function AppShell({
                     <span className="rounded-full bg-institutional px-1.5 text-[10px] font-medium tabular-nums text-institutional-foreground">{unread}</span>
                   ) : null}
                 </summary>
-                <div className="absolute right-0 z-20 mt-2 w-96 rounded-lg border bg-popover p-3 text-sm shadow-md">
+                <div className="absolute right-0 z-40 mt-2 w-96 rounded-lg border bg-popover p-3 text-sm shadow-md">
                   <div className="mb-2 flex items-center justify-between">
                     <span className="font-medium">Notifications</span>
                     <Link href="/notifications" className="text-xs underline">

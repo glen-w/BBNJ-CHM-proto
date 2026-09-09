@@ -12,7 +12,7 @@ import { fmtDate, stageLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { can } from "@/server/policy";
 import { listEiaActivities } from "@/server/queries";
-import { SEED_HONESTY, provenanceBadgeForTitle } from "@/server/seed-pack";
+import { SEED_HONESTY, provenanceBadgeForRecord } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -22,7 +22,8 @@ export default async function EiaPage({ searchParams }: Props) {
   const sp = await searchParams;
   const q = typeof sp.q === "string" ? sp.q : "";
   const p = await getSessionUser();
-  const activities = listEiaActivities(getDb(), p, q || undefined);
+  const db = getDb();
+  const activities = listEiaActivities(db, p, q || undefined);
 
   return (
     <AppShell title="Environmental impact assessments (EIA) — Part IV" flash={flash}>
@@ -86,7 +87,7 @@ export default async function EiaPage({ searchParams }: Props) {
                       {a.title}
                     </Link>
                     {(() => {
-                      const badge = provenanceBadgeForTitle(a.title);
+                      const badge = provenanceBadgeForRecord(db, a.id);
                       return badge ? (
                         <div className="mt-1">
                           <ProvenanceBadge badge={badge} />

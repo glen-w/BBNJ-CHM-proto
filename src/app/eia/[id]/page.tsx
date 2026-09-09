@@ -21,7 +21,7 @@ import { EIA_STAGE_ORDER, getEiaActivity, packsForActivity } from "@/server/eia"
 import { DEMO_COMMENT_WINDOW_DAYS } from "@/lib/contracts/extensions";
 import { can } from "@/server/policy";
 import { listEiaActivities, recordVisible, timelineOf } from "@/server/queries";
-import { agreementBasisExtrasForTitle, provenanceBadgeForTitle } from "@/server/seed-pack";
+import { agreementBasisExtrasForRecord, provenanceBadgeForRecord } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -45,8 +45,8 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
   const amendable = Array.from(latestByStage.values())
     .filter((e) => e.status === "published" && e.stage !== "comments_stb")
     .map((e) => ({ stage: e.stage, version: e.version }));
-  const basis = agreementBasisExtrasForTitle(activity.title);
-  const provenance = provenanceBadgeForTitle(activity.title);
+  const basis = agreementBasisExtrasForRecord(db, id);
+  const provenance = provenanceBadgeForRecord(db, id);
 
   return (
     <AppShell title={`EIA activity — ${activity.title}`} flash={flash}>

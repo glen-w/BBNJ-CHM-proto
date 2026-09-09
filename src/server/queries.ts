@@ -11,6 +11,7 @@ import { rowToActivity } from "./eia";
 import { rowToBatch } from "./mgr";
 import { type EventRow, rowToEvent } from "./outbox";
 import { RECORD_JOIN, can, type Principal, readPolicy, recordVisibilityClause, userId, visibilityClause } from "./policy";
+import { provenanceBadgeForRecord, type ProvenanceBadge } from "./seed-pack";
 
 const eventClause = (p: Principal) => visibilityClause(readPolicy(p), { status: "e.status", tier: "e.confidentiality", owner: "r.owner_user_id" });
 
@@ -45,6 +46,8 @@ export interface SearchHit {
   publicRecordId?: string;
   href: string;
   updatedAt: string;
+  /** Seed-pack honesty chip when the hit came from fixtures/bbnj-chm-seed-pack. */
+  provenanceBadge?: ProvenanceBadge;
 }
 
 export function searchRecords(
@@ -89,6 +92,7 @@ export function searchRecords(
           publicRecordId: r.public_record_id ?? undefined,
           href: DOMAIN_HREF.mgr(r.id),
           updatedAt: r.updated_at,
+          provenanceBadge: provenanceBadgeForRecord(db, r.id),
         });
       }
     } else if (domain === "eia") {
@@ -121,6 +125,7 @@ export function searchRecords(
           publicRecordId: r.public_record_id ?? undefined,
           href: DOMAIN_HREF.eia(r.id),
           updatedAt: r.updated_at,
+          provenanceBadge: provenanceBadgeForRecord(db, r.id),
         });
       }
     } else if (domain === "cbtmt") {
@@ -153,6 +158,7 @@ export function searchRecords(
           publicRecordId: r.public_record_id ?? undefined,
           href: DOMAIN_HREF.cbtmt(r.id),
           updatedAt: r.updated_at,
+          provenanceBadge: provenanceBadgeForRecord(db, r.id),
         });
       }
     } else {
@@ -185,6 +191,7 @@ export function searchRecords(
           publicRecordId: r.public_record_id ?? undefined,
           href: DOMAIN_HREF.abmt(r.id),
           updatedAt: r.updated_at,
+          provenanceBadge: provenanceBadgeForRecord(db, r.id),
         });
       }
     }

@@ -19,7 +19,7 @@ import { addMgrPackAction } from "@/server/actions";
 import { getMgrBatch, MGR_AMENDABLE_STAGES } from "@/server/mgr";
 import { can, hasRole } from "@/server/policy";
 import { packsOf, recordVisible, timelineOf } from "@/server/queries";
-import { provenanceBadgeForTitle } from "@/server/seed-pack";
+import { provenanceBadgeForRecord } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -45,7 +45,7 @@ export default async function MgrBatchPage({ params, searchParams }: Props) {
   for (const e of packs) if (!latestByStage.has(e.stage) || latestByStage.get(e.stage)!.version < e.version) latestByStage.set(e.stage, e);
   const amendable = MGR_AMENDABLE_STAGES.filter((s) => latestByStage.get(s)?.status === "published").map((s) => ({ stage: s, version: latestByStage.get(s)!.version }));
   const canAmend = can(p, "amend", { ownerUserId: batch.ownerUserId ?? null });
-  const provenance = provenanceBadgeForTitle(batch.title);
+  const provenance = provenanceBadgeForRecord(db, id);
 
   return (
     <AppShell title={`MGR batch — ${batch.title}`} flash={flash}>

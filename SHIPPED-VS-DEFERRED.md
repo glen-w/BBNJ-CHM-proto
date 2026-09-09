@@ -1,4 +1,4 @@
-# Shipped vs deferred — EOI wave (schema v5) against Session‑1 and the EOI criteria
+# Shipped vs deferred — EOI wave (schema v6) against Session‑1 and the EOI criteria
 
 Status legend: **shipped** (in the sandbox, asserted by `npm run smoke` / `npm run demo`) · **partial** (works, with a stated limit) · **deferred** (deliberately not built; reason given). Every "shipped" row names where to see it.
 
@@ -17,8 +17,8 @@ Wording rule for this file: a row is **shipped** only when the smoke suite or th
 | Version control | shipped | `amendPack()` → pending v+1 with change note + material flag; version history on every record; superseded Art 12.2 values kept (`P0‑4`) | "material" is a submitter's declaration |
 | Artifacts / documents | shipped | `artifactRefs` (`pdf | url | note | xlsx` + label, optional href) on every pack; seeded EIA packs carry them; interim MGR TEMP mirror carries DOALOS URL; shown on the pack and in exports | references only — no file store, no upload |
 | Storage | shipped | SQLite, append-only outbox, caches reconciled from events (`reconcile()`), ABMT on the same rails | single node; federation deferred |
-| Search & retrieval | partial | role-filtered lists with `LIKE` search on title/area/ids; stable `/records/<publicRecordId>` | no full-text index (Solr deferred) |
-| Neighbourhood (same ABNJ box) | shipped | list of other visible activities in the same box on `/eia/[id]` | a list, not a map; ABNJ vocabulary extended for rich seed (splashdown corridor, mesopelagic belt, OAE trial, Sargasso, Costa Rica Dome) |
+| Search & retrieval | shipped | SQLite FTS5 (`records_fts`) + policy-aware `searchRecords()`; global `/search` and list `?q=`; Interim/Demo provenance badges on hits; stable `/records/<publicRecordId>` | Solr / federation deferred |
+| Neighbourhood (same ABNJ box) | shipped | list of other visible activities in the same box on `/eia/[id]`; rich seed keeps ≥2 published EIA per storyline AbnjBox | a list, not a map; ABNJ vocabulary extended for rich seed (splashdown corridor, mesopelagic belt, OAE trial, Sargasso, Costa Rica Dome) |
 | Reporting & export | shipped | CSV/JSON per domain and audit; per-record JSON; PDF stub (`P0‑6`); **digest windows CSV** (Secretariat) | PDF is a one-page text stub |
 | Confidentiality controls | shipped | three tiers enforced in SQL for every read path; seeds for all tiers; tier × role matrix (`P0‑5`) | no field-level redaction inside a public record |
 
@@ -77,6 +77,8 @@ Wording rule for this file: a row is **shipped** only when the smoke suite or th
 
 ## D. Deferred (with reasons)
 
+Indicative **next waves** (admin backend, e-mail notifications, auth/TLS, file store, federation, …) are sketched in the README **Roadmap** — not a COP1 workplan.
+
 | Item | Reason |
 |---|---|
 | Public sandbox hosting (C1) | Out of scope for this wave; clone or Docker gives the same hands-on path without a hosting commitment |
@@ -92,11 +94,12 @@ Wording rule for this file: a row is **shipped** only when the smoke suite or th
 | PDF beyond a stub | hand-rolled single page is enough to prove the export seam; a real renderer is a dependency decision |
 | Scheduler for digests | `npm run digest` is cron-ready; no in-process timer in the image |
 | WCAG certification / third-party audit | `ACCESSIBILITY.md` remediations shipped; formal audit not done |
+| Admin / operator backend | Secretariat tools today are journey pages + audit; a dedicated admin surface is Wave A in the README roadmap |
 
 ## E. How to verify
 
 ```bash
-npm run smoke                                  # 35 tests — invariants incl. all eight P0 items + EOI wave (defensive skip only if an EOI API is absent)
+npm run smoke                                  # 36 tests — invariants incl. all eight P0 items + EOI wave (defensive skip only if an EOI API is absent)
 npm test                                       # Vitest unit suite (temp SQLite; does not touch data/chm.sqlite)
 npm run demo                                   # 17 narrated checkpoints on a temp DB
 BASE_URL=http://localhost:3000 npm run demo    # + HTTP status/body checks with each demo cookie (incl. /cbtmt → /capacity, /abmt)

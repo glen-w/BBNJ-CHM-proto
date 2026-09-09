@@ -2,8 +2,11 @@ activity_seed_key,stage,status,screening_outcome,summary
 eia-rocket-splashdown,screening,published,eia_required,Art 31 screening — EIA required for controlled re-entry splashdown corridor
 eia-rocket-splashdown,planned_activity_notice,published,,Art 32 planned activity notice — splashdown corridor coordinates & schedule envelope
 eia-rocket-splashdown,draft_eia,published,,"Draft EIA for STB/public consultation — noise, debris, wildlife strike, cumulative launch cadence"
+eia-rocket-neighbour,screening,published,no_eia,Art 31 — no EIA required (range-safety telemetry buoy; neighbourhood density)
 eia-marine-cdr-oae,screening,published,eia_required,Art 31 screening — mCDR OAE pilot requires EIA
 eia-marine-cdr-oae,planned_activity_notice,published,,Art 32 notice — alkalinity enhancement trial box
 eia-marine-cdr-oae,draft_eia,pending,,Draft EIA pending Secretariat publish — monitoring & cumulative mCDR interactions
+eia-marine-cdr-neighbour,screening,published,no_eia,Art 31 — no EIA required (baseline carbonate transect; neighbourhood density)
 eia-mesopelagic-fishery,screening,published,eia_required,Art 31 screening — exploratory mesopelagic fishery requires EIA
+eia-mesopelagic-neighbour,screening,published,no_eia,Art 31 — no EIA required (acoustic biomass survey; neighbourhood density)
 eia-no-eia-buoy,screening,published,no_eia,Art 31 — no EIA required (sufficiently detailed screening pack)
