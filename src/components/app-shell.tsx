@@ -6,8 +6,7 @@ import { cookies } from "next/headers";
 import { AuditRibbon } from "@/components/audit-ribbon";
 import { FlashBanner, type Flash } from "@/components/flash";
 import { LanguageControl } from "@/components/language-control";
-import { FocalPointsCaption } from "@/components/related-systems";
-import { JourneysNav, RailsNav } from "@/components/shell-nav";
+import { InstitutionalNav, JourneysNav, RailsNav } from "@/components/shell-nav";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getDb } from "@/lib/db";
@@ -43,6 +42,7 @@ export async function AppShell({
   const latest = latestVisibleEvent(db, principal);
   const role = actorRoleOf(principal);
   const username = principal.kind === "user" ? principal.user.username : "anonymous";
+  const roleDuplicatesUsername = username.toLowerCase() === role.toLowerCase();
   const store = await cookies();
   const treatyLang = treatyLangOf(store.get(TREATY_LANG_COOKIE)?.value);
 
@@ -87,9 +87,9 @@ export async function AppShell({
               <span className="text-sm text-muted-foreground">Biodiversity Beyond National Jurisdiction</span>
             </span>
           </Link>
-          <div className="ms-auto flex min-w-0 items-center gap-1.5">
+          <div className="ms-auto flex shrink-0 flex-nowrap items-center gap-1.5">
             <RailsNav items={railItems} />
-            <form action="/search" method="get" className="flex items-center gap-1.5" role="search">
+            <form action="/search" method="get" className="flex min-w-0 items-center gap-1.5" role="search">
               <Input
                 name="q"
                 type="search"
@@ -140,9 +140,20 @@ export async function AppShell({
                 </div>
               </details>
             ) : null}
-            <Link href="/login" className={cn(buttonVariants({ variant: "ghost", size: "sm" }))} title="Switch role">
-              <span className="font-mono text-xs">{username}</span>
-              <span className="ml-1 rounded border border-line bg-muted px-1.5 text-[10px] uppercase tracking-wide text-muted-foreground">{role}</span>
+            <Link
+              href="/login"
+              className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "whitespace-nowrap")}
+              title="Switch role"
+            >
+              {!roleDuplicatesUsername ? <span className="font-mono text-xs">{username}</span> : null}
+              <span
+                className={cn(
+                  "rounded border border-line bg-muted px-1.5 text-[10px] uppercase tracking-wide text-muted-foreground",
+                  !roleDuplicatesUsername && "ms-1",
+                )}
+              >
+                {role}
+              </span>
             </Link>
             {principal.kind === "user" ? (
               <form action={logoutAction}>
@@ -158,13 +169,7 @@ export async function AppShell({
       {/* Band 3 — journeys · last outbox event. */}
       <div className="sticky top-0 z-30 border-b bg-card">
         <div className="mx-auto flex w-full max-w-6xl items-center gap-x-4 px-6">
-          <nav
-            aria-label="Institutional"
-            className="flex shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-r border-line pe-4 text-sm text-muted-foreground"
-          >
-            <span className="font-medium text-foreground/85">Institutional</span>
-            <FocalPointsCaption />
-          </nav>
+          <InstitutionalNav />
           <JourneysNav items={journeys} />
           <div className="ms-auto min-w-0 max-w-md py-1">
             <AuditRibbon event={latest} />

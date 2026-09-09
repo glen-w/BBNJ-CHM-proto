@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const railLink =
-  "rounded-md px-2 py-1 text-sm text-foreground/80 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
+  "whitespace-nowrap rounded-md px-2 py-1 text-sm text-foreground/80 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 const railLinkCurrent = "bg-muted text-foreground";
 const journeyTab =
   "inline-flex items-center gap-1.5 border-b-2 border-transparent px-1 py-2 text-sm font-medium text-foreground/85 hover:border-line hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
@@ -20,7 +20,7 @@ function pathActive(pathname: string, href: string) {
 export function RailsNav({ items }: { items: { href: string; label: string }[] }) {
   const pathname = usePathname();
   return (
-    <nav aria-label="Rails" className="flex flex-wrap items-center gap-1">
+    <nav aria-label="Rails" className="flex shrink-0 flex-nowrap items-center gap-1">
       {items.map((item) => {
         const current = pathActive(pathname, item.href);
         return (
@@ -34,6 +34,23 @@ export function RailsNav({ items }: { items: { href: string; label: string }[] }
           </Link>
         );
       })}
+    </nav>
+  );
+}
+
+export function InstitutionalNav() {
+  const pathname = usePathname();
+  const current = pathActive(pathname, "/institutional");
+  return (
+    <nav aria-label="Institutional" className="shrink-0 border-r border-line pe-4">
+      <Link
+        href="/institutional"
+        className={cn(journeyTab, current && journeyTabCurrent)}
+        title="Focal points, notices and related systems"
+        aria-current={current ? "page" : undefined}
+      >
+        Institutional
+      </Link>
     </nav>
   );
 }

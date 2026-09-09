@@ -1,52 +1,29 @@
-import { cn } from "@/lib/utils";
 import { RELATED_SYSTEMS_SEED, SECRETARIAT_NOTICES } from "@/server/seed-pack";
 
-const FOCAL_POINT_SEED_KEYS = ["focal-points-list", "notif-2026-001"] as const;
+/** Interim DOALOS focal-point surfaces — full list for the institutional page. */
+export function SecretariatNoticesList() {
+  const notices = SECRETARIAT_NOTICES();
 
-/** Interim DOALOS focal-point surfaces — surfaced quietly in shell chrome. */
-export function focalPointsInterimLinks(): { href: string; label: string; title: string }[] {
-  const fromNotices = SECRETARIAT_NOTICES()
-    .filter((n) => (FOCAL_POINT_SEED_KEYS as readonly string[]).includes(n.seedKey))
-    .sort((a, b) => FOCAL_POINT_SEED_KEYS.indexOf(a.seedKey as (typeof FOCAL_POINT_SEED_KEYS)[number]) - FOCAL_POINT_SEED_KEYS.indexOf(b.seedKey as (typeof FOCAL_POINT_SEED_KEYS)[number]))
-    .map((n) => ({
-      href: n.url,
-      label: n.seedKey === "notif-2026-001" ? "Notif 2026-001" : "Interim list",
-      title: n.title,
-    }));
-  if (fromNotices.length > 0) return fromNotices;
-
-  return RELATED_SYSTEMS_SEED()
-    .filter((r) => r.href.includes("focal-points") || r.href.includes("notification-2026-001"))
-    .map((r) => ({
-      href: r.href,
-      label: r.href.includes("notification-2026-001") ? "Notif 2026-001" : "Interim list",
-      title: r.label,
-    }));
-}
-
-/** One-line interim focal-point links — visible but not dominant. */
-export function FocalPointsCaption({ className }: { className?: string }) {
-  const links = focalPointsInterimLinks();
-  if (links.length === 0) return null;
+  if (notices.length === 0) {
+    return <p className="text-sm text-muted-foreground">No notices in this build.</p>;
+  }
 
   return (
-    <span className={cn("inline-flex flex-wrap items-center gap-x-1 gap-y-0.5", className)}>
-      <span>Focal points:</span>
-      {links.map((link, i) => (
-        <span key={link.href} className="inline-flex items-center gap-x-1">
-          {i > 0 ? <span aria-hidden="true">·</span> : null}
+    <ul className="divide-y">
+      {notices.map((notice) => (
+        <li key={notice.seedKey} className="py-3 first:pt-0 last:pb-0">
           <a
-            href={link.href}
+            href={notice.url}
             rel="noopener noreferrer"
             target="_blank"
-            title={link.title}
-            className="underline underline-offset-2 hover:text-institutional"
+            className="font-medium text-foreground underline underline-offset-2 hover:text-institutional"
           >
-            {link.label}
+            {notice.title}
           </a>
-        </span>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{notice.summary}</p>
+        </li>
       ))}
-    </span>
+    </ul>
   );
 }
 
