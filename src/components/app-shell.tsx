@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { logoutAction } from "@/server/actions";
 import { actorRoleOf, can } from "@/server/policy";
 import { latestVisibleEvent, notificationsFor, unreadCount } from "@/server/queries";
+import { RELATED_SYSTEMS_SEED, SECRETARIAT_NOTICES } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
 // Journeys are entry points into the shared rails, not competing brands (VISUAL-CHARTER.md §1.2, §4).
@@ -25,13 +26,13 @@ const journeys: { href: string; label: string; caption: string; enabled: boolean
   { href: "/abmt", label: "ABMT", caption: "area-based management tools (stub, without prejudice)", enabled: true },
 ];
 
-/** Reference links only — no data flows to or from these systems. Includes DOALOS interim anchors from the rich seed pack. */
+/** Reference links only — no data flows. Seed pack interim anchors + ABSCH/BCH/OBIS. */
 const RELATED_SYSTEMS = [
-  { href: "https://www.un.org/bbnjagreement/en/mgr-notifications/bbnj-mgr-temp-2026-001", label: "MGR TEMP-2026-001" },
-  { href: "https://www.un.org/bbnjagreement/en/Information-sharing/CBTMT", label: "CBTMT (interim)" },
-  { href: "https://www.un.org/bbnjagreement/en/focal-points-formal-communications", label: "Focal points" },
-  { href: "https://www.un.org/bbnjagreement/en/notification-2026-001", label: "Notif 2026-001" },
-  { href: "https://absch.cbd.int/", label: "ABSCH" },
+  ...RELATED_SYSTEMS_SEED.map((r) => ({ href: r.href, label: r.label })),
+  ...SECRETARIAT_NOTICES.filter((n) => !RELATED_SYSTEMS_SEED.some((r) => r.href === n.url)).map((n) => ({
+    href: n.url,
+    label: n.title,
+  })),
   { href: "https://bch.cbd.int/", label: "BCH" },
   { href: "https://obis.org/", label: "OBIS" },
 ] as const;
