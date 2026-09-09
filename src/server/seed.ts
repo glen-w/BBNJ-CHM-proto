@@ -8,8 +8,10 @@
 import type { Db } from "@/lib/db";
 import type { Subscription, User } from "@/lib/contracts/events";
 import { createCbtmtRecord, suggestMatch } from "./cbtmt";
+import { runDigests } from "./digest";
 import { addEiaPack, createEiaActivity } from "./eia";
-import { addMgrPack, receivePreCollection, saveMgrDraft } from "./mgr";
+import { addMgrPack, amendMgrPack, receivePreCollection, saveMgrDraft } from "./mgr";
+import { latestPackRow } from "./outbox";
 import { publishPack } from "./packs";
 import { principalFor } from "./policy";
 import { upsertSubscription } from "./queries";
@@ -26,8 +28,8 @@ export const CBTMT_THEMES = ["taxonomy", "genomics", "eia_practice"] as const;
 
 export interface SeedIds {
   users: Record<string, string>;
-  mgr: { published: string; draft: string; imported: string; restricted: string };
-  eia: { noEia: string; full: string; coexist: string };
+  mgr: { published: string; draft: string; imported: string; restricted: string; confidential: string };
+  eia: { noEia: string; full: string; coexist: string; restricted: string };
   cbtmt: { need: string; offer: string; matchId?: string };
 }
 
@@ -68,6 +70,24 @@ export function seedDatabase(db: Db): SeedIds {
   );
   publishPack(db, secretariat, { domain: "mgr", recordId: a.batch.id, stage: "pre_collection", at: "2026-09-01T10:00:00.000Z" });
   addMgrPack(db, party, a.batch.id, "post_collection", "Post-collection notification: 412 samples, 38 taxa; repository deposit pending", K("mgr-a-post"));
+  // Publish v1 only if it is still the pending v1 — on re-seed v2 is pending and must stay pending (idempotent seed).
+  const postLatest = latestPackRow(db, a.batch.id, "post_collection");
+  if (postLatest && postLatest.version === 1 && postLatest.status === "pending") {
+    publishPack(db, secretariat, { domain: "mgr", recordId: a.batch.id, stage: "post_collection", at: "2026-09-03T09:00:00.000Z" });
+  }
+  // Versioning demo: the published post-collection pack is amended (material) → pending v2 awaiting publication.
+  amendMgrPack(
+    db,
+    party,
+    a.batch.id,
+    "post_collection",
+    {
+      summary: "Post-collection notification v2: 412 samples, 41 taxa after re-identification; repository deposit DOI 10.5555/demo",
+      changeNote: "Taxon count corrected 38 → 41 after expert re-identification; repository DOI added",
+      materialChange: true,
+    },
+    K("mgr-a-post-v2"),
+  );
 
   const b = saveMgrDraft(db, party, { title: "Seamount sponge survey DEMO-02 (draft)", locationHint: "Reykjanes Ridge" }, K("mgr-b"));
 
@@ -90,6 +110,22 @@ export function seedDatabase(db: Db): SeedIds {
   );
   publishPack(db, secretariat, { domain: "mgr", recordId: d.batch.id, stage: "pre_collection", at: "2026-09-02T10:00:00.000Z" });
 
+  const f = receivePreCollection(
+    db,
+    party,
+    {
+      title: "Confidential cruise DEMO-05",
+      locationHint: "CCZ",
+      confidentiality: "confidential",
+      objectives: "Confidential tier — visible to Secretariat and the submitting Party only; STB never sees it.",
+      tkFpicFlag: true,
+    },
+    "form",
+    K("mgr-f"),
+    { at: "2026-09-02T11:00:00.000Z" },
+  );
+  publishPack(db, secretariat, { domain: "mgr", recordId: f.batch.id, stage: "pre_collection", at: "2026-09-02T12:00:00.000Z" });
+
   // ---- EIA
   const e1 = createEiaActivity(db, party, { title: "Acoustic survey, Reykjanes Ridge", abnjBox: "Reykjanes Ridge" }, K("eia-1"));
   addEiaPack(db, party, e1.activity.id, "screening", "Screening: below threshold, no EIA required (Art 31)", K("eia-1-screening"), { screeningOutcome: "no_eia" });
@@ -109,6 +145,10 @@ export function seedDatabase(db: Db): SeedIds {
   publishPack(db, secretariat, { domain: "eia", recordId: e3.activity.id, stage: "screening", at: "2026-09-04T10:00:00.000Z" });
   addEiaPack(db, party, e3.activity.id, "draft_eia", "Draft EIA — work in progress", K("eia-3-draft"), { status: "draft" });
 
+  const e4 = createEiaActivity(db, party, { title: "Restricted cable-route survey, Reykjanes Ridge", abnjBox: "Reykjanes Ridge", confidentiality: "restricted" }, K("eia-4"));
+  addEiaPack(db, party, e4.activity.id, "screening", "Screening (restricted tier): EIA required (Art 31)", K("eia-4-screening"), { screeningOutcome: "eia_required" });
+  publishPack(db, secretariat, { domain: "eia", recordId: e4.activity.id, stage: "screening", at: "2026-09-04T12:00:00.000Z" });
+
   // ---- CBTMT
   const need = createCbtmtRecord(db, party, { kind: "need", title: "Taxonomic training for deep-sea samples", themes: ["taxonomy", "genomics"] }, K("cbtmt-need"));
   publishPack(db, secretariat, { domain: "cbtmt", recordId: need.record.id, stage: "need_posted", at: "2026-08-28T10:00:00.000Z" });
@@ -121,19 +161,13 @@ export function seedDatabase(db: Db): SeedIds {
   publishPack(db, secretariat, { domain: "cbtmt", recordId: offer.record.id, stage: "offer_posted", at: "2026-08-29T10:00:00.000Z" });
   const match = suggestMatch(db, secretariat, need.record.id, offer.record.id, "shared_theme:taxonomy", K("cbtmt-match"));
 
-  // ---- one seeded digest notification (digest rows are seeded only)
-  const anyPublished = db.prepare("SELECT id FROM events WHERE status = 'published' ORDER BY seq ASC LIMIT 1").get() as { id: string } | undefined;
-  if (anyPublished) {
-    db.prepare(
-      `INSERT OR IGNORE INTO notifications (id, user_id, event_id, kind, at, read, summary)
-       VALUES ('00000000-0000-4000-8000-00000000d001', ?, ?, 'digest', '2026-09-05T06:00:00.000Z', 0, 'Daily digest: 3 new published packs across MGR and EIA (demo)')`,
-    ).run(SEED_USERS[0].id, anyPublished.id);
-  }
+  // ---- digests: daily/weekly subscribers were held back by the dispatcher; roll them up once, through the real runner.
+  runDigests(db);
 
   return {
     users: Object.fromEntries(SEED_USERS.map((u) => [u.username, u.id])),
-    mgr: { published: a.batch.id, draft: b.batch.id, imported: c.batch.id, restricted: d.batch.id },
-    eia: { noEia: e1.activity.id, full: e2.activity.id, coexist: e3.activity.id },
+    mgr: { published: a.batch.id, draft: b.batch.id, imported: c.batch.id, restricted: d.batch.id, confidential: f.batch.id },
+    eia: { noEia: e1.activity.id, full: e2.activity.id, coexist: e3.activity.id, restricted: e4.activity.id },
     cbtmt: { need: need.record.id, offer: offer.record.id, matchId: match.match.id },
   };
 }

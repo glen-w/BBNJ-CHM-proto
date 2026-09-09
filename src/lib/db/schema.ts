@@ -4,7 +4,7 @@
  * Zod is the schema of record; SQL adds keys, uniqueness, checks and foreign keys
  * for every claimed invariant. No migrations: SCHEMA_VERSION mismatch refuses start.
  */
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 export const SCHEMA_SQL = `
 CREATE TABLE IF NOT EXISTS meta (
@@ -52,6 +52,9 @@ CREATE TABLE IF NOT EXISTS events (
   match_id TEXT,
   screening_outcome TEXT CHECK (screening_outcome IS NULL OR screening_outcome IN ('eia_required', 'no_eia')),
   idempotency_key TEXT UNIQUE,
+  -- Implementation (v4): amendment metadata for versions > 1 of a published pack.
+  change_note TEXT,
+  material_change INTEGER NOT NULL DEFAULT 0 CHECK (material_change IN (0, 1)),
   UNIQUE (record_id, stage, version, status)
 );
 CREATE INDEX IF NOT EXISTS idx_events_pack ON events(record_id, stage, version, seq);
@@ -78,6 +81,45 @@ CREATE TABLE IF NOT EXISTS dispatch_log (
   error TEXT
 );
 
+-- Implementation (v4): every refused authorisation, append-only. Secretariat projection only.
+CREATE TABLE IF NOT EXISTS access_refusals (
+  id TEXT PRIMARY KEY,
+  at TEXT NOT NULL,
+  actor_role TEXT NOT NULL,
+  actor_user_id TEXT,
+  action TEXT NOT NULL,
+  domain TEXT,
+  record_id TEXT,
+  path TEXT,
+  reason TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_refusals_at ON access_refusals(at);
+
+-- Implementation (v4): durable outcome of one Excel import (closed loop for offline submitters).
+CREATE TABLE IF NOT EXISTS import_runs (
+  id TEXT PRIMARY KEY,
+  at TEXT NOT NULL,
+  actor_user_id TEXT REFERENCES users(id),
+  party_code TEXT NOT NULL,
+  filename TEXT,
+  bytes INTEGER NOT NULL,
+  accepted INTEGER NOT NULL,
+  rejected INTEGER NOT NULL,
+  rows_json TEXT NOT NULL
+);
+
+-- Implementation (v4): one row per digest window delivered to a daily/weekly subscriber.
+CREATE TABLE IF NOT EXISTS digest_runs (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  window_start TEXT NOT NULL,
+  window_end TEXT NOT NULL,
+  at TEXT NOT NULL,
+  event_count INTEGER NOT NULL,
+  notification_id TEXT REFERENCES notifications(id),
+  UNIQUE (user_id, window_end)
+);
+
 CREATE TABLE IF NOT EXISTS counters (
   name TEXT PRIMARY KEY,
   value INTEGER NOT NULL DEFAULT 0
@@ -97,6 +139,8 @@ CREATE TABLE IF NOT EXISTS mgr_batches (
   tk_fpic_flag INTEGER NOT NULL DEFAULT 0 CHECK (tk_fpic_flag IN (0, 1)),
   owner_user_id TEXT REFERENCES users(id),
   details_json TEXT NOT NULL DEFAULT '{}',
+  -- Implementation (v4): previous Art 12.2 field values, one entry per superseded published version.
+  details_history_json TEXT NOT NULL DEFAULT '[]',
   updated_at TEXT NOT NULL,
   -- C1: B-SBI exists exactly when the batch has left pre_collection (one mint, at receipt).
   CHECK ((b_sbi IS NULL) = (current_stage = 'pre_collection'))

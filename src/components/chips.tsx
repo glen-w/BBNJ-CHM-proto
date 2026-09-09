@@ -1,5 +1,7 @@
 import { Badge } from "@/components/ui/badge";
+import type { ConfidentialityTier } from "@/lib/contracts/events";
 import { cn } from "@/lib/utils";
+import { whoCanSee } from "@/lib/tiers";
 
 const STATUS_STYLE: Record<string, string> = {
   draft: "bg-muted text-muted-foreground border-border",
@@ -22,10 +24,20 @@ const TIER_STYLE: Record<string, string> = {
 };
 
 export function ConfidentialityBadge({ tier }: { tier: string }) {
+  const explain = (["public", "restricted", "confidential"] as const).includes(tier as ConfidentialityTier) ? whoCanSee(tier as ConfidentialityTier) : "";
   return (
-    <Badge variant="outline" className={TIER_STYLE[tier] ?? ""} title="Confidentiality tier (implementation of PrepCom3 annex categories) — enforced server-side">
+    <Badge variant="outline" className={TIER_STYLE[tier] ?? ""} title={`Confidentiality tier — enforced in SQL for every list, count, feed, audit row, export and notification. ${explain}`}>
       {tier}
     </Badge>
+  );
+}
+
+/** One-line statement of who can see a record at this tier (rendered under the badge on detail pages). */
+export function TierNote({ tier }: { tier: ConfidentialityTier }) {
+  return (
+    <p className="text-xs text-muted-foreground">
+      <span className="font-medium">Who can see this ({tier}):</span> {whoCanSee(tier)}
+    </p>
   );
 }
 

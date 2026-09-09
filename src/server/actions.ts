@@ -14,12 +14,14 @@ import { getDb } from "@/lib/db";
 import { IdempotencyKey } from "@/lib/contracts/extensions";
 import { FIELD_DEFS } from "@/lib/mgr-fields";
 import { createCbtmtRecord, suggestMatch, suggestMatches } from "./cbtmt";
+import { runDigests } from "./digest";
 import { addEiaPack, commentStb, createEiaActivity } from "./eia";
 import { DomainError } from "./errors";
 import { importMgrExcel } from "./import";
-import { addMgrPack, saveMgrDraft, submitPreCollection } from "./mgr";
-import { publishPack } from "./packs";
+import { addMgrPack, amendMgrPack, MGR_AMENDABLE_STAGES, saveMgrDraft, submitPreCollection } from "./mgr";
+import { amendPack, publishPack } from "./packs";
 import { getSubscription, markAllRead, upsertSubscription } from "./queries";
+import { resetSandbox } from "./reset";
 import { getSessionUser, setSessionUser } from "./session";
 import { buildMgrSample } from "./template";
 import { findUserById } from "./users";
@@ -143,16 +145,75 @@ export async function importMgrAction(fd: FormData) {
     const file = fd.get("file");
     const useFixture = str(fd, "fixture") === "1";
     let bytes: Buffer;
+    let filename: string | undefined;
     if (useFixture || !(file instanceof File) || file.size === 0) {
-      bytes = await buildMgrSample();
+      // The bundled fixture deliberately includes one invalid row so the closed loop (error report → fix → re-import) is visible.
+      bytes = await buildMgrSample({ withInvalid: true });
+      filename = "fixture:mgr-sample.xlsx";
     } else {
       if (!file.name.toLowerCase().endsWith(".xlsx")) throw new DomainError("import_rejected", "Only .xlsx files are accepted");
       bytes = Buffer.from(await file.arrayBuffer());
+      filename = file.name;
     }
-    const res = await importMgrExcel(getDb(), p, bytes, str(fd, "partyCode") || "XSD", keyOf(fd));
-    const url = new URL("/mgr/import", "http://x");
-    url.searchParams.set("result", JSON.stringify(res.rows.map((r) => ({ row: r.row, ok: r.ok, bSbi: r.bSbi, batchId: r.batchId, title: r.title, error: r.error }))).slice(0, 6000));
-    return { to: url.pathname + url.search, notice: `${res.accepted} accepted, ${res.rejected} rejected` };
+    const res = await importMgrExcel(getDb(), p, bytes, str(fd, "partyCode") || "XSD", keyOf(fd), { filename });
+    return {
+      to: `/mgr/import/${res.runId}`,
+      notice: `${res.accepted} accepted, ${res.rejected} rejected${res.rejected ? " — download the error report, fix the rows, re-import" : ""}`,
+    };
+  });
+}
+
+// ------------------------------------------------------------------ amend (all domains)
+
+export async function amendAction(fd: FormData) {
+  const p = await getSessionUser();
+  const back = returnTo(fd, "/");
+  attempt(back, () => {
+    const domain = z.enum(["mgr", "eia", "cbtmt"]).parse(str(fd, "domain"));
+    const recordId = str(fd, "recordId");
+    const stage = str(fd, "stage");
+    const changeNote = str(fd, "changeNote");
+    const materialChange = fd.get("materialChange") !== null;
+    const summary = str(fd, "summary");
+    const key = keyOf(fd);
+    let version: number;
+    if (domain === "mgr") {
+      const st = z.enum(MGR_AMENDABLE_STAGES).parse(stage);
+      const fieldEdits: Record<string, unknown> = {};
+      if (st === "pre_collection" && str(fd, "_withFields") === "1") Object.assign(fieldEdits, mgrFields(fd));
+      version = amendMgrPack(getDb(), p, recordId, st, { summary, changeNote, materialChange, fieldEdits }, key).event.version;
+    } else {
+      version = amendPack(getDb(), p, { domain, recordId, stage, summary, changeNote, materialChange, idempotencyKey: key }).event.version;
+    }
+    return {
+      to: back,
+      notice: `Amendment recorded as ${stage.replace(/_/g, " ")} v${version} (pending). ${materialChange ? "Material change: earlier readers will be re-notified on publication." : "Editorial change: subscribers only."} Identifiers unchanged.`,
+    };
+  });
+}
+
+// ------------------------------------------------------------------ digest / sandbox (Secretariat)
+
+export async function runDigestAction(fd: FormData) {
+  const p = await getSessionUser();
+  const back = returnTo(fd, "/notifications");
+  attempt(back, () => {
+    const cadence = z.enum(["daily", "weekly"]).optional().catch(undefined).parse(str(fd, "cadence") || undefined);
+    const r = runDigests(getDb(), { actor: p, cadence });
+    const delivered = r.users.filter((u) => u.inserted).map((u) => `${u.username} (${u.eventCount})`);
+    return {
+      to: back,
+      notice: r.inserted ? `Digest run: ${r.inserted} digest${r.inserted === 1 ? "" : "s"} delivered — ${delivered.join(", ")}.` : "Digest run: nothing new held for any daily/weekly subscriber.",
+    };
+  });
+}
+
+export async function resetSandboxAction(fd: FormData) {
+  const p = await getSessionUser();
+  const back = returnTo(fd, "/audit");
+  attempt(back, () => {
+    const r = resetSandbox(p);
+    return { to: "/", notice: `Sandbox reset — database recreated and re-seeded (${r.removed.length} file(s) removed). Sign-ins survive; everything else is fresh.` };
   });
 }
 
@@ -223,7 +284,14 @@ export async function createCbtmtAction(fd: FormData) {
     createCbtmtRecord(
       getDb(),
       p,
-      { kind, title: str(fd, "title"), themes: str(fd, "themes"), partyCode: str(fd, "partyCode") || undefined, provider: str(fd, "provider") || undefined },
+      {
+        kind,
+        title: str(fd, "title"),
+        themes: str(fd, "themes"),
+        partyCode: str(fd, "partyCode") || undefined,
+        provider: str(fd, "provider") || undefined,
+        confidentiality: z.enum(["public", "restricted", "confidential"]).catch("public").parse(str(fd, "confidentiality")),
+      },
       keyOf(fd),
     );
     return { to: "/capacity", notice: `${kind === "need" ? "Need" : "Offer"} posted (pending publication).` };

@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
 import { ConfidentialityBadge, StatusChip } from "@/components/chips";
+import { ExportLinks } from "@/components/export-links";
 import { flashFrom } from "@/components/flash";
 import { buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -37,6 +38,7 @@ export default async function EiaPage({ searchParams }: Props) {
               STB review queue
             </Link>
           ) : null}
+          <ExportLinks domain="eia" />
         </div>
       </div>
       <div className="overflow-x-auto rounded-lg border">

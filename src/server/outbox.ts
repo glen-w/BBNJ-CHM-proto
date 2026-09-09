@@ -5,7 +5,7 @@
  */
 import type { Db } from "@/lib/db";
 import { Event, type Domain } from "@/lib/contracts/events";
-import type { StoredEvent } from "@/lib/contracts/extensions";
+import type { AmendmentMeta, StoredEvent } from "@/lib/contracts/extensions";
 
 export type EventRow = {
   seq: number;
@@ -28,6 +28,8 @@ export type EventRow = {
   match_id: string | null;
   screening_outcome: string | null;
   idempotency_key: string | null;
+  change_note: string | null;
+  material_change: number;
 };
 
 export function rowToEvent(row: EventRow): StoredEvent {
@@ -52,20 +54,26 @@ export function rowToEvent(row: EventRow): StoredEvent {
     screeningOutcome: row.screening_outcome ?? undefined,
   };
   const parsed = Event.parse(base);
-  return { ...parsed, seq: row.seq, idempotencyKey: row.idempotency_key ?? undefined };
+  return {
+    ...parsed,
+    seq: row.seq,
+    idempotencyKey: row.idempotency_key ?? undefined,
+    changeNote: row.change_note ?? undefined,
+    materialChange: row.material_change === 1,
+  };
 }
 
 /** Validate against the contract, then insert. Returns the stored row. */
-export function insertEvent(db: Db, event: Event, idempotencyKey?: string): StoredEvent {
+export function insertEvent(db: Db, event: Event, idempotencyKey?: string, meta: AmendmentMeta = {}): StoredEvent {
   const ev = Event.parse(event);
   const anyEv = ev as Event & { bSbi?: string; matchId?: string; screeningOutcome?: string };
   db.prepare(
     `INSERT INTO events (id, domain, stage, status, record_id, related_record_id, public_record_id, receipt_id,
        actor_role, actor_user_id, at, summary, artifact_refs_json, confidentiality, version, b_sbi, match_id,
-       screening_outcome, idempotency_key)
+       screening_outcome, idempotency_key, change_note, material_change)
      VALUES (@id, @domain, @stage, @status, @recordId, @relatedRecordId, @publicRecordId, @receiptId,
        @actorRole, @actorUserId, @at, @summary, @artifactRefs, @confidentiality, @version, @bSbi, @matchId,
-       @screeningOutcome, @idempotencyKey)`,
+       @screeningOutcome, @idempotencyKey, @changeNote, @materialChange)`,
   ).run({
     id: ev.id,
     domain: ev.domain,
@@ -86,8 +94,23 @@ export function insertEvent(db: Db, event: Event, idempotencyKey?: string): Stor
     matchId: anyEv.matchId ?? null,
     screeningOutcome: anyEv.screeningOutcome ?? null,
     idempotencyKey: idempotencyKey ?? null,
+    changeNote: meta.changeNote?.trim() || null,
+    materialChange: meta.materialChange ? 1 : 0,
   });
   return getEvent(db, ev.id)!;
+}
+
+/** Every version of one (record, stage): latest row per version, ascending. Unfiltered — callers apply policy. */
+export function versionsOfPack(db: Db, recordId: string, stage: string): StoredEvent[] {
+  const rows = db
+    .prepare(
+      `SELECT e.* FROM events e
+       WHERE e.record_id = ? AND e.stage = ?
+         AND e.seq = (SELECT MAX(x.seq) FROM events x WHERE x.record_id = e.record_id AND x.stage = e.stage AND x.version = e.version)
+       ORDER BY e.version ASC`,
+    )
+    .all(recordId, stage) as EventRow[];
+  return rows.map(rowToEvent);
 }
 
 export function getEvent(db: Db, id: string): StoredEvent | undefined {

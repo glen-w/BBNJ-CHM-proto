@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
 import { ChannelBadge, ConfidentialityBadge } from "@/components/chips";
+import { ExportLinks } from "@/components/export-links";
 import { flashFrom } from "@/components/flash";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,7 @@ export default async function MgrPage({ searchParams }: Props) {
               Import offline template
             </Link>
           ) : null}
+          <ExportLinks domain="mgr" />
         </div>
       </div>
 

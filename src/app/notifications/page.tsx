@@ -2,13 +2,14 @@ import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
 import { flashFrom } from "@/components/flash";
-import { SubmitButton } from "@/components/forms";
+import { KeyFields, SubmitButton } from "@/components/forms";
 import { buttonVariants } from "@/components/ui/button";
 import { getDb } from "@/lib/db";
 import { fmtDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { markAllReadAction } from "@/server/actions";
-import { notificationsFor } from "@/server/queries";
+import { markAllReadAction, runDigestAction } from "@/server/actions";
+import { can } from "@/server/policy";
+import { getSubscription, notificationsFor } from "@/server/queries";
 import { getSessionUser } from "@/server/session";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -16,7 +17,10 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 export default async function NotificationsPage({ searchParams }: Props) {
   const flash = await flashFrom(searchParams);
   const p = await getSessionUser();
-  const items = notificationsFor(getDb(), p, 100);
+  const db = getDb();
+  const items = notificationsFor(db, p, 100);
+  const sub = getSubscription(db, p);
+  const canRunDigest = can(p, "run_digest");
 
   return (
     <AppShell title="Notifications" flash={flash}>
@@ -31,11 +35,29 @@ export default async function NotificationsPage({ searchParams }: Props) {
       ) : (
         <>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm text-muted-foreground">
+            <p className="max-w-2xl text-sm text-muted-foreground">
               Kinds: publish · deadline · digest · match · stb_review. Rows are produced by the dispatcher from published outbox events only; drafts and
-              pending packs never notify.
+              pending packs never notify.{" "}
+              {sub ? (
+                sub.digest === "immediate" ? (
+                  <>Your cadence is <strong>immediate</strong>: every matching publication reaches the bell at once.</>
+                ) : (
+                  <>
+                    Your cadence is <strong>{sub.digest}</strong>: subscription matches are <em>held</em> and rolled into one digest row per window. Rows
+                    about your own records, STB review requests, deadlines and material amendments still arrive immediately.
+                  </>
+                )
+              ) : null}
             </p>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
+              {canRunDigest ? (
+                <form action={runDigestAction} className="flex gap-1">
+                  <KeyFields returnTo="/notifications" />
+                  <SubmitButton variant="outline" size="sm" title="Rolls held publications into one digest row per daily/weekly subscriber (idempotent)">
+                    Run digest now
+                  </SubmitButton>
+                </form>
+              ) : null}
               <Link href="/preferences" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
                 Subscription preferences
               </Link>

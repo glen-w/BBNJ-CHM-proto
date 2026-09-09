@@ -2,18 +2,20 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AppShell } from "@/components/app-shell";
-import { ChannelBadge, ConfidentialityBadge, Identifier, StageChip } from "@/components/chips";
+import { ChannelBadge, ConfidentialityBadge, Identifier, StageChip, TierNote } from "@/components/chips";
+import { RecordExportLinks } from "@/components/export-links";
 import { flashFrom } from "@/components/flash";
 import { Field, KeyFields, SubmitButton, selectClass } from "@/components/forms";
 import { MgrForm } from "@/components/mgr-form";
 import { PublishButton } from "@/components/publish-button";
 import { Timeline } from "@/components/timeline";
 import { Input } from "@/components/ui/input";
+import { AmendForm, VersionHistory } from "@/components/version-history";
 import { getDb } from "@/lib/db";
 import { FIELD_DEFS } from "@/lib/mgr-fields";
 import { cn } from "@/lib/utils";
 import { addMgrPackAction } from "@/server/actions";
-import { getMgrBatch } from "@/server/mgr";
+import { getMgrBatch, MGR_AMENDABLE_STAGES } from "@/server/mgr";
 import { can, hasRole } from "@/server/policy";
 import { packsOf, recordVisible, timelineOf } from "@/server/queries";
 import { getSessionUser } from "@/server/session";
@@ -36,17 +38,31 @@ export default async function MgrBatchPage({ params, searchParams }: Props) {
   const isDraft = batch.currentStage === "pre_collection" && !batch.bSbi;
   const here = `/mgr/${id}`;
   const reached = STAGES.indexOf(batch.currentStage);
+  // Latest version per stage; a stage is amendable when its latest version is published.
+  const latestByStage = new Map<string, (typeof packs)[number]>();
+  for (const e of packs) if (!latestByStage.has(e.stage) || latestByStage.get(e.stage)!.version < e.version) latestByStage.set(e.stage, e);
+  const amendable = MGR_AMENDABLE_STAGES.filter((s) => latestByStage.get(s)?.status === "published").map((s) => ({ stage: s, version: latestByStage.get(s)!.version }));
+  const canAmend = can(p, "amend", { ownerUserId: batch.ownerUserId ?? null });
 
   return (
     <AppShell title={`MGR batch — ${batch.title}`} flash={flash}>
-      <div className="flex flex-wrap items-center gap-2">
-        <Link href="/mgr" className="text-sm underline">
-          ← All batches
-        </Link>
-        <ChannelBadge channel={batch.sourceChannel} />
-        <ConfidentialityBadge tier={batch.confidentiality} />
-        <span className="font-mono text-xs text-muted-foreground">Party {batch.partyCode}</span>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href="/mgr" className="text-sm underline">
+            ← All batches
+          </Link>
+          <ChannelBadge channel={batch.sourceChannel} />
+          <ConfidentialityBadge tier={batch.confidentiality} />
+          {batch.tkFpicFlag ? (
+            <span className="rounded border px-1.5 text-[11px] uppercase" title="Art 13 — traditional knowledge / FPIC flag (metadata only; no TK content is stored)">
+              TK / FPIC flag
+            </span>
+          ) : null}
+          <span className="font-mono text-xs text-muted-foreground">Party {batch.partyCode}</span>
+        </div>
+        <RecordExportLinks publicRecordId={batch.publicRecordId} />
       </div>
+      <TierNote tier={batch.confidentiality} />
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Identifier label="internalId" value={batch.id} caption="UUID at creation — never shown as a public identifier" />
@@ -101,6 +117,28 @@ export default async function MgrBatchPage({ params, searchParams }: Props) {
               <MgrForm batch={batch} needsPartyCode={!hasRole(p, "party")} returnTo={here} />
             </div>
           ) : null}
+          {!isDraft && canAmend ? (
+            <AmendForm domain="mgr" recordId={id} stages={amendable} returnTo={here}>
+              {amendable.some((a) => a.stage === "pre_collection") ? (
+                <details className="rounded-md border p-2 text-sm">
+                  <summary className="cursor-pointer">Also edit Art 12.2 fields (pre-collection amendments only)</summary>
+                  <p className="mt-1 text-xs text-muted-foreground">Tick to submit the edited values with the amendment; previous values are kept in the version history.</p>
+                  <label className="mt-2 flex items-center gap-2">
+                    <input type="checkbox" name="_withFields" value="1" className="size-4" /> Apply the field values below
+                  </label>
+                  <div className="mt-2 grid gap-2">
+                    {FIELD_DEFS.filter((f) => f.kind !== "boolean" && f.key !== "confidentiality").map((f) => (
+                      <Field key={f.key} label={f.label} basis={f.basis}>
+                        <Input name={f.key} defaultValue={f.key === "title" ? batch.title : f.key === "locationHint" ? (batch.locationHint ?? "") : (batch.details[f.key] ?? "")} />
+                      </Field>
+                    ))}
+                    <input type="hidden" name="confidentiality" value={batch.confidentiality} />
+                    {batch.tkFpicFlag ? <input type="hidden" name="tkFpicFlag" value="on" /> : null}
+                  </div>
+                </details>
+              ) : null}
+            </AmendForm>
+          ) : null}
           {!isDraft && owner ? (
             <form action={addMgrPackAction} className="space-y-3 rounded-lg border p-4">
               <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Add a later pack to this batch</h2>
@@ -128,6 +166,33 @@ export default async function MgrBatchPage({ params, searchParams }: Props) {
             </p>
           ) : null}
         </div>
+      </section>
+
+      <section className="rounded-lg border p-4" id="versions">
+        <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">Version history (per stage; identifiers never change)</h2>
+        <VersionHistory packs={packs} />
+        {batch.detailsHistory.length > 0 && can(p, "view_full_audit") ? (
+          <details className="mt-3 text-sm">
+            <summary className="cursor-pointer text-muted-foreground">Superseded Art 12.2 values ({batch.detailsHistory.length}) — Secretariat projection</summary>
+            <ul className="mt-2 space-y-2 text-xs">
+              {batch.detailsHistory.map((h) => (
+                <li key={`${h.version}-${h.at}`} className="rounded-md border p-2">
+                  <div className="mb-1 font-medium">
+                    pre-collection v{h.version} · superseded {h.at.slice(0, 16).replace("T", " ")}Z
+                  </div>
+                  <dl className="grid gap-x-4 gap-y-0.5 sm:grid-cols-2">
+                    {Object.entries(h.values).map(([k, v]) => (
+                      <div key={k} className="flex gap-2">
+                        <dt className="text-muted-foreground">{k}</dt>
+                        <dd className="truncate">{v || "—"}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </li>
+              ))}
+            </ul>
+          </details>
+        ) : null}
       </section>
 
       <section>

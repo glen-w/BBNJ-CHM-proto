@@ -40,9 +40,18 @@ const Ownership = z.object({
 });
 
 /** Stored MGR batch: contract + ownership + Art 12.2 detail fields (FIELD_DEFS). */
+/** Implementation (v4): superseded Art 12.2 values, kept when a published pre-collection pack is amended. */
+export const MgrDetailsHistoryEntry = z.object({
+  version: z.number().int().min(1),
+  at: z.string(),
+  values: z.record(z.string(), z.string()),
+});
+export type MgrDetailsHistoryEntry = z.infer<typeof MgrDetailsHistoryEntry>;
+
 export const StoredMgrBatch = MgrBatch.extend({
   ...Ownership.shape,
   details: z.record(z.string(), z.string()).default({}),
+  detailsHistory: z.array(MgrDetailsHistoryEntry).default([]),
 }).superRefine((val, ctx) => {
   // C1/C2: once the batch has left pre_collection, a strict-shaped B-SBI is required (minted once, at receipt).
   if (val.currentStage !== "pre_collection") {
@@ -69,7 +78,34 @@ export type StoredCbtmtRecord = z.infer<typeof StoredCbtmtRecord>;
 export type StoredEvent = z.infer<typeof Event> & {
   seq: number;
   idempotencyKey?: string;
+  /** Domain fields surfaced as optional on the union so readers need no narrowing (values come from the row). */
+  bSbi?: string;
+  matchId?: string;
+  screeningOutcome?: "eia_required" | "no_eia";
+  /** Implementation (v4): why a published pack was re-issued as version > 1. */
+  changeNote?: string;
+  /** Implementation (v4): material change → earlier readers are re-notified on publish. */
+  materialChange: boolean;
 };
+
+/** Implementation (v4): amendment metadata carried by openPack/insertEvent, outside the contract. */
+export interface AmendmentMeta {
+  changeNote?: string;
+  materialChange?: boolean;
+}
+
+/** Implementation (v4): one refused authorisation. */
+export interface AccessRefusal {
+  id: string;
+  at: string;
+  actorRole: string;
+  actorUserId?: string;
+  action: string;
+  domain?: string;
+  recordId?: string;
+  path?: string;
+  reason: string;
+}
 
 /** Anonymous principal used when the cookie is missing, malformed, unknown or inactive. */
 export type Principal =

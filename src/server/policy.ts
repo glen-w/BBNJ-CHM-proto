@@ -4,9 +4,9 @@
  * resolver and notification fan-out goes through visibilityClause() /
  * recordVisibilityClause(). Nobody writes visibility SQL by hand.
  */
-import type { Db } from "@/lib/db";
+import { getDb, type Db } from "@/lib/db";
 import type { ActorRole, ConfidentialityTier, PublishStatus, User } from "@/lib/contracts/events";
-import type { Principal } from "@/lib/contracts/extensions";
+import type { AccessRefusal, Principal } from "@/lib/contracts/extensions";
 import { DomainError } from "./errors";
 import { findUserById } from "./users";
 
@@ -15,11 +15,29 @@ export type { Principal };
 export type Action =
   | "submit"
   | "publish"
+  | "amend"
   | "comment_stb"
   | "import"
   | "suggest_match"
   | "manage_subscription"
-  | "view_full_audit";
+  | "view_full_audit"
+  | "export_full"
+  | "run_digest"
+  | "reset_sandbox";
+
+export const ALL_ACTIONS: Action[] = [
+  "submit",
+  "publish",
+  "amend",
+  "comment_stb",
+  "import",
+  "suggest_match",
+  "manage_subscription",
+  "view_full_audit",
+  "export_full",
+  "run_digest",
+  "reset_sandbox",
+];
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -65,6 +83,7 @@ export function can(p: Principal, action: Action, subject?: { ownerUserId?: stri
   if (p.kind === "anonymous") return false;
   switch (action) {
     case "submit":
+    case "amend": // amend = submit a new version of a published pack; same ownership rule
       if (isSecretariat(p)) return true; // on behalf → sourceChannel "assisted"
       if (!hasRole(p, "party")) return false;
       if (subject && subject.ownerUserId != null) return subject.ownerUserId === p.user.id;
@@ -76,11 +95,16 @@ export function can(p: Principal, action: Action, subject?: { ownerUserId?: stri
     case "import":
     case "suggest_match":
     case "view_full_audit":
+    case "export_full":
+    case "run_digest":
+    case "reset_sandbox":
       return isSecretariat(p);
     case "manage_subscription":
       return true;
   }
 }
+
+export { whoCanSee } from "@/lib/tiers";
 
 export interface ReadPolicy {
   all: boolean;
@@ -155,8 +179,70 @@ export const RECORD_JOIN = `
     UNION ALL SELECT id, owner_user_id, confidentiality, 'cbtmt' FROM cbtmt_records
   ) r ON r.id = e.record_id`;
 
-export function requireCan(p: Principal, action: Action, subject?: { ownerUserId?: string | null }): void {
-  if (!can(p, action, subject)) {
-    throw new DomainError("forbidden", `Not permitted: ${action}`);
+export interface RefusalContext {
+  domain?: string;
+  recordId?: string;
+  path?: string;
+  reason?: string;
+  /** Explicit connection (tests); defaults to the app singleton. */
+  db?: Db;
+}
+
+/**
+ * Append one refusal row. Never throws into the business path: a failure to
+ * record is logged and swallowed, the refusal itself is still enforced.
+ */
+export function recordRefusal(p: Principal, action: Action | string, ctx: RefusalContext = {}): AccessRefusal | undefined {
+  const refusal: AccessRefusal = {
+    id: crypto.randomUUID(),
+    at: new Date().toISOString(),
+    actorRole: actorRoleOf(p),
+    actorUserId: userId(p),
+    action,
+    domain: ctx.domain,
+    recordId: ctx.recordId,
+    path: ctx.path,
+    reason: ctx.reason ?? `Not permitted: ${action}`,
+  };
+  try {
+    (ctx.db ?? getDb())
+      .prepare(
+        `INSERT INTO access_refusals (id, at, actor_role, actor_user_id, action, domain, record_id, path, reason)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .run(refusal.id, refusal.at, refusal.actorRole, refusal.actorUserId ?? null, refusal.action, refusal.domain ?? null, refusal.recordId ?? null, refusal.path ?? null, refusal.reason);
+    return refusal;
+  } catch (err) {
+    console.error(`[refusal] could not record: ${err instanceof Error ? err.message : String(err)}`);
+    return undefined;
   }
+}
+
+/** Authorise or record-and-throw. Every domain mutation and gated read goes through here. */
+export function requireCan(p: Principal, action: Action, subject?: { ownerUserId?: string | null }, ctx: RefusalContext = {}): void {
+  if (!can(p, action, subject)) {
+    const reason =
+      subject && subject.ownerUserId != null && p.kind === "user" && hasRole(p, "party") ? `Not permitted: ${action} — record owned by another Party` : `Not permitted: ${action}`;
+    recordRefusal(p, action, { ...ctx, reason: ctx.reason ?? reason });
+    throw new DomainError("forbidden", reason);
+  }
+}
+
+type RefusalRow = { id: string; at: string; actor_role: string; actor_user_id: string | null; action: string; domain: string | null; record_id: string | null; path: string | null; reason: string };
+
+/** Secretariat projection only: the refusal log. Anyone else gets an empty list (and a refusal row of their own). */
+export function listRefusals(db: Db, p: Principal, limit = 200): AccessRefusal[] {
+  if (!can(p, "view_full_audit")) return [];
+  const rows = db.prepare("SELECT * FROM access_refusals ORDER BY at DESC, rowid DESC LIMIT ?").all(limit) as RefusalRow[];
+  return rows.map((r) => ({
+    id: r.id,
+    at: r.at,
+    actorRole: r.actor_role,
+    actorUserId: r.actor_user_id ?? undefined,
+    action: r.action,
+    domain: r.domain ?? undefined,
+    recordId: r.record_id ?? undefined,
+    path: r.path ?? undefined,
+    reason: r.reason,
+  }));
 }

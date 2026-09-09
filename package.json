@@ -14,7 +14,11 @@
     "contracts:check": "tsx scripts/contracts-check.ts",
     "smoke": "tsx scripts/smoke.ts",
     "replay-outbox": "tsx scripts/replay-outbox.ts",
-    "typecheck": "tsc --noEmit"
+    "digest": "tsx scripts/digest.ts",
+    "demo": "tsx scripts/demo.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@base-ui/react": "1.8.0",
@@ -40,7 +44,8 @@
     "eslint-config-next": "16.3.4",
     "tailwindcss": "4.3.3",
     "tsx": "4.23.13",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "4.1.11"
   },
   "engines": {
     "node": ">=22 <27"

@@ -339,6 +339,272 @@ async function main() {
     assert.doesNotThrow(() => reset.assertResetAllowed({ nodeEnv: "development", force: false }));
   });
 
+  // ================================================================ v0.2 hardening
+  const digest = await import("../src/server/digest");
+  const exporter = await import("../src/server/export");
+  const resetMod = await import("../src/server/reset");
+  const count = (sql: string, ...params: unknown[]) => (db.prepare(sql).get(...params) as { n: number }).n;
+  const anon = () => policy.anonymous();
+  const otherParty = (): import("../src/server/policy").Principal => ({
+    kind: "user",
+    user: { id: "00000000-0000-4000-8000-0000000000ff", username: "party.other", displayName: "Other Party", roles: ["party"], partyCode: "XSE", active: true },
+  });
+
+  // ---------------------------------------------------------------- P0-1 role matrix + refusal log
+  p0("role × action matrix — every refusal leaves exactly one access_refusals row; grants leave none", () => {
+    const actors: Record<string, () => import("../src/server/policy").Principal> = { anonymous: anon, public: pub, party: party, stb, secretariat };
+    // expected can() per action, in ALL_ACTIONS order
+    const expected: Record<string, Record<string, boolean>> = {
+      anonymous: { submit: false, publish: false, amend: false, comment_stb: false, import: false, suggest_match: false, manage_subscription: false, view_full_audit: false, export_full: false, run_digest: false, reset_sandbox: false },
+      public: { submit: false, publish: false, amend: false, comment_stb: false, import: false, suggest_match: false, manage_subscription: true, view_full_audit: false, export_full: false, run_digest: false, reset_sandbox: false },
+      party: { submit: true, publish: false, amend: true, comment_stb: false, import: false, suggest_match: false, manage_subscription: true, view_full_audit: false, export_full: false, run_digest: false, reset_sandbox: false },
+      stb: { submit: false, publish: false, amend: false, comment_stb: true, import: false, suggest_match: false, manage_subscription: true, view_full_audit: false, export_full: false, run_digest: false, reset_sandbox: false },
+      secretariat: { submit: true, publish: true, amend: true, comment_stb: false, import: true, suggest_match: true, manage_subscription: true, view_full_audit: true, export_full: true, run_digest: true, reset_sandbox: true },
+    };
+    for (const [name, mk] of Object.entries(actors)) {
+      for (const action of policy.ALL_ACTIONS) {
+        const before = count("SELECT COUNT(*) AS n FROM access_refusals");
+        const allowed = policy.can(mk(), action);
+        assert.equal(allowed, expected[name][action], `${name} can ${action}`);
+        if (allowed) {
+          assert.doesNotThrow(() => policy.requireCan(mk(), action, undefined, { db }));
+          assert.equal(count("SELECT COUNT(*) AS n FROM access_refusals"), before, "grant writes no refusal");
+        } else {
+          assert.throws(() => policy.requireCan(mk(), action, undefined, { db, path: "/smoke" }), (e: unknown) => e instanceof DomainError && e.code === "forbidden");
+          assert.equal(count("SELECT COUNT(*) AS n FROM access_refusals"), before + 1, `refusal recorded for ${name}/${action}`);
+        }
+      }
+    }
+    // ownership: another Party is refused on someone else's record and the row names the record
+    const r = mgr.receivePreCollection(db, party(), { title: "Owned", locationHint: "CCZ" }, "form", key());
+    assert.throws(() => mgr.saveMgrDraft(db, otherParty(), { title: "x" }, key(), { batchId: r.batch.id }), DomainError);
+    const last = policy.listRefusals(db, secretariat(), 1)[0];
+    assert.equal(last.recordId, r.batch.id);
+    assert.equal(last.actorRole, "party");
+    // projections: secretariat sees refusals, nobody else does (and asking is itself not a refusal — it's an empty read)
+    assert.ok(policy.listRefusals(db, secretariat()).length > 0);
+    for (const p of [anon(), pub(), party(), stb()]) assert.deepEqual(policy.listRefusals(db, p), []);
+  });
+
+  // ---------------------------------------------------------------- P0-2 digest hold semantics
+  p0("digest — daily subscriber gets no per-event bell for subscription matches; runDigests rolls them into one row; idempotent; immediate subscriber still per-event", () => {
+    const partyUser = users.findUserByUsername(db, "party.nfp")!; // subscribed mgr+cbtmt, daily
+    const publicUser = users.findUserByUsername(db, "public")!; // subscribed eia/CCZ, immediate
+    // MGR pack owned by the secretariat (assisted) so the party is reached only via subscription
+    const r = mgr.receivePreCollection(db, secretariat(), { title: "Held for digest", locationHint: "CCZ" }, "form", key(), { partyCode: "XSE" });
+    const pubEvt = packs.publishPack(db, secretariat(), { domain: "mgr", recordId: r.batch.id, stage: "pre_collection" });
+    assert.equal(count("SELECT COUNT(*) AS n FROM notifications WHERE user_id = ? AND event_id = ?", partyUser.id, pubEvt.event.id), 0, "held, no per-event bell");
+    const digestsBefore = count("SELECT COUNT(*) AS n FROM notifications WHERE user_id = ? AND kind = 'digest'", partyUser.id);
+    const run1 = digest.runDigests(db, { actor: secretariat() });
+    const mine = run1.users.find((u) => u.userId === partyUser.id)!;
+    assert.ok(mine.inserted && mine.eventCount >= 1, JSON.stringify(mine));
+    assert.equal(count("SELECT COUNT(*) AS n FROM notifications WHERE user_id = ? AND kind = 'digest'", partyUser.id), digestsBefore + 1);
+    const row = db.prepare("SELECT summary FROM notifications WHERE user_id = ? AND kind = 'digest' ORDER BY at DESC, rowid DESC LIMIT 1").get(partyUser.id) as { summary: string };
+    assert.match(row.summary, /Daily digest/);
+    assert.match(row.summary, /Held for digest|BBNJ-MGR/);
+    const run2 = digest.runDigests(db, { actor: secretariat() });
+    assert.equal(run2.inserted, 0, "second run inserts nothing");
+    assert.equal(count("SELECT COUNT(*) AS n FROM digest_runs WHERE user_id = ?", partyUser.id) >= 1, true);
+    // immediate subscriber: EIA/CCZ publish reaches public at once
+    const e = eia.createEiaActivity(db, party(), { title: "Immediate CCZ", abnjBox: "CCZ" }, key());
+    eia.addEiaPack(db, party(), e.activity.id, "screening", "Screening", key(), { screeningOutcome: "no_eia" });
+    const pe = packs.publishPack(db, secretariat(), { domain: "eia", recordId: e.activity.id, stage: "screening" });
+    assert.equal(count("SELECT COUNT(*) AS n FROM notifications WHERE user_id = ? AND event_id = ? AND kind = 'publish'", publicUser.id, pe.event.id), 1);
+    // party cannot run digests
+    assert.throws(() => digest.runDigests(db, { actor: party() }), DomainError);
+    // replay still inserts nothing
+    assert.equal(notify.replayOutbox(db).inserted, 0);
+  });
+
+  // ---------------------------------------------------------------- P0-3 import closed loop
+  p0("import loop — fixture with invalid row → run persisted, N-1 accepted; error workbook re-imports after correction; runs visible to secretariat only", async () => {
+    const fixture = await template.buildMgrSample({ rows: 2, withInvalid: true });
+    const k = key();
+    const run = await importer.importMgrExcel(db, secretariat(), fixture, "XSD", k, { filename: "smoke.xlsx" });
+    assert.equal(run.accepted, 2);
+    assert.equal(run.rejected, 1);
+    const bad = run.rows.find((r) => !r.ok)!;
+    assert.match(bad.error ?? "", /objectives|confidentiality/i);
+    assert.ok(bad.values && bad.values.title.includes("INVALID"), "rejected row keeps its values");
+    // durable + idempotent
+    const again = await importer.importMgrExcel(db, secretariat(), fixture, "XSD", k, { filename: "smoke.xlsx" });
+    assert.equal(again.runId, run.runId);
+    assert.equal(count("SELECT COUNT(*) AS n FROM import_runs WHERE id = ?", run.runId), 1);
+    assert.ok(importer.getImportRun(db, secretariat(), run.runId));
+    assert.throws(() => importer.getImportRun(db, party(), run.runId), DomainError);
+    assert.deepEqual(importer.listImportRuns(db, pub()), []);
+    // error workbook: template marker, Error column, only the failed row
+    const report = await template.buildMgrErrorReport(run);
+    assert.deepEqual(await template.sheetNames(report), ["Meta", "Data", "Field guide"]);
+    const ExcelJS = (await import("exceljs")).default;
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.load(report as unknown as import("exceljs").Buffer);
+    const data = wb.getWorksheet("Data")!;
+    assert.equal(data.rowCount, 2, "header + one failed row");
+    const headerRow = data.getRow(1);
+    assert.equal(String(headerRow.getCell(headerRow.cellCount).value), template.ERROR_COLUMN_HEADER);
+    // re-import the raw report is rejected (unknown header); corrected report is accepted
+    await assert.rejects(importer.importMgrExcel(db, secretariat(), report, "XSD", key()), DomainError);
+    const fixed = await template.correctErrorReport(report, { objectives: "Corrected offline by the Party.", confidentiality: "public" });
+    const run2 = await importer.importMgrExcel(db, secretariat(), fixed, "XSD", key(), { filename: "smoke-corrected.xlsx" });
+    assert.equal(run2.rejected, 0, JSON.stringify(run2.rows));
+    assert.equal(run2.accepted, 1);
+    assert.match(mgr.getMgrBatch(db, run2.rows[0].batchId!)!.bSbi!, ext.BSBI_PATTERN);
+  });
+
+  // ---------------------------------------------------------------- P0-4 versioning + material change
+  p0("amend — published v1 → pending v2 with note; publish v2 re-notifies prior recipients when material; editorial does not; non-published refused; ids unchanged", () => {
+    const partyUser = users.findUserByUsername(db, "party.nfp")!;
+    const publicUser = users.findUserByUsername(db, "public")!;
+    // EIA in CCZ: public (immediate, CCZ) and owner receive v1
+    const e = eia.createEiaActivity(db, party(), { title: "Amendable", abnjBox: "CCZ" }, key());
+    eia.addEiaPack(db, party(), e.activity.id, "screening", "Screening v1", key(), { screeningOutcome: "eia_required" });
+    const v1 = packs.publishPack(db, secretariat(), { domain: "eia", recordId: e.activity.id, stage: "screening" });
+    const prid = v1.event.publicRecordId!;
+    assert.equal(count("SELECT COUNT(*) AS n FROM notifications WHERE user_id = ? AND event_id = ?", publicUser.id, v1.event.id), 1);
+    // amending a pending pack is refused
+    eia.addEiaPack(db, party(), e.activity.id, "draft_eia", "Draft", key());
+    assert.throws(
+      () => packs.amendPack(db, party(), { domain: "eia", recordId: e.activity.id, stage: "draft_eia", summary: "", changeNote: "x", materialChange: true, idempotencyKey: key() }),
+      (err: unknown) => err instanceof DomainError && err.code === "invalid_transition",
+    );
+    // editorial amendment of screening → v2 pending, publish → public notified via subscription only once (as a normal publish), party as owner
+    const ed = packs.amendPack(db, party(), { domain: "eia", recordId: e.activity.id, stage: "screening", summary: "Screening v2 (typo)", changeNote: "Typo fixed", materialChange: false, idempotencyKey: key() });
+    assert.equal(ed.event.version, 2);
+    assert.equal(ed.event.status, "pending");
+    assert.equal(ed.event.changeNote, "Typo fixed");
+    assert.equal(ed.event.materialChange, false);
+    assert.equal(ed.event.screeningOutcome, "eia_required", "screening outcome carried to v2");
+    const pv2 = packs.publishPack(db, secretariat(), { domain: "eia", recordId: e.activity.id, stage: "screening" });
+    assert.equal(pv2.event.version, 2);
+    assert.equal(pv2.event.publicRecordId, prid, "publicRecordId unchanged across versions");
+    assert.equal(pv2.event.changeNote, "Typo fixed");
+    // material amendment → v3; the STB user never held a screening notification and stays out; public/party re-notified
+    const stbUser = users.findUserByUsername(db, "stb")!;
+    const mat = packs.amendPack(db, secretariat(), { domain: "eia", recordId: e.activity.id, stage: "screening", summary: "Screening v3", changeNote: "Outcome reasoning corrected", materialChange: true, idempotencyKey: key() });
+    assert.equal(mat.event.version, 3);
+    const pv3 = packs.publishPack(db, secretariat(), { domain: "eia", recordId: e.activity.id, stage: "screening" });
+    assert.match(pv3.event.summary, /Screening v3/);
+    for (const u of [publicUser, partyUser]) {
+      assert.equal(count("SELECT COUNT(*) AS n FROM notifications WHERE user_id = ? AND event_id = ? AND kind = 'publish'", u.id, pv3.event.id), 1, `${u.username} re-notified once`);
+    }
+    assert.equal(count("SELECT COUNT(*) AS n FROM notifications WHERE user_id = ? AND event_id = ?", stbUser.id, pv3.event.id), 0);
+    const nRow = db.prepare("SELECT summary FROM notifications WHERE user_id = ? AND event_id = ?").get(publicUser.id, pv3.event.id) as { summary: string };
+    assert.match(nRow.summary, /amended v3 \(material change\)/);
+    assert.deepEqual(packs.packVersions(db, e.activity.id, "screening").map((x) => [x.version, x.status]), [[1, "published"], [2, "published"], [3, "published"]]);
+    // MGR: amend published pre-collection with field edits; B-SBI unchanged, history kept
+    const b = mgr.receivePreCollection(db, party(), { title: "Amend me", locationHint: "CCZ" }, "form", key());
+    packs.publishPack(db, secretariat(), { domain: "mgr", recordId: b.batch.id, stage: "pre_collection" });
+    const before = mgr.getMgrBatch(db, b.batch.id)!;
+    const am = mgr.amendMgrPack(db, party(), b.batch.id, "pre_collection", { changeNote: "Area corrected", materialChange: true, fieldEdits: { locationHint: "Reykjanes Ridge" } }, key());
+    const after = mgr.getMgrBatch(db, b.batch.id)!;
+    assert.equal(am.event.version, 2);
+    assert.equal(am.event.bSbi, before.bSbi);
+    assert.equal(after.bSbi, before.bSbi);
+    assert.equal(after.publicRecordId, before.publicRecordId);
+    assert.equal(after.locationHint, "Reykjanes Ridge");
+    assert.equal(after.detailsHistory.length, 1);
+    assert.equal(after.detailsHistory[0].values.locationHint, "CCZ");
+    assert.throws(() => mgr.amendMgrPack(db, otherParty(), b.batch.id, "pre_collection", { changeNote: "hijack", materialChange: false }, key()), DomainError);
+    assert.deepEqual(reconcile.reconcile(db).mismatches, []);
+  });
+
+  // ---------------------------------------------------------------- P0-5 tier × role matrix
+  p0("tier × role matrix — public/restricted/confidential across lists, record, packs, audit, feed, resolver, notifications, exports", () => {
+    const tiers = ["public", "restricted", "confidential"] as const;
+    const ids: Record<string, { id: string; prid: string }> = {};
+    for (const t of tiers) {
+      const r = mgr.receivePreCollection(db, party(), { title: `Tier ${t}`, locationHint: "CCZ", confidentiality: t }, "form", key());
+      const pubEvt = packs.publishPack(db, secretariat(), { domain: "mgr", recordId: r.batch.id, stage: "pre_collection" });
+      ids[t] = { id: r.batch.id, prid: pubEvt.event.publicRecordId! };
+    }
+    const readers: Record<string, () => import("../src/server/policy").Principal> = { anon, public: pub, owner: party, other: otherParty, stb, secretariat };
+    const expected: Record<string, Record<string, boolean>> = {
+      public: { anon: true, public: true, owner: true, other: true, stb: true, secretariat: true },
+      restricted: { anon: false, public: false, owner: true, other: false, stb: true, secretariat: true },
+      confidential: { anon: false, public: false, owner: true, other: false, stb: false, secretariat: true },
+    };
+    for (const t of tiers) {
+      for (const [name, mk] of Object.entries(readers)) {
+        const p = mk();
+        const want = expected[t][name];
+        const label = `${t}/${name}`;
+        assert.equal(queries.listMgrBatches(db, p).some((b) => b.id === ids[t].id), want, `${label} list`);
+        assert.equal(queries.recordVisible(db, p, "mgr", ids[t].id), want, `${label} recordVisible`);
+        assert.equal(queries.packsOf(db, p, ids[t].id).length > 0, want, `${label} packs`);
+        assert.equal(queries.auditRows(db, p, {}).some((r) => r.recordId === ids[t].id), want, `${label} audit`);
+        assert.equal(queries.recentPublished(db, p, 1000).some((r) => r.recordId === ids[t].id), want, `${label} feed`);
+        assert.equal(!!queries.resolvePublicRecord(db, p, ids[t].prid), want, `${label} resolver`);
+        assert.equal(exporter.exportTable(db, p, "mgr").rows.some((r) => r.internalId === ids[t].id), want, `${label} export mgr`);
+        assert.equal(exporter.exportTable(db, p, "audit").rows.some((r) => r.recordId === ids[t].id), want, `${label} export audit`);
+        assert.equal(!!exporter.exportRecord(db, p, ids[t].prid), want, `${label} exportRecord`);
+        if (p.kind === "user" && users.findUserById(db, p.user.id)) {
+          const n = count("SELECT COUNT(*) AS n FROM notifications n JOIN events e ON e.id = n.event_id WHERE n.user_id = ? AND e.record_id = ?", p.user.id, ids[t].id);
+          if (!want) assert.equal(n, 0, `${label} no notification`);
+        }
+      }
+    }
+    // seeded confidential batch: STB cannot see it, owner and secretariat can
+    assert.equal(queries.recordVisible(db, stb(), "mgr", seedResult.mgr.confidential), false);
+    assert.equal(queries.recordVisible(db, party(), "mgr", seedResult.mgr.confidential), true);
+    assert.equal(queries.recordVisible(db, secretariat(), "mgr", seedResult.mgr.confidential), true);
+    // restricted EIA: public never; STB yes
+    assert.equal(queries.recordVisible(db, pub(), "eia", seedResult.eia.restricted), false);
+    assert.equal(queries.recordVisible(db, stb(), "eia", seedResult.eia.restricted), true);
+  });
+
+  // ---------------------------------------------------------------- P0-6 exports
+  p0("export — CSV header equals columns and is RFC 4180; anonymous excludes drafts/restricted; secretariat includes drafts; PDF stub is a PDF; invisible record logs a refusal", () => {
+    for (const d of exporter.EXPORT_DOMAINS) {
+      const t = exporter.exportTable(db, anon(), d);
+      const csv = exporter.toCsv(t);
+      const [header, ...rest] = csv.split("\r\n");
+      assert.equal(header, t.columns.join(","));
+      assert.equal(rest.filter((l) => l !== "").length, t.rows.length, `${d} one line per row`);
+    }
+    const anonAudit = exporter.exportTable(db, anon(), "audit");
+    assert.ok(anonAudit.rows.every((r) => r.status === "published" && r.confidentiality === "public"));
+    assert.ok(!anonAudit.columns.includes("actorUserId"));
+    const secAudit = exporter.exportTable(db, secretariat(), "audit");
+    assert.ok(secAudit.rows.some((r) => r.status === "draft"));
+    assert.ok(secAudit.columns.includes("idempotencyKey"));
+    // quoting
+    const quoted = exporter.toCsv({ columns: ["a"], rows: [{ a: 'x, "y"\nz' }] });
+    assert.equal(quoted, 'a\r\n"x, ""y""\nz"\r\n');
+    // envelope
+    const env = exporter.envelope(pub(), anonAudit.rows);
+    assert.equal(env.schemaVersion, SCHEMA_VERSION);
+    assert.equal(env.count, anonAudit.rows.length);
+    assert.equal(env.role, "public");
+    // record json + pdf for the seeded public batch
+    const a = mgr.getMgrBatch(db, seedResult.mgr.published)!;
+    const rec = exporter.exportRecord(db, anon(), a.publicRecordId!)!;
+    assert.equal(rec.domain, "mgr");
+    assert.ok(!("ownerUserId" in rec.record), "public projection drops owner");
+    assert.ok(rec.versions.post_collection?.length >= 1);
+    const pdf = exporter.recordPdf(db, anon(), a.publicRecordId!)!;
+    const text = pdf.toString("latin1");
+    assert.ok(text.startsWith("%PDF-1.4"));
+    assert.ok(text.trimEnd().endsWith("%%EOF"));
+    assert.ok(text.includes(a.publicRecordId!));
+    // restricted record → undefined + refusal row for the anonymous reader
+    const d = mgr.getMgrBatch(db, seedResult.mgr.restricted)!;
+    const before = count("SELECT COUNT(*) AS n FROM access_refusals");
+    assert.equal(exporter.exportRecord(db, anon(), d.publicRecordId!, "/api/records/x.json"), undefined);
+    assert.equal(count("SELECT COUNT(*) AS n FROM access_refusals"), before + 1);
+  });
+
+  // ---------------------------------------------------------------- P0-8 sandbox reset
+  p0("sandbox reset — refused for non-secretariat, refused unless SANDBOX_RESET=1 outside production, gate helper", () => {
+    assert.equal(resetMod.sandboxResetEnabled({ SANDBOX_RESET: "1", NODE_ENV: "development" }), true);
+    assert.equal(resetMod.sandboxResetEnabled({ SANDBOX_RESET: "1", NODE_ENV: "production" }), false);
+    assert.equal(resetMod.sandboxResetEnabled({ NODE_ENV: "development" }), false);
+    assert.equal(resetMod.sandboxResetEnabled({ SANDBOX_RESET: "force", NODE_ENV: "production" }), true);
+    assert.throws(() => resetMod.resetSandbox(party(), { SANDBOX_RESET: "1", NODE_ENV: "test" }), (e: unknown) => e instanceof DomainError && e.code === "forbidden");
+    assert.throws(() => resetMod.resetSandbox(secretariat(), { NODE_ENV: "test" }), (e: unknown) => e instanceof DomainError && e.code === "forbidden");
+    // the real reset is exercised by scripts/demo.ts on its own temp file; here we only prove the gates
+  });
+
   // ---------------------------------------------------------------- Excel (P1)
   p1("template — Meta, Data, Field guide sheets; import fixture → sourceChannel excel + bSbi; bad files rejected", async () => {
     const buf = await template.buildMgrTemplate();

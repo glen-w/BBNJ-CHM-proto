@@ -3,7 +3,7 @@ import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { flashFrom } from "@/components/flash";
 import { MgrForm } from "@/components/mgr-form";
-import { can, hasRole } from "@/server/policy";
+import { can, hasRole, recordRefusal } from "@/server/policy";
 import { getSessionUser } from "@/server/session";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -12,6 +12,7 @@ export default async function NewMgrPage({ searchParams }: Props) {
   const flash = await flashFrom(searchParams);
   const p = await getSessionUser();
   if (!can(p, "submit")) {
+    recordRefusal(p, "submit", { domain: "mgr", path: "/mgr/new", reason: "Submission form requested without the submit permission" });
     return (
       <AppShell title="MGR — new pre-collection notification" flash={flash}>
         <p className="text-sm">

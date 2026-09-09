@@ -10,7 +10,7 @@ import { MgrPreCollectionInput, coerceMgrInput, splitMgrInput, FIELD_DEFS } from
 import { DomainError } from "./errors";
 import { mintBSbi, nowIso, yearOf } from "./ids";
 import { findEventByKey, latestPackRow } from "./outbox";
-import { openPack, type PackResult } from "./packs";
+import { amendPack, openPack, type PackResult } from "./packs";
 import { hasRole, isSecretariat, requireCan, type Principal, userId } from "./policy";
 
 type BatchRow = {
@@ -27,6 +27,7 @@ type BatchRow = {
   tk_fpic_flag: number;
   owner_user_id: string | null;
   details_json: string;
+  details_history_json: string;
   updated_at: string;
 };
 
@@ -46,6 +47,7 @@ export function rowToBatch(row: BatchRow): StoredMgrBatch {
     tkFpicFlag: row.tk_fpic_flag === 1,
     ownerUserId: row.owner_user_id ?? undefined,
     details: JSON.parse(row.details_json),
+    detailsHistory: JSON.parse(row.details_history_json ?? "[]"),
     updatedAt: row.updated_at,
   });
 }
@@ -70,7 +72,7 @@ function channelFor(actor: Principal, requested: SourceChannel): SourceChannel {
   return isSecretariat(actor) ? "assisted" : "form";
 }
 
-function storedValues(batch: StoredMgrBatch): Record<string, unknown> {
+export function storedValues(batch: StoredMgrBatch): Record<string, unknown> {
   return {
     title: batch.title,
     locationHint: batch.locationHint ?? "",
@@ -78,6 +80,13 @@ function storedValues(batch: StoredMgrBatch): Record<string, unknown> {
     confidentiality: batch.confidentiality,
     ...batch.details,
   };
+}
+
+/** String projection of the Art 12.2 values, as kept in details_history_json. */
+function valuesSnapshot(batch: StoredMgrBatch): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(storedValues(batch))) out[k] = typeof v === "boolean" ? (v ? "yes" : "no") : String(v ?? "");
+  return out;
 }
 
 function validateFull(raw: Record<string, unknown>) {
@@ -144,11 +153,11 @@ export function saveMgrDraft(
   key: IdempotencyKey,
   opts: { batchId?: string; partyCode?: string } = {},
 ): MgrResult {
-  requireCan(actor, "submit");
+  requireCan(actor, "submit", undefined, { domain: "mgr", recordId: opts.batchId, db });
   if (opts.batchId) {
     const batch = getMgrBatch(db, opts.batchId);
     if (!batch) throw new DomainError("not_found", "Batch not found");
-    requireCan(actor, "submit", { ownerUserId: batch.ownerUserId ?? null });
+    requireCan(actor, "submit", { ownerUserId: batch.ownerUserId ?? null }, { domain: "mgr", recordId: batch.id, db });
     if (batch.currentStage !== "pre_collection") throw new DomainError("already_submitted", "This batch has already been received");
     writeBatchFields(db, batch.id, coerceMgrInput({ ...storedValues(batch), ...raw }));
     const event = latestPackRow(db, batch.id, "pre_collection")!;
@@ -182,7 +191,7 @@ export function submitPreCollection(db: Db, actor: Principal, batchId: string, r
   if (existing) return { batch: getMgrBatch(db, existing.recordId)!, event: existing, created: false };
   const batch = getMgrBatch(db, batchId);
   if (!batch) throw new DomainError("not_found", "Batch not found");
-  requireCan(actor, "submit", { ownerUserId: batch.ownerUserId ?? null });
+  requireCan(actor, "submit", { ownerUserId: batch.ownerUserId ?? null }, { domain: "mgr", recordId: batch.id, db });
   if (batch.bSbi || batch.currentStage !== "pre_collection") throw new DomainError("already_submitted", "This batch has already been received and holds a B-SBI");
   const input = validateFull({ ...storedValues(batch), ...rawEdits });
   const tx = db.transaction((): MgrResult => {
@@ -202,7 +211,7 @@ export function receivePreCollection(
   key: IdempotencyKey,
   opts: { partyCode?: string; at?: string } = {},
 ): MgrResult {
-  requireCan(actor, "submit");
+  requireCan(actor, "submit", undefined, { domain: "mgr", db });
   const existing = findEventByKey(db, key);
   if (existing) return { batch: getMgrBatch(db, existing.recordId)!, event: existing, created: false };
   const partyCode = partyCodeFor(actor, opts.partyCode);
@@ -242,6 +251,57 @@ export function addMgrPack(
     extras: { bSbi: batch.bSbi },
   });
   return { ...res, batch: getMgrBatch(db, batchId)! };
+}
+
+export const MGR_AMENDABLE_STAGES = ["pre_collection", "post_collection", "utilisation"] as const;
+export type MgrAmendableStage = (typeof MGR_AMENDABLE_STAGES)[number];
+
+/**
+ * Amend a published MGR pack → pending v+1 with change note and material flag.
+ * Pre-collection amendments may edit Art 12.2 fields: the merged input is
+ * re-validated, the superseded values are appended to details_history_json.
+ * Never touches the B-SBI or the publicRecordId.
+ */
+export function amendMgrPack(
+  db: Db,
+  actor: Principal,
+  batchId: string,
+  stage: MgrAmendableStage,
+  input: { summary?: string; changeNote: string; materialChange: boolean; fieldEdits?: Record<string, unknown> },
+  key: IdempotencyKey,
+): MgrResult {
+  const existing = findEventByKey(db, key);
+  if (existing) return { batch: getMgrBatch(db, existing.recordId)!, event: existing, created: false };
+  const batch = getMgrBatch(db, batchId);
+  if (!batch) throw new DomainError("not_found", "Batch not found");
+  if (!MGR_AMENDABLE_STAGES.includes(stage)) throw new DomainError("validation", "Unsupported MGR stage");
+  requireCan(actor, "amend", { ownerUserId: batch.ownerUserId ?? null }, { domain: "mgr", recordId: batch.id, db });
+  const latest = latestPackRow(db, batchId, stage);
+  if (!latest || latest.status !== "published") {
+    throw new DomainError("invalid_transition", `Only a published ${stage.replace("_", "-")} pack can be amended`);
+  }
+  const tx = db.transaction((): MgrResult => {
+    let summary = input.summary?.trim() || "";
+    if (stage === "pre_collection" && input.fieldEdits && Object.keys(input.fieldEdits).length > 0) {
+      const merged = validateFull({ ...storedValues(batch), ...input.fieldEdits });
+      const history = [...batch.detailsHistory, { version: latest.version, at: nowIso(), values: valuesSnapshot(batch) }];
+      db.prepare("UPDATE mgr_batches SET details_history_json = ? WHERE id = ?").run(JSON.stringify(history), batch.id);
+      writeBatchFields(db, batch.id, merged);
+      summary ||= `Pre-collection notification amended (v${latest.version + 1}); B-SBI ${batch.bSbi} unchanged`;
+    }
+    const res = amendPack(db, actor, {
+      domain: "mgr",
+      recordId: batchId,
+      stage,
+      summary,
+      changeNote: input.changeNote,
+      materialChange: input.materialChange,
+      idempotencyKey: key,
+      extras: batch.bSbi ? { bSbi: batch.bSbi } : undefined,
+    });
+    return { ...res, batch: getMgrBatch(db, batchId)! };
+  });
+  return tx();
 }
 
 export const MGR_FIELD_DEFS = FIELD_DEFS;

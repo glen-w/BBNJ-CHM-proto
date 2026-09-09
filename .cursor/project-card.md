@@ -12,8 +12,8 @@ ui_entry: npm run dev
 sibling_ports: []             # none documented; confirm before killing non-3000 ports
 small_fixture: npm run db:seed -- --if-empty; npm run contracts:check && npm run smoke
 large_fixture_hint: seeded SQLite with full MGR + EIA + CBTMT journeys, or a path the user names
-default_test_cmd: npm run typecheck && npm run lint && npm run contracts:check && npm run smoke
-coverage_cmd: none
+default_test_cmd: npm run typecheck && npm run lint && npm run contracts:check && npm test && npm run smoke
+coverage_cmd: npx vitest run --coverage
 architecture_rules:
   - one shared Cl-HM substrate (receipt → manage → publish/notify → roles)
   - Zod in src/schemas/events.ts authoritative; parity with proposal/schemas/events.ts

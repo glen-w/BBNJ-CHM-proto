@@ -1,8 +1,8 @@
-# Contract sync — end of day v0.1
+# Contract sync — v0.1 build and v0.2 hardening
 
-`proposal/schemas/events.ts` stayed authoritative all day. `src/lib/contracts/events.ts` is a verbatim copy, enforced by `npm run contracts:check` (byte comparison, also run inside `npm run smoke`).
+`proposal/schemas/events.ts` stayed authoritative throughout. `src/lib/contracts/events.ts` is a verbatim copy, enforced by `npm run contracts:check` (byte comparison, also run inside `npm run smoke`).
 
-**Result of the diff: zero changes to the locked contract were needed to build the prototype.** Everything the implementation added lives in `src/lib/contracts/extensions.ts`, which only narrows or extends contract types.
+**Result of the diff: zero changes to the locked contract were needed to build or harden the prototype.** Everything the implementation added lives in `src/lib/contracts/extensions.ts` (which only narrows or extends contract types) and in implementation-only schema columns/tables (`change_note`, `material_change`, `details_history_json`, `access_refusals`, `import_runs`, `digest_runs`).
 
 This file proposes what, if anything, should be folded back into the contract. Nothing below has been applied; it is a reviewed diff for a decision.
 
@@ -76,6 +76,48 @@ Argument against: ownership is a policy concern, not a record-content concern; t
 ## Not proposed — storage-only metadata
 
 The outbox row carries `seq` (monotonic ordering) and `idempotencyKey`. These are storage and transport concerns, not contract content, and are typed as `StoredEvent` in `extensions.ts`. Recommend they stay out of `events.ts`.
+
+## v0.2 hardening — three more candidates (contract still untouched)
+
+The eight P0 items were built without editing `events.ts`; `npm run contracts:check` still passes. Three additions sit in `extensions.ts` / schema v4 and are worth a decision.
+
+### Proposed amendment C6 — amendment metadata on published events (recommended)
+
+Every version > 1 of a pack now carries why it exists and whether readers of the earlier version should be told again.
+
+```diff
+ const EventBase = z.object({
+   ...
+   version: z.number().int().min(1),
++  /** Why this version exists (versions > 1). Shown in version history and in the re-notification. */
++  changeNote: z.string().min(1).optional(),
++  /** Submitter's declaration that the change is material → earlier readers are re-notified on publish. */
++  materialChange: z.boolean().default(false),
+ });
+```
+
+Why fold in: a consumer reading the outbox cannot otherwise tell an editorial re-issue from a substantive one, and the notification text already depends on it. Why not: "material" is a submitter's declaration with no definition in the Agreement; the contract could reasonably leave the semantics to the Secretariat.
+
+### Proposed amendment C7 — notification kind `amendment` (optional)
+
+Amendments are delivered today as `kind: "publish"` with an "amended vN (material change)" summary because the kind enum is locked. A dedicated kind would let clients filter.
+
+```diff
+-export const NotificationKind = z.enum(["publish", "deadline", "digest", "match", "stb_review"]);
++export const NotificationKind = z.enum(["publish", "amendment", "deadline", "digest", "match", "stb_review"]);
+```
+
+Argument against: the version number on the anchored event already distinguishes them; adding a kind is presentation, not content.
+
+### Proposed amendment C8 — refusal record (not recommended for the contract)
+
+`access_refusals` (actor role/user, action, domain, record, path, reason) is an audit artefact of the policy layer, not something that is ever published or exchanged. Recommend it stays an implementation table, documented in `HARDENING.md`.
+
+| # | Amendment | Recommendation |
+|---|---|---|
+| C6 | `changeNote` / `materialChange` on events | adopt |
+| C7 | `amendment` notification kind | discuss |
+| C8 | refusal record | leave in implementation |
 
 ## Zod 4 notes (no action required today)
 

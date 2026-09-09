@@ -2,10 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AppShell } from "@/components/app-shell";
-import { ConfidentialityBadge, Identifier, StageChip } from "@/components/chips";
+import { ConfidentialityBadge, Identifier, StageChip, TierNote } from "@/components/chips";
+import { RecordExportLinks } from "@/components/export-links";
 import { flashFrom } from "@/components/flash";
 import { PublishButton } from "@/components/publish-button";
 import { Timeline } from "@/components/timeline";
+import { AmendForm, VersionHistory } from "@/components/version-history";
 import { getDb } from "@/lib/db";
 import { fmtDate } from "@/lib/format";
 import { getCbtmtRecord, matchesForRecord } from "@/server/cbtmt";
@@ -27,21 +29,29 @@ export default async function CbtmtRecordPage({ params, searchParams }: Props) {
   const timeline = timelineOf(db, p, id);
   const matches = matchesForRecord(db, id);
   const here = `/capacity/${id}`;
+  const owner = can(p, "amend", { ownerUserId: record.ownerUserId ?? null });
+  const postStage = record.kind === "need" ? "need_posted" : "offer_posted";
+  const latestPost = packs.filter((e) => e.stage === postStage).sort((a, b) => b.version - a.version)[0];
+  const amendable = latestPost?.status === "published" ? [{ stage: postStage, version: latestPost.version }] : [];
 
   return (
     <AppShell title={`CBTMT ${record.kind} — ${record.title}`} flash={flash}>
-      <div className="flex flex-wrap items-center gap-2 text-sm">
-        <Link href="/capacity" className="underline">
-          ← Board
-        </Link>
-        <ConfidentialityBadge tier={record.confidentiality} />
-        {record.kind === "need" ? <span className="font-mono text-xs">Party {record.partyCode}</span> : <span className="text-xs">{record.provider}</span>}
-        {record.themes.map((t) => (
-          <span key={t} className="rounded bg-muted px-1.5 text-xs">
-            {t}
-          </span>
-        ))}
+      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href="/capacity" className="underline">
+            ← Board
+          </Link>
+          <ConfidentialityBadge tier={record.confidentiality} />
+          {record.kind === "need" ? <span className="font-mono text-xs">Party {record.partyCode}</span> : <span className="text-xs">{record.provider}</span>}
+          {record.themes.map((t) => (
+            <span key={t} className="rounded bg-muted px-1.5 text-xs">
+              {t}
+            </span>
+          ))}
+        </div>
+        <RecordExportLinks publicRecordId={record.publicRecordId} />
       </div>
+      <TierNote tier={record.confidentiality} />
       <section className="grid gap-3 sm:grid-cols-3">
         <Identifier label="internalId" value={record.id} caption="UUID at creation" />
         <Identifier label="receiptId" value={packs.find((e) => e.receiptId)?.receiptId} caption="Issued when the pack entered pending" />
@@ -80,6 +90,13 @@ export default async function CbtmtRecordPage({ params, searchParams }: Props) {
             ))}
           </ul>
         )}
+      </section>
+      <section className="grid gap-4 lg:grid-cols-2" id="versions">
+        <div className="rounded-lg border p-4">
+          <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">Version history</h2>
+          <VersionHistory packs={packs} />
+        </div>
+        {owner ? <AmendForm domain="cbtmt" recordId={id} stages={amendable} returnTo={here} /> : null}
       </section>
       <section>
         <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">Timeline</h2>

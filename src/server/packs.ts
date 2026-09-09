@@ -6,13 +6,13 @@
  */
 import type { Db } from "@/lib/db";
 import type { ArtifactRef, ConfidentialityTier, Domain, Event, PublishStatus } from "@/lib/contracts/events";
-import type { StoredEvent } from "@/lib/contracts/extensions";
+import type { AmendmentMeta, IdempotencyKey, StoredEvent } from "@/lib/contracts/extensions";
 import { DomainError } from "./errors";
 import { mintPublicRecordId, mintReceiptId, nowIso, yearOf } from "./ids";
 import { dispatch } from "./notify";
-import { findEventByKey, insertEvent, latestPackRow } from "./outbox";
+import { findEventByKey, insertEvent, latestPackRow, versionsOfPack } from "./outbox";
 import { actorRoleOf, requireCan, type Principal, userId } from "./policy";
-import { getRecordMeta, refreshCaches } from "./records";
+import { getRecordMeta, recordTable, refreshCaches } from "./records";
 
 export interface OpenPackArgs {
   domain: Domain;
@@ -29,6 +29,8 @@ export interface OpenPackArgs {
   actorOverride?: Principal;
   /** Explicit timestamp (seeds); defaults to now. */
   at?: string;
+  /** Amendment metadata (versions > 1 only). */
+  amendment?: AmendmentMeta;
 }
 
 export interface PackResult {
@@ -81,7 +83,7 @@ export function openPack(db: Db, actor: Principal, args: OpenPackArgs): PackResu
 
   const meta = getRecordMeta(db, args.domain, args.recordId);
   if (!meta) throw new DomainError("not_found", "Record not found");
-  requireCan(args.actorOverride ?? actor, "submit", { ownerUserId: meta.ownerUserId ?? null });
+  requireCan(args.actorOverride ?? actor, "submit", { ownerUserId: meta.ownerUserId ?? null }, { domain: args.domain, recordId: args.recordId, db });
 
   const tx = db.transaction((): StoredEvent => {
     const latest = latestPackRow(db, args.recordId, args.stage);
@@ -111,11 +113,63 @@ export function openPack(db: Db, actor: Principal, args: OpenPackArgs): PackResu
       artifactRefs: args.artifactRefs,
       extras: args.extras,
     });
-    const stored = insertEvent(db, ev, args.idempotencyKey);
+    const stored = insertEvent(db, ev, args.idempotencyKey, version > 1 ? args.amendment : undefined);
     refreshCaches(db, args.domain, args.recordId);
     return stored;
   });
   return { event: tx(), created: true };
+}
+
+export interface AmendArgs {
+  domain: Domain;
+  recordId: string;
+  stage: string;
+  summary: string;
+  changeNote: string;
+  materialChange: boolean;
+  idempotencyKey: IdempotencyKey;
+  /** Domain-specific extras carried onto the new version (bSbi, screeningOutcome). */
+  extras?: Record<string, unknown>;
+  at?: string;
+}
+
+/**
+ * Amend a published pack: opens pending v+1 of the same (record, stage) carrying
+ * a change note and the material-change flag. Only the latest published version
+ * can be amended; a pending or draft latest version is refused. Never mints.
+ */
+export function amendPack(db: Db, actor: Principal, args: AmendArgs): PackResult {
+  const existing = findEventByKey(db, args.idempotencyKey);
+  if (existing) return { event: existing, created: false };
+  const meta = getRecordMeta(db, args.domain, args.recordId);
+  if (!meta) throw new DomainError("not_found", "Record not found");
+  requireCan(actor, "amend", { ownerUserId: meta.ownerUserId ?? null }, { domain: args.domain, recordId: args.recordId, db });
+  const latest = latestPackRow(db, args.recordId, args.stage);
+  if (!latest) throw new DomainError("not_found", `No ${args.stage} pack on this record`);
+  if (latest.status !== "published") {
+    throw new DomainError("invalid_transition", `Only a published pack can be amended — ${args.stage} v${latest.version} is ${latest.status}`);
+  }
+  const note = args.changeNote.trim();
+  if (!note) throw new DomainError("validation", "A change note is required when amending a published pack");
+  const carried = latest as StoredEvent & { bSbi?: string; screeningOutcome?: string };
+  return openPack(db, actor, {
+    domain: args.domain,
+    recordId: args.recordId,
+    stage: args.stage,
+    status: "pending",
+    summary: args.summary.trim() || `${args.stage.replace(/_/g, " ")} amended (v${latest.version + 1}): ${note}`,
+    idempotencyKey: args.idempotencyKey,
+    confidentiality: latest.confidentiality,
+    artifactRefs: latest.artifactRefs,
+    extras: { ...(carried.bSbi ? { bSbi: carried.bSbi } : {}), ...(carried.screeningOutcome ? { screeningOutcome: carried.screeningOutcome } : {}), ...(args.extras ?? {}) },
+    at: args.at,
+    amendment: { changeNote: note, materialChange: args.materialChange },
+  });
+}
+
+/** Version history of one (record, stage), oldest first. Unfiltered — callers apply the read policy. */
+export function packVersions(db: Db, recordId: string, stage: string): StoredEvent[] {
+  return versionsOfPack(db, recordId, stage);
 }
 
 export interface PublishArgs {
@@ -133,7 +187,7 @@ export interface PublishArgs {
  * Mints publicRecordId on the record's first publish. Dispatches after commit.
  */
 export function publishPack(db: Db, actor: Principal, args: PublishArgs): PackResult {
-  requireCan(actor, "publish");
+  requireCan(actor, "publish", undefined, { domain: args.domain, recordId: args.recordId, db });
   const meta = getRecordMeta(db, args.domain, args.recordId);
   if (!meta) throw new DomainError("not_found", "Record not found");
 
@@ -150,11 +204,10 @@ export function publishPack(db: Db, actor: Principal, args: PublishArgs): PackRe
     let publicRecordId = meta.publicRecordId;
     if (!publicRecordId) {
       publicRecordId = mintPublicRecordId(db, args.domain, yearOf(at));
-      const table = args.domain === "mgr" ? "mgr_batches" : args.domain === "eia" ? "eia_activities" : "cbtmt_records";
-      const res = db.prepare(`UPDATE ${table} SET public_record_id = ? WHERE id = ? AND public_record_id IS NULL`).run(publicRecordId, args.recordId);
+      const res = db.prepare(`UPDATE ${recordTable(args.domain)} SET public_record_id = ? WHERE id = ? AND public_record_id IS NULL`).run(publicRecordId, args.recordId);
       if (res.changes !== 1) throw new DomainError("invalid_transition", "publicRecordId already minted concurrently");
     }
-    const { seq: _seq, idempotencyKey: _k, id: _id, ...rest } = latest;
+    const { seq: _seq, idempotencyKey: _k, id: _id, changeNote, materialChange, ...rest } = latest;
     void _seq;
     void _k;
     void _id;
@@ -168,7 +221,7 @@ export function publishPack(db: Db, actor: Principal, args: PublishArgs): PackRe
       publicRecordId,
       summary: latest.summary,
     } as Event;
-    const stored = insertEvent(db, ev);
+    const stored = insertEvent(db, ev, undefined, { changeNote, materialChange });
     refreshCaches(db, args.domain, args.recordId);
     return stored;
   });

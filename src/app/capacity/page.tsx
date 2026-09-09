@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
 import { ConfidentialityBadge, StatusChip } from "@/components/chips";
+import { ExportLinks } from "@/components/export-links";
 import { flashFrom } from "@/components/flash";
 import { Field, KeyFields, SubmitButton, selectClass } from "@/components/forms";
 import { PublishButton } from "@/components/publish-button";
@@ -32,10 +33,13 @@ export default async function CapacityPage({ searchParams }: Props) {
 
   return (
     <AppShell title="Capacity-building and transfer of marine technology (CBTMT) — Part V" flash={flash}>
-      <p className="max-w-3xl text-sm text-muted-foreground">
-        Needs and offers are records with a pending → published pack. A <strong>match</strong> is a row (need, offer, rule, at) plus a{" "}
-        <code>match_suggested</code> outbox event carrying the <code>matchId</code>. The only rule is deterministic: shared theme. No ML.
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <p className="max-w-3xl text-sm text-muted-foreground">
+          Needs and offers are records with a pending → published pack. A <strong>match</strong> is a row (need, offer, rule, at) plus a{" "}
+          <code>match_suggested</code> outbox event carrying the <code>matchId</code>. The only rule is deterministic: shared theme. No ML.
+        </p>
+        <ExportLinks domain="cbtmt" />
+      </div>
 
       <section className="grid gap-4 lg:grid-cols-2">
         <Board title="Needs (Parties, Art 42)" items={needs} p={p} kind="need" />
@@ -190,6 +194,13 @@ function PostForm({ kind, p }: { kind: "need" | "offer"; p: Awaited<ReturnType<t
           <Input name="provider" required placeholder="Institution / consortium" />
         </Field>
       ) : null}
+      <Field label="Confidentiality tier" hint="public: everyone · restricted: Secretariat, owner, STB · confidential: Secretariat and owner only">
+        <select name="confidentiality" className={selectClass} defaultValue="public">
+          <option value="public">public</option>
+          <option value="restricted">restricted</option>
+          <option value="confidential">confidential</option>
+        </select>
+      </Field>
       <SubmitButton size="sm">Post {kind} (pending)</SubmitButton>
     </form>
   );

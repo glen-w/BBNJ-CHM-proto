@@ -68,7 +68,7 @@ export function createCbtmtRecord(
   input: { kind: "need" | "offer"; title: string; themes: string[] | string; partyCode?: string; provider?: string; confidentiality?: "public" | "restricted" | "confidential" },
   key: IdempotencyKey,
 ): CbtmtResult {
-  requireCan(actor, "submit");
+  requireCan(actor, "submit", undefined, { domain: "cbtmt", db });
   const existing = findEventByKey(db, key);
   if (existing) return { record: getCbtmtRecord(db, existing.recordId)!, event: existing, created: false };
   const title = input.title.trim();
@@ -118,7 +118,7 @@ function isPublished(db: Db, recordId: string, stage: string): boolean {
 
 /** Insert-or-ignore the match; only a newly inserted row gets a match_suggested event. One transaction. */
 export function suggestMatch(db: Db, actor: Principal, needId: string, offerId: string, rule: string, key: IdempotencyKey): MatchResult {
-  requireCan(actor, "suggest_match");
+  requireCan(actor, "suggest_match", undefined, { domain: "cbtmt", recordId: needId, db });
   const need = getCbtmtRecord(db, needId);
   const offer = getCbtmtRecord(db, offerId);
   if (!need || need.kind !== "need") throw new DomainError("not_found", "Need not found");
@@ -168,7 +168,7 @@ export function suggestMatch(db: Db, actor: Principal, needId: string, offerId: 
 
 /** Deterministic rule: every published need × offer sharing a theme. */
 export function suggestMatches(db: Db, actor: Principal, key: IdempotencyKey): MatchResult[] {
-  requireCan(actor, "suggest_match");
+  requireCan(actor, "suggest_match", undefined, { domain: "cbtmt", db });
   const rows = db.prepare("SELECT * FROM cbtmt_records").all() as CbtmtRow[];
   const needs = rows.filter((r) => r.kind === "need" && isPublished(db, r.id, "need_posted"));
   const offers = rows.filter((r) => r.kind === "offer" && isPublished(db, r.id, "offer_posted"));

@@ -5,14 +5,17 @@
  *   ≤ 200 data rows · formula cells → row error (no evaluation, no cached results)
  *   each row → receivePreCollection(..., "excel") in its own transaction
  */
+import { createHash } from "node:crypto";
+
 import ExcelJS from "exceljs";
 
 import type { Db } from "@/lib/db";
 import type { IdempotencyKey } from "@/lib/contracts/extensions";
 import { FIELD_DEFS, MGR_TEMPLATE_NAME, MGR_TEMPLATE_VERSION, normaliseHeader } from "@/lib/mgr-fields";
 import { DomainError } from "./errors";
+import { nowIso } from "./ids";
 import { receivePreCollection } from "./mgr";
-import { requireCan, type Principal } from "./policy";
+import { can, requireCan, type Principal } from "./policy";
 import { DATA_SHEET, META_SHEET } from "./template";
 
 export const IMPORT_MAX_BYTES = 2 * 1024 * 1024;
@@ -26,12 +29,37 @@ export interface ImportRowResult {
   receiptId?: string;
   title?: string;
   error?: string;
+  /** Raw cell text by FIELD_DEFS key — kept for rejected rows so the error report can be re-filled. */
+  values?: Record<string, string>;
 }
 
 export interface ImportResult {
+  runId: string;
+  at: string;
+  partyCode: string;
+  filename?: string;
+  bytes: number;
   rows: ImportRowResult[];
   accepted: number;
   rejected: number;
+}
+
+type RunRow = { id: string; at: string; actor_user_id: string | null; party_code: string; filename: string | null; bytes: number; accepted: number; rejected: number; rows_json: string };
+
+function rowToRun(r: RunRow): ImportResult {
+  return { runId: r.id, at: r.at, partyCode: r.party_code, filename: r.filename ?? undefined, bytes: r.bytes, accepted: r.accepted, rejected: r.rejected, rows: JSON.parse(r.rows_json) };
+}
+
+/** Durable outcome of one import; Secretariat only (same rule as import itself). */
+export function getImportRun(db: Db, actor: Principal, runId: string): ImportResult | undefined {
+  requireCan(actor, "import", undefined, { domain: "mgr", recordId: runId, path: `/mgr/import/${runId}`, db });
+  const r = db.prepare("SELECT * FROM import_runs WHERE id = ?").get(runId) as RunRow | undefined;
+  return r ? rowToRun(r) : undefined;
+}
+
+export function listImportRuns(db: Db, actor: Principal, limit = 20): ImportResult[] {
+  if (!can(actor, "import")) return [];
+  return (db.prepare("SELECT * FROM import_runs ORDER BY at DESC LIMIT ?").all(limit) as RunRow[]).map(rowToRun);
 }
 
 function cellText(cell: ExcelJS.Cell): string {
@@ -51,8 +79,18 @@ function cellText(cell: ExcelJS.Cell): string {
   return String(v);
 }
 
-export async function importMgrExcel(db: Db, actor: Principal, file: Buffer | Uint8Array, partyCode: string, key: IdempotencyKey): Promise<ImportResult> {
-  requireCan(actor, "import");
+export async function importMgrExcel(
+  db: Db,
+  actor: Principal,
+  file: Buffer | Uint8Array,
+  partyCode: string,
+  key: IdempotencyKey,
+  opts: { filename?: string } = {},
+): Promise<ImportResult> {
+  requireCan(actor, "import", undefined, { domain: "mgr", path: "/mgr/import", db });
+  // Idempotent: the same key returns the stored run.
+  const prior = db.prepare("SELECT * FROM import_runs WHERE id = ?").get(runIdFor(key)) as RunRow | undefined;
+  if (prior) return rowToRun(prior);
   if (file.byteLength > IMPORT_MAX_BYTES) throw new DomainError("import_rejected", `File exceeds ${IMPORT_MAX_BYTES / 1024 / 1024} MB`);
   if (file.byteLength < 4 || file[0] !== 0x50 || file[1] !== 0x4b) throw new DomainError("import_rejected", "Not an .xlsx file");
 
@@ -105,9 +143,14 @@ export async function importMgrExcel(db: Db, actor: Principal, file: Buffer | Ui
   const results: ImportRowResult[] = [];
   for (const row of dataRows) {
     const n = row.number;
+    const values: Record<string, string> = {};
     try {
       const raw: Record<string, unknown> = {};
-      for (const f of FIELD_DEFS) raw[f.key] = cellText(row.getCell(colForHeader.get(f.excelHeader)!));
+      for (const f of FIELD_DEFS) {
+        const text = cellText(row.getCell(colForHeader.get(f.excelHeader)!));
+        raw[f.key] = text;
+        values[f.key] = text;
+      }
       const res = receivePreCollection(db, actor, raw, "excel", `${key}:${n}`.slice(0, 128), { partyCode });
       results.push({ row: n, ok: true, batchId: res.batch.id, bSbi: res.batch.bSbi, receiptId: res.event.receiptId, title: res.batch.title });
     } catch (err) {
@@ -119,8 +162,28 @@ export async function importMgrExcel(db: Db, actor: Principal, file: Buffer | Ui
           : err instanceof Error
             ? err.message
             : String(err);
-      results.push({ row: n, ok: false, error: message });
+      // Formula rows abort before every cell is read; keep whatever text we have so the report still shows the row.
+      results.push({ row: n, ok: false, error: message, values });
     }
   }
-  return { rows: results, accepted: results.filter((r) => r.ok).length, rejected: results.filter((r) => !r.ok).length };
+  const run: ImportResult = {
+    runId: runIdFor(key),
+    at: nowIso(),
+    partyCode,
+    filename: opts.filename,
+    bytes: file.byteLength,
+    rows: results,
+    accepted: results.filter((r) => r.ok).length,
+    rejected: results.filter((r) => !r.ok).length,
+  };
+  db.prepare(
+    `INSERT OR IGNORE INTO import_runs (id, at, actor_user_id, party_code, filename, bytes, accepted, rejected, rows_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run(run.runId, run.at, actor.kind === "user" ? actor.user.id : null, run.partyCode, run.filename ?? null, run.bytes, run.accepted, run.rejected, JSON.stringify(run.rows));
+  return run;
+}
+
+/** Deterministic, UUID-shaped run id derived from the idempotency key — replaying the same import returns the same run. */
+export function runIdFor(key: string): string {
+  const h = createHash("sha1").update(`import-run:${key}`).digest("hex");
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-8${h.slice(17, 20)}-${h.slice(20, 32)}`;
 }

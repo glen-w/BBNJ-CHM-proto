@@ -2,12 +2,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AppShell } from "@/components/app-shell";
-import { ConfidentialityBadge, Identifier, StageChip } from "@/components/chips";
+import { ConfidentialityBadge, Identifier, StageChip, TierNote } from "@/components/chips";
+import { RecordExportLinks } from "@/components/export-links";
 import { flashFrom } from "@/components/flash";
 import { Field, KeyFields, SubmitButton, selectClass } from "@/components/forms";
 import { PublishButton } from "@/components/publish-button";
 import { Timeline } from "@/components/timeline";
 import { Input } from "@/components/ui/input";
+import { AmendForm, VersionHistory } from "@/components/version-history";
 import { EiaPublishableStages } from "@/lib/contracts/events";
 import { getDb } from "@/lib/db";
 import { fmtDate } from "@/lib/format";
@@ -44,18 +46,27 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
   const here = `/eia/${id}`;
   const neighbours = listEiaActivities(db, p).filter((a) => a.abnjBox === activity.abnjBox && a.id !== id);
   const reached = EIA_STAGE_ORDER.indexOf(activity.currentStage);
+  const latestByStage = new Map<string, (typeof packs)[number]>();
+  for (const e of packs) if (!latestByStage.has(e.stage) || latestByStage.get(e.stage)!.version < e.version) latestByStage.set(e.stage, e);
+  const amendable = Array.from(latestByStage.values())
+    .filter((e) => e.status === "published" && e.stage !== "comments_stb")
+    .map((e) => ({ stage: e.stage, version: e.version }));
 
   return (
     <AppShell title={`EIA activity — ${activity.title}`} flash={flash}>
-      <div className="flex flex-wrap items-center gap-2">
-        <Link href="/eia" className="text-sm underline">
-          ← All activities
-        </Link>
-        <ConfidentialityBadge tier={activity.confidentiality} />
-        <span className="text-xs text-muted-foreground">
-          ABNJ box <strong>{activity.abnjBox}</strong> · Party <span className="font-mono">{activity.partyCode}</span>
-        </span>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href="/eia" className="text-sm underline">
+            ← All activities
+          </Link>
+          <ConfidentialityBadge tier={activity.confidentiality} />
+          <span className="text-xs text-muted-foreground">
+            ABNJ box <strong>{activity.abnjBox}</strong> · Party <span className="font-mono">{activity.partyCode}</span>
+          </span>
+        </div>
+        <RecordExportLinks publicRecordId={activity.publicRecordId} />
       </div>
+      <TierNote tier={activity.confidentiality} />
 
       <section className="grid gap-3 sm:grid-cols-3">
         <Identifier label="internalId" value={activity.id} caption="UUID at creation" />
@@ -152,6 +163,14 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
             </ul>
           )}
         </div>
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-2" id="versions">
+        <div className="rounded-lg border p-4">
+          <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">Version history (per stage)</h2>
+          <VersionHistory packs={packs} />
+        </div>
+        {owner ? <AmendForm domain="eia" recordId={id} stages={amendable} returnTo={here} /> : null}
       </section>
 
       <section>

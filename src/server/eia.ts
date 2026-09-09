@@ -76,7 +76,7 @@ export function createEiaActivity(
   input: { title: string; abnjBox: string; partyCode?: string; confidentiality?: "public" | "restricted" | "confidential" },
   key: IdempotencyKey,
 ): EiaResult {
-  requireCan(actor, "submit");
+  requireCan(actor, "submit", undefined, { domain: "eia", db });
   const existing = findEventByKey(db, key);
   if (existing) return { activity: getEiaActivity(db, existing.recordId)!, event: existing, created: false };
   const title = input.title.trim();
@@ -171,7 +171,7 @@ export function stbQueue(db: Db, actor: Principal): StbQueueItem[] {
 
 /** One consolidated STB comment per published draft version. Published row; dispatches after commit. */
 export function commentStb(db: Db, actor: Principal, activityId: string, text: string, key: IdempotencyKey): EiaResult {
-  requireCan(actor, "comment_stb");
+  requireCan(actor, "comment_stb", undefined, { domain: "eia", recordId: activityId, db });
   const existing = findEventByKey(db, key);
   if (existing) return { activity: getEiaActivity(db, existing.recordId)!, event: existing, created: false };
   const activity = getEiaActivity(db, activityId);

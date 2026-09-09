@@ -96,9 +96,17 @@ export default async function HomePage({ searchParams }: Props) {
                 <span className="font-mono text-foreground">publicRecordId</span> — first pack publish on the record
               </li>
             </ol>
-            <Link href="/compare" className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "mt-3")}>
-              DOALOS contrast
-            </Link>
+            <div className="mt-3 flex flex-wrap gap-1">
+              <Link href="/compare" className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}>
+                DOALOS contrast
+              </Link>
+              <a href="/api/export/mgr.csv" className={cn(buttonVariants({ variant: "outline", size: "sm" }))} title="CSV of the MGR rows visible to your role">
+                Export CSV
+              </a>
+              <a href="/api/export/audit.json" className={cn(buttonVariants({ variant: "outline", size: "sm" }))} title="JSON envelope of the audit rows visible to your role">
+                Audit JSON
+              </a>
+            </div>
           </div>
         </div>
       </section>

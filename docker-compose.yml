@@ -5,6 +5,9 @@ services:
       - "127.0.0.1:3000:3000"
     environment:
       DATABASE_PATH: /app/data/chm.sqlite
+      # Hosted webinar sandbox: SANDBOX_RESET=force shows the Secretariat's "Reset sandbox" button
+      # even though the image runs in production mode. Leave at 0 for anything that is not a sandbox.
+      SANDBOX_RESET: ${SANDBOX_RESET:-0}
     volumes:
       - chm-data:/app/data
     restart: unless-stopped

@@ -46,8 +46,15 @@ export async function buildMgrTemplate(opts: { templateVersion?: number } = {}):
   return Buffer.from(await wb.xlsx.writeBuffer());
 }
 
-/** Fixture used by the "Import sample" fallback and by smoke. */
-export async function buildMgrSample(opts: { rows?: number; withFormula?: boolean } = {}): Promise<Buffer> {
+export const ERROR_COLUMN_HEADER = "Error (fix and delete this column before re-import)";
+
+/**
+ * Fixture used by the "Import sample" fallback and by smoke.
+ * `withInvalid` appends one row that fails validation (missing objectives, bad
+ * confidentiality value) so the closed loop — error report → fix → re-import —
+ * can be demonstrated without hand-editing a workbook.
+ */
+export async function buildMgrSample(opts: { rows?: number; withFormula?: boolean; withInvalid?: boolean } = {}): Promise<Buffer> {
   const wb = workbook();
   const data = wb.getWorksheet(DATA_SHEET)!;
   const n = opts.rows ?? 2;
@@ -66,10 +73,72 @@ export async function buildMgrSample(opts: { rows?: number; withFormula?: boolea
     };
     data.addRow(FIELD_DEFS.map((f) => row[f.excelHeader] ?? ""));
   }
+  if (opts.withInvalid) {
+    const bad: Record<string, unknown> = {
+      title: "Offline cruise SAMPLE-INVALID (missing objectives, bad tier)",
+      geographical_area: "CCZ",
+      objectives: "",
+      method_means: "RV Sample (1,800 t); box corer.",
+      expected_dates: "2027-03-01 to 2027-03-20",
+      sponsoring_institution: "Demo Institute — Dr C. Example",
+      participation_opportunities: "",
+      data_management_plan: "https://example.org/dmp/sample-invalid",
+      tk_fpic_flag: "no",
+      confidentiality: "secret",
+    };
+    data.addRow(FIELD_DEFS.map((f) => bad[f.excelHeader] ?? ""));
+  }
   if (opts.withFormula) {
     const r = data.addRow(FIELD_DEFS.map((f) => (f.excelHeader === "geographical_area" ? "CCZ" : f.excelHeader === "tk_fpic_flag" ? "no" : f.excelHeader === "confidentiality" ? "public" : "")));
     r.getCell(1).value = { formula: 'CONCATENATE("Formula", " row")', result: "Formula row" };
   }
+  return Buffer.from(await wb.xlsx.writeBuffer());
+}
+
+/**
+ * Error report for one import run: the current template with the Data sheet
+ * holding only the rejected rows (original values) plus a trailing Error
+ * column. The submitter fixes the cells, deletes the Error column, re-imports.
+ * Meta carries the source run id for traceability.
+ */
+export async function buildMgrErrorReport(run: {
+  runId: string;
+  at: string;
+  rows: { row: number; ok: boolean; error?: string; values?: Record<string, string> }[];
+}): Promise<Buffer> {
+  const wb = workbook();
+  const meta = wb.getWorksheet(META_SHEET)!;
+  meta.addRow(["errorReportOf", run.runId]);
+  meta.addRow(["importedAt", run.at]);
+  const data = wb.getWorksheet(DATA_SHEET)!;
+  const errCol = FIELD_DEFS.length + 1;
+  data.getRow(1).getCell(errCol).value = ERROR_COLUMN_HEADER;
+  data.getRow(1).getCell(errCol).font = { bold: true, color: { argb: "FFB00020" } };
+  data.getColumn(errCol).width = 80;
+  for (const r of run.rows.filter((x) => !x.ok)) {
+    const cells = FIELD_DEFS.map((f) => r.values?.[f.key] ?? "");
+    cells.push(`Row ${r.row}: ${r.error ?? "rejected"}`);
+    data.addRow(cells);
+  }
+  return Buffer.from(await wb.xlsx.writeBuffer());
+}
+
+/** Test helper: drop the Error column from an error report and patch cells so it re-imports cleanly. */
+export async function correctErrorReport(buf: Buffer | Uint8Array, patch: Record<string, string>): Promise<Buffer> {
+  const wb = new ExcelJS.Workbook();
+  await wb.xlsx.load(buf as unknown as ExcelJS.Buffer);
+  const data = wb.getWorksheet(DATA_SHEET)!;
+  const headers: string[] = [];
+  data.getRow(1).eachCell({ includeEmpty: false }, (c) => headers.push(String(c.value ?? "")));
+  const errIdx = headers.indexOf(ERROR_COLUMN_HEADER);
+  if (errIdx >= 0) data.spliceColumns(errIdx + 1, 1);
+  data.eachRow((row, n) => {
+    if (n === 1) return;
+    for (const [header, value] of Object.entries(patch)) {
+      const idx = FIELD_DEFS.findIndex((f) => f.excelHeader === header);
+      if (idx >= 0) row.getCell(idx + 1).value = value;
+    }
+  });
   return Buffer.from(await wb.xlsx.writeBuffer());
 }
 

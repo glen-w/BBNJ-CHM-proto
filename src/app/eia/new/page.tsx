@@ -6,7 +6,7 @@ import { Field, KeyFields, SubmitButton, selectClass } from "@/components/forms"
 import { Input } from "@/components/ui/input";
 import { AbnjBox, ConfidentialityTier } from "@/lib/contracts/events";
 import { createEiaAction } from "@/server/actions";
-import { can, hasRole } from "@/server/policy";
+import { can, hasRole, recordRefusal } from "@/server/policy";
 import { getSessionUser } from "@/server/session";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -15,6 +15,7 @@ export default async function NewEiaPage({ searchParams }: Props) {
   const flash = await flashFrom(searchParams);
   const p = await getSessionUser();
   if (!can(p, "submit")) {
+    recordRefusal(p, "submit", { domain: "eia", path: "/eia/new", reason: "Activity form requested without the submit permission" });
     return (
       <AppShell title="EIA — new activity" flash={flash}>
         <p className="text-sm">

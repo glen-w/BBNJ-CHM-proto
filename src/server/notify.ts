@@ -24,20 +24,40 @@ export interface DispatchResult {
 
 type Target = { userId: string; kind: NotificationKind; summary: string };
 
-type SubRow = { user_id: string; themes_json: string; abnj_boxes_json: string; domains_json: string };
+type SubRow = { user_id: string; themes_json: string; abnj_boxes_json: string; domains_json: string; digest: "immediate" | "daily" | "weekly" };
 
-function subscribersFor(db: Db, event: StoredEvent, meta: RecordMeta): Set<string> {
-  const out = new Set<string>();
-  const subs = db.prepare("SELECT user_id, themes_json, abnj_boxes_json, domains_json FROM subscriptions").all() as SubRow[];
-  for (const s of subs) {
-    const domains: string[] = JSON.parse(s.domains_json);
-    const boxes: string[] = JSON.parse(s.abnj_boxes_json);
-    const themes: string[] = JSON.parse(s.themes_json);
-    if (domains.includes(event.domain)) out.add(s.user_id);
-    if (meta.abnjBox && boxes.includes(meta.abnjBox)) out.add(s.user_id);
-    if (meta.themes && meta.themes.some((t) => themes.includes(t))) out.add(s.user_id);
-  }
-  return out;
+export interface SubscriberMatch {
+  userId: string;
+  digest: SubRow["digest"];
+}
+
+/** Does this subscription row match the event/record? Shared by the dispatcher and the digest runner. */
+export function subscriptionMatches(s: { themes_json: string; abnj_boxes_json: string; domains_json: string }, domain: string, meta: Pick<RecordMeta, "abnjBox" | "themes">): boolean {
+  const domains: string[] = JSON.parse(s.domains_json);
+  const boxes: string[] = JSON.parse(s.abnj_boxes_json);
+  const themes: string[] = JSON.parse(s.themes_json);
+  if (domains.includes(domain)) return true;
+  if (meta.abnjBox && boxes.includes(meta.abnjBox)) return true;
+  if (meta.themes && meta.themes.some((t) => themes.includes(t))) return true;
+  return false;
+}
+
+/** Every subscriber whose filters match, with their cadence. */
+export function subscribersFor(db: Db, event: StoredEvent, meta: RecordMeta): SubscriberMatch[] {
+  const subs = db.prepare("SELECT user_id, themes_json, abnj_boxes_json, domains_json, digest FROM subscriptions").all() as SubRow[];
+  return subs.filter((s) => subscriptionMatches(s, event.domain, meta)).map((s) => ({ userId: s.user_id, digest: s.digest }));
+}
+
+/** Users who already hold a notification for an earlier version of this (record, stage) — re-notified on material change. */
+function priorRecipients(db: Db, event: StoredEvent): Set<string> {
+  const rows = db
+    .prepare(
+      `SELECT DISTINCT n.user_id FROM notifications n
+       JOIN events e ON e.id = n.event_id
+       WHERE e.record_id = ? AND e.stage = ? AND e.version < ?`,
+    )
+    .all(event.recordId, event.stage, event.version) as { user_id: string }[];
+  return new Set(rows.map((r) => r.user_id));
 }
 
 /** Is this event readable by this user under the single read policy? */
@@ -48,21 +68,44 @@ export function eventVisibleTo(db: Db, user: User, eventId: string): boolean {
   return !!row;
 }
 
+/** Human summary of a published pack event, version-aware. Shared with the digest runner. */
+export function publishSummaryOf(event: StoredEvent, meta: Pick<RecordMeta, "publicRecordId" | "title">): string {
+  const label = meta.publicRecordId ?? event.publicRecordId ?? meta.title;
+  const base = `${event.domain.toUpperCase()} · ${event.stage.replace(/_/g, " ")}`;
+  if (event.version > 1) {
+    const kind = event.materialChange ? "material change" : "editorial";
+    return `${base} amended v${event.version} (${kind}) — ${label}${event.changeNote ? `: ${event.changeNote}` : ""}`;
+  }
+  return `${base} published — ${label}`;
+}
+
+/**
+ * Hold semantics: subscription matches with digest = daily/weekly are NOT
+ * notified per event — runDigests() rolls them up. Owner, STB, deadline and
+ * match targets are always immediate.
+ */
 function targetsFor(db: Db, event: StoredEvent, meta: RecordMeta): Target[] {
   const targets: Target[] = [];
   const label = meta.publicRecordId ?? event.publicRecordId ?? meta.title;
-  const publishSummary = `${event.domain.toUpperCase()} · ${event.stage.replace(/_/g, " ")} published — ${label}`;
+  const publishSummary = publishSummaryOf(event, meta);
+  const subs = subscribersFor(db, event, meta);
+  const immediateSubs = subs.filter((s) => s.digest === "immediate").map((s) => s.userId);
 
   if (meta.ownerUserId) targets.push({ userId: meta.ownerUserId, kind: "publish", summary: publishSummary });
-  for (const uid of subscribersFor(db, event, meta)) targets.push({ userId: uid, kind: "publish", summary: publishSummary });
+  for (const uid of immediateSubs) targets.push({ userId: uid, kind: "publish", summary: publishSummary });
+
+  // Material change on a later version: everyone who was told about an earlier version hears about this one, whatever their cadence.
+  if (event.version > 1 && event.materialChange) {
+    for (const uid of priorRecipients(db, event)) targets.push({ userId: uid, kind: "publish", summary: publishSummary });
+  }
 
   if (event.domain === "eia" && event.stage === "draft_eia") {
     for (const stbUser of listUsers(db).filter((u) => u.active && u.roles.includes("stb"))) {
-      targets.push({ userId: stbUser.id, kind: "stb_review", summary: `Draft EIA published for STB review — ${label} (Arts 34–35)` });
+      targets.push({ userId: stbUser.id, kind: "stb_review", summary: `Draft EIA${event.version > 1 ? ` v${event.version}` : ""} published for STB review — ${label} (Arts 34–35)` });
     }
     const closes = new Date(new Date(event.at).getTime() + DEMO_COMMENT_WINDOW_DAYS * 86400000).toISOString().slice(0, 10);
     const deadlineSummary = `Comment window on draft EIA ${label} closes ${closes} (demo: ${DEMO_COMMENT_WINDOW_DAYS} days — the Agreement fixes no day count here)`;
-    for (const uid of subscribersFor(db, event, meta)) targets.push({ userId: uid, kind: "deadline", summary: deadlineSummary });
+    for (const s of subs) targets.push({ userId: s.userId, kind: "deadline", summary: deadlineSummary });
     if (meta.ownerUserId) targets.push({ userId: meta.ownerUserId, kind: "deadline", summary: deadlineSummary });
   }
 
