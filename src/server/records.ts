@@ -30,7 +30,7 @@ export function recordTable(domain: Domain): string {
     case "cbtmt":
       return "cbtmt_records";
     case "abmt":
-      throw new Error("abmt reserved — no record table in this build");
+      return "abmt_proposals";
   }
 }
 
@@ -64,8 +64,14 @@ export function getRecordMeta(db: Db, domain: Domain, id: string): RecordMeta | 
         ? { id: r.id, domain, kind: r.kind, ownerUserId: r.owner_user_id ?? undefined, publicRecordId: r.public_record_id ?? undefined, confidentiality: r.confidentiality, partyCode: r.party_code ?? undefined, title: r.title, themes: JSON.parse(r.themes_json) }
         : undefined;
     }
-    case "abmt":
-      return undefined;
+    case "abmt": {
+      const r = db.prepare("SELECT id, owner_user_id, public_record_id, confidentiality, party_code, title FROM abmt_proposals WHERE id = ?").get(id) as
+        | { id: string; owner_user_id: string | null; public_record_id: string | null; confidentiality: RecordMeta["confidentiality"]; party_code: string; title: string }
+        | undefined;
+      return r
+        ? { id: r.id, domain, ownerUserId: r.owner_user_id ?? undefined, publicRecordId: r.public_record_id ?? undefined, confidentiality: r.confidentiality, partyCode: r.party_code, title: r.title }
+        : undefined;
+    }
   }
 }
 
@@ -103,8 +109,12 @@ export function deriveCaches(db: Db, domain: Domain, recordId: string): DerivedC
     }
     case "cbtmt":
       return { publicRecordId };
-    case "abmt":
-      return {};
+    case "abmt": {
+      const latest = latestEventOfRecord(db, recordId);
+      return latest
+        ? { currentStage: latest.stage, latestPackStatus: latest.status, publicRecordId }
+        : { currentStage: "proposal_stub", latestPackStatus: null, publicRecordId };
+    }
   }
 }
 
@@ -129,6 +139,13 @@ export function refreshCaches(db: Db, domain: Domain, recordId: string): Derived
       db.prepare("UPDATE cbtmt_records SET public_record_id = ?, updated_at = ? WHERE id = ?").run(d.publicRecordId, now, recordId);
       break;
     case "abmt":
+      db.prepare("UPDATE abmt_proposals SET current_stage = ?, latest_pack_status = ?, public_record_id = ?, updated_at = ? WHERE id = ?").run(
+        d.currentStage ?? "proposal_stub",
+        d.latestPackStatus,
+        d.publicRecordId,
+        now,
+        recordId,
+      );
       break;
   }
   return d;

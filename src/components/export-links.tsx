@@ -2,7 +2,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 /** CSV / JSON export buttons for a list; policy-filtered server-side exactly like the page. */
-export function ExportLinks({ domain, className }: { domain: "mgr" | "eia" | "cbtmt" | "audit"; className?: string }) {
+export function ExportLinks({ domain, className }: { domain: "mgr" | "eia" | "cbtmt" | "abmt" | "audit"; className?: string }) {
   return (
     <span className={cn("inline-flex gap-1", className)}>
       <a

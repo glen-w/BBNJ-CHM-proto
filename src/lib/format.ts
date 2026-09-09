@@ -39,6 +39,8 @@ export function domainPath(domain: string, recordId: string): string {
       return `/eia/${recordId}`;
     case "cbtmt":
       return `/capacity/${recordId}`;
+    case "abmt":
+      return `/abmt/${recordId}`;
     default:
       return "/abmt";
   }

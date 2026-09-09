@@ -60,7 +60,7 @@ describe("identifier patterns", () => {
 describe("core enums", () => {
   it("validates Domain, ActorRole, ConfidentialityTier, SourceChannel, PublishStatus", () => {
     expect(Domain.options).toEqual(["mgr", "cbtmt", "eia", "abmt"]);
-    expect(ActorRole.options).toEqual(["party", "public", "stb", "secretariat", "publishing_authority"]);
+    expect(ActorRole.options).toEqual(["party", "public", "stb", "secretariat", "publishing_authority", "non_state_uploader"]);
     expect(ConfidentialityTier.options).toEqual(["public", "restricted", "confidential"]);
     expect(SourceChannel.options).toEqual(["form", "excel", "assisted"]);
     expect(PublishStatus.options).toEqual(["draft", "pending", "published"]);

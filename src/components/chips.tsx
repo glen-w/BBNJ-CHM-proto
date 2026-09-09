@@ -20,12 +20,14 @@ const DOMAIN_STYLE: Record<AccentDomain, string> = {
   mgr: "bg-domain-mgr text-domain-mgr-foreground border-domain-mgr-line",
   eia: "bg-domain-eia text-domain-eia-foreground border-domain-eia-line",
   cbtmt: "bg-domain-cbtmt text-domain-cbtmt-foreground border-domain-cbtmt-line",
+  abmt: "bg-domain-abmt text-domain-abmt-foreground border-domain-abmt-line",
 };
 
 export const DOMAIN_RAIL: Record<AccentDomain, string> = {
   mgr: "border-l-2 border-domain-mgr-line",
   eia: "border-l-2 border-domain-eia-line",
   cbtmt: "border-l-2 border-domain-cbtmt-line",
+  abmt: "border-l-2 border-domain-abmt-line",
 };
 
 export function DomainBadge({
@@ -81,7 +83,8 @@ export function ConfidentialityBadge({ tier }: { tier: string }) {
 export function TierNote({ tier }: { tier: ConfidentialityTier }) {
   return (
     <p className="text-xs text-muted-foreground">
-      <span className="font-medium">Who can see this ({tier}):</span> {whoCanSee(tier)}
+      <span className="font-medium">Who can see this ({tier}):</span> {whoCanSee(tier)} A separate <em>proprietary</em> category (PrepCom3 annex) is
+      deferred in this build — commercially sensitive material sits under <em>confidential</em> for now.
     </p>
   );
 }

@@ -2,14 +2,16 @@
  * Seeds — through the domain functions with fixed idempotency keys, never raw
  * inserts. Re-running on a seeded database writes nothing.
  *
- * Users are "three logins + STB reviewer". Party code XSD sits in the ISO
- * user-assigned range: a demo SIDS Party, no real State implied.
+ * Users are "three logins + STB reviewer + a PrepCom3-style non-State uploader".
+ * Party code XSD sits in the ISO user-assigned range: a demo SIDS Party, no
+ * real State implied.
  */
 import type { Db } from "@/lib/db";
-import type { Subscription, User } from "@/lib/contracts/events";
-import { createCbtmtRecord, suggestMatch } from "./cbtmt";
+import type { ArtifactRef, Subscription, User } from "@/lib/contracts/events";
+import { createAbmtProposal, submitAbmtProposal } from "./abmt";
+import { createCbtmtRecord, setMatchFacilitationNote, suggestMatch } from "./cbtmt";
 import { runDigests } from "./digest";
-import { addEiaPack, createEiaActivity } from "./eia";
+import { addEiaPack, createEiaActivity, setEiaDueAt } from "./eia";
 import { addMgrPack, amendMgrPack, receivePreCollection, saveMgrDraft } from "./mgr";
 import { latestPackRow } from "./outbox";
 import { publishPack } from "./packs";
@@ -22,6 +24,24 @@ export const SEED_USERS: User[] = [
   { id: "00000000-0000-4000-8000-000000000002", username: "secretariat", displayName: "Secretariat / authorised publishing role", roles: ["secretariat"], active: true },
   { id: "00000000-0000-4000-8000-000000000003", username: "public", displayName: "Public (view-only)", roles: ["public"], active: true },
   { id: "00000000-0000-4000-8000-000000000004", username: "stb", displayName: "Scientific and Technical Body reviewer", roles: ["stb"], active: true },
+  {
+    id: "00000000-0000-4000-8000-000000000005",
+    username: "nonstate.uploader",
+    displayName: "Registered non-State uploader (CBTMT offers only)",
+    roles: ["non_state_uploader"],
+    active: true,
+  },
+];
+
+/** Demo artefact references on EIA packs — labelled demo/uncertified; nothing is fetched or stored. */
+const EIA_SCREENING_ARTIFACTS: ArtifactRef[] = [
+  { kind: "url", label: "Screening notice (demo URL)", href: "https://example.org/eia/screening-notice" },
+  { kind: "pdf", label: "Demo screening extract (not certified)", href: "http://127.0.0.1:3000/demo-artifacts/eia-screening-demo.pdf" },
+  { kind: "note", label: "Artefacts are references only — the CHM stores metadata, not the documents" },
+];
+const EIA_DRAFT_ARTIFACTS: ArtifactRef[] = [
+  { kind: "pdf", label: "Draft EIA report v1 (demo extract, not certified)", href: "http://127.0.0.1:3000/demo-artifacts/eia-screening-demo.pdf" },
+  { kind: "url", label: "Public consultation page (demo URL)", href: "https://example.org/eia/consultation" },
 ];
 
 export const CBTMT_THEMES = ["taxonomy", "genomics", "eia_practice"] as const;
@@ -31,6 +51,8 @@ export interface SeedIds {
   mgr: { published: string; draft: string; imported: string; restricted: string; confidential: string };
   eia: { noEia: string; full: string; coexist: string; restricted: string };
   cbtmt: { need: string; offer: string; matchId?: string };
+  abmt: { published: string };
+  nonstate: { userId: string };
 }
 
 const K = (s: string) => `seed:${s}`;
@@ -125,6 +147,15 @@ export function seedDatabase(db: Db): SeedIds {
     { at: "2026-09-02T11:00:00.000Z" },
   );
   publishPack(db, secretariat, { domain: "mgr", recordId: f.batch.id, stage: "pre_collection", at: "2026-09-02T12:00:00.000Z" });
+  // P1 TK/FPIC metadata UX — captions only; no content store (Art 13).
+  db.prepare(
+    `UPDATE mgr_batches SET tk_provenance_note = ?, fpic_status_note = ?, updated_at = ? WHERE id = ?`,
+  ).run(
+    "Demo: holders identified via national focal point channel; knowledge itself is not stored in the Cl-HM.",
+    "Demo: free, prior and informed consent recorded as asserted by the submitting Party (metadata only).",
+    "2026-09-02T12:00:00.000Z",
+    f.batch.id,
+  );
 
   // ---- EIA
   const e1 = createEiaActivity(db, party, { title: "Acoustic survey, Reykjanes Ridge", abnjBox: "Reykjanes Ridge" }, K("eia-1"));
@@ -132,13 +163,15 @@ export function seedDatabase(db: Db): SeedIds {
   publishPack(db, secretariat, { domain: "eia", recordId: e1.activity.id, stage: "screening", at: "2026-08-20T10:00:00.000Z" });
 
   const e2 = createEiaActivity(db, party, { title: "Sediment sampling, CCZ", abnjBox: "CCZ" }, K("eia-2"));
-  addEiaPack(db, party, e2.activity.id, "screening", "Screening: EIA required (Art 31)", K("eia-2-screening"), { screeningOutcome: "eia_required" });
+  addEiaPack(db, party, e2.activity.id, "screening", "Screening: EIA required (Art 31)", K("eia-2-screening"), { screeningOutcome: "eia_required", artifactRefs: EIA_SCREENING_ARTIFACTS });
   publishPack(db, secretariat, { domain: "eia", recordId: e2.activity.id, stage: "screening", at: "2026-08-22T10:00:00.000Z" });
   addEiaPack(db, party, e2.activity.id, "planned_activity_notice", "Public notification of planned activity (Art 32)", K("eia-2-notice"));
   publishPack(db, secretariat, { domain: "eia", recordId: e2.activity.id, stage: "planned_activity_notice", at: "2026-08-25T10:00:00.000Z" });
-  addEiaPack(db, party, e2.activity.id, "draft_eia", "Draft EIA report v1 for consultation (Arts 33–34)", K("eia-2-draft"));
+  addEiaPack(db, party, e2.activity.id, "draft_eia", "Draft EIA report v1 for consultation (Arts 33–34)", K("eia-2-draft"), { artifactRefs: EIA_DRAFT_ARTIFACTS });
   publishPack(db, secretariat, { domain: "eia", recordId: e2.activity.id, stage: "draft_eia", at: "2026-09-03T10:00:00.000Z" });
   addEiaPack(db, party, e2.activity.id, "decision_conditions", "Draft decision with conditions (Arts 34/37) — awaiting publication", K("eia-2-decision"));
+  // P1: explicit comment-window due date (demo value; the Agreement fixes no day count). Idempotent: same value on every run.
+  setEiaDueAt(db, party, e2.activity.id, "2026-10-03T10:00:00.000Z");
 
   const e3 = createEiaActivity(db, party, { title: "Baseline survey, CCZ", abnjBox: "CCZ" }, K("eia-3"));
   addEiaPack(db, party, e3.activity.id, "screening", "Screening: EIA required (Art 31)", K("eia-3-screening"), { screeningOutcome: "eia_required" });
@@ -160,6 +193,18 @@ export function seedDatabase(db: Db): SeedIds {
   );
   publishPack(db, secretariat, { domain: "cbtmt", recordId: offer.record.id, stage: "offer_posted", at: "2026-08-29T10:00:00.000Z" });
   const match = suggestMatch(db, secretariat, need.record.id, offer.record.id, "shared_theme:taxonomy", K("cbtmt-match"));
+  // Brokerage pattern: the deterministic rule finds the pair; a human note records what the Secretariat did with it.
+  setMatchFacilitationNote(
+    db,
+    secretariat,
+    match.match.id,
+    "Secretariat facilitated an introduction between the Party XSD focal point and the consortium's placement coordinator (2026-09-01); both agreed to scope a two-berth placement for the 2027 season. Follow-up owned by the Party.",
+  );
+
+  // ---- ABMT (thin stub, Art 51.3(a)(ii); without prejudice to COP1): draft → pending → published on the same rails.
+  const abmt = createAbmtProposal(db, party, { title: "Demo ABMT proposal stub (without prejudice)" }, K("abmt-1"));
+  submitAbmtProposal(db, party, abmt.proposal.id, K("abmt-1-submit"));
+  publishPack(db, secretariat, { domain: "abmt", recordId: abmt.proposal.id, stage: "proposal_stub", at: "2026-09-05T10:00:00.000Z" });
 
   // ---- digests: daily/weekly subscribers were held back by the dispatcher; roll them up once, through the real runner.
   runDigests(db);
@@ -169,6 +214,8 @@ export function seedDatabase(db: Db): SeedIds {
     mgr: { published: a.batch.id, draft: b.batch.id, imported: c.batch.id, restricted: d.batch.id, confidential: f.batch.id },
     eia: { noEia: e1.activity.id, full: e2.activity.id, coexist: e3.activity.id, restricted: e4.activity.id },
     cbtmt: { need: need.record.id, offer: offer.record.id, matchId: match.match.id },
+    abmt: { published: abmt.proposal.id },
+    nonstate: { userId: SEED_USERS[4].id },
   };
 }
 

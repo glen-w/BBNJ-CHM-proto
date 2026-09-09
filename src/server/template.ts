@@ -4,6 +4,7 @@
  */
 import ExcelJS from "exceljs";
 
+import { EIA_SCREENING_FIELDS, EIA_SCREENING_TEMPLATE_NAME, EIA_SCREENING_TEMPLATE_VERSION } from "@/lib/eia-fields";
 import { FIELD_DEFS, MGR_TEMPLATE_NAME, MGR_TEMPLATE_VERSION } from "@/lib/mgr-fields";
 
 export const META_SHEET = "Meta";
@@ -146,4 +147,85 @@ export async function sheetNames(buf: Buffer | Uint8Array): Promise<string[]> {
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.load(buf as unknown as ExcelJS.Buffer);
   return wb.worksheets.map((w) => w.name);
+}
+
+// ------------------------------------------------------------------ EIA screening (Art 51.5 offline pattern beyond MGR)
+
+/** Same three-sheet layout as the MGR template, generated from EIA_SCREENING_FIELDS. */
+function eiaScreeningWorkbook(templateVersion = EIA_SCREENING_TEMPLATE_VERSION): ExcelJS.Workbook {
+  const wb = new ExcelJS.Workbook();
+  wb.creator = "BBNJ Cl-HM";
+  wb.created = new Date();
+
+  const meta = wb.addWorksheet(META_SHEET);
+  meta.addRow(["template", EIA_SCREENING_TEMPLATE_NAME]);
+  meta.addRow(["templateVersion", templateVersion]);
+  meta.addRow(["generatedAt", new Date().toISOString()]);
+  meta.addRow(["instructions", "Fill one row per planned activity screening (Art 31) on the Data sheet. Do not rename headers. Formulas are not accepted."]);
+  meta.getColumn(1).width = 18;
+  meta.getColumn(2).width = 90;
+
+  const data = wb.addWorksheet(DATA_SHEET);
+  data.addRow(EIA_SCREENING_FIELDS.map((f) => f.excelHeader));
+  data.getRow(1).font = { bold: true };
+  EIA_SCREENING_FIELDS.forEach((f, i) => {
+    data.getColumn(i + 1).width = Math.max(16, Math.min(40, f.excelHeader.length + 6));
+  });
+  data.views = [{ state: "frozen", ySplit: 1 }];
+
+  const guide = wb.addWorksheet(GUIDE_SHEET);
+  guide.addRow(["field", "excel_header", "required", "kind", "agreement_basis_or_implementation", "help", "allowed_values"]);
+  guide.getRow(1).font = { bold: true };
+  for (const f of EIA_SCREENING_FIELDS) {
+    guide.addRow([f.key, f.excelHeader, f.required ? "yes" : "no", f.kind, f.basis, f.help, f.options ? f.options.join(" | ") : ""]);
+  }
+  [18, 26, 10, 10, 70, 60, 30].forEach((w, i) => (guide.getColumn(i + 1).width = w));
+  return wb;
+}
+
+export async function buildEiaScreeningTemplate(opts: { templateVersion?: number } = {}): Promise<Buffer> {
+  const wb = eiaScreeningWorkbook(opts.templateVersion);
+  return Buffer.from(await wb.xlsx.writeBuffer());
+}
+
+/**
+ * Fixture for the EIA "Import sample" fallback: two valid screening rows, plus
+ * (optionally) one row that fails validation — unknown ABNJ box and a
+ * screening outcome outside the Art 31 vocabulary — so the closed loop is visible.
+ */
+export async function buildEiaScreeningSample(opts: { withInvalid?: boolean } = {}): Promise<Buffer> {
+  const wb = eiaScreeningWorkbook();
+  const data = wb.getWorksheet(DATA_SHEET)!;
+  const rows: Record<string, string>[] = [
+    { title: "Offline screening SAMPLE-01 — sediment coring", abnj_box: "CCZ", party_code: "XSD", screening_outcome: "eia_required", confidentiality: "public" },
+    { title: "Offline screening SAMPLE-02 — acoustic transect", abnj_box: "Reykjanes Ridge", party_code: "XSD", screening_outcome: "no_eia", confidentiality: "public" },
+  ];
+  if (opts.withInvalid) {
+    rows.push({ title: "Offline screening SAMPLE-INVALID (unknown box, bad outcome)", abnj_box: "Mid-Atlantic", party_code: "XSD", screening_outcome: "maybe", confidentiality: "public" });
+  }
+  for (const r of rows) data.addRow(EIA_SCREENING_FIELDS.map((f) => r[f.excelHeader] ?? ""));
+  return Buffer.from(await wb.xlsx.writeBuffer());
+}
+
+/** Error report for an EIA screening import run — same closed-loop shape as the MGR report. */
+export async function buildEiaScreeningErrorReport(run: {
+  runId: string;
+  at: string;
+  rows: { row: number; ok: boolean; error?: string; values?: Record<string, string> }[];
+}): Promise<Buffer> {
+  const wb = eiaScreeningWorkbook();
+  const meta = wb.getWorksheet(META_SHEET)!;
+  meta.addRow(["errorReportOf", run.runId]);
+  meta.addRow(["importedAt", run.at]);
+  const data = wb.getWorksheet(DATA_SHEET)!;
+  const errCol = EIA_SCREENING_FIELDS.length + 1;
+  data.getRow(1).getCell(errCol).value = ERROR_COLUMN_HEADER;
+  data.getRow(1).getCell(errCol).font = { bold: true, color: { argb: "FFB00020" } };
+  data.getColumn(errCol).width = 80;
+  for (const r of run.rows.filter((x) => !x.ok)) {
+    const cells = EIA_SCREENING_FIELDS.map((f) => r.values?.[f.key] ?? "");
+    cells.push(`Row ${r.row}: ${r.error ?? "rejected"}`);
+    data.addRow(cells);
+  }
+  return Buffer.from(await wb.xlsx.writeBuffer());
 }

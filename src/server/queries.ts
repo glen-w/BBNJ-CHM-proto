@@ -4,7 +4,8 @@
  */
 import type { Db } from "@/lib/db";
 import type { Domain, Notification, Subscription } from "@/lib/contracts/events";
-import type { StoredCbtmtRecord, StoredEiaActivity, StoredEvent, StoredMgrBatch } from "@/lib/contracts/extensions";
+import type { StoredAbmtProposal, StoredCbtmtRecord, StoredEiaActivity, StoredEvent, StoredMgrBatch } from "@/lib/contracts/extensions";
+import { rowToAbmt } from "./abmt";
 import { rowToCbtmt } from "./cbtmt";
 import { rowToActivity } from "./eia";
 import { rowToBatch } from "./mgr";
@@ -49,9 +50,22 @@ export function listCbtmtRecords(db: Db, p: Principal, kind?: "need" | "offer"):
   return rows.map(rowToCbtmt);
 }
 
+export function listAbmtProposals(db: Db, p: Principal, q?: string): StoredAbmtProposal[] {
+  const c = recordVisibilityClause(readPolicy(p), { id: "a.id", tier: "a.confidentiality", owner: "a.owner_user_id" });
+  const like = q ? `%${q.trim()}%` : null;
+  const rows = db
+    .prepare(
+      `SELECT a.* FROM abmt_proposals a WHERE ${c.sql}
+       ${like ? "AND (a.title LIKE ? OR a.public_record_id LIKE ?)" : ""}
+       ORDER BY a.updated_at DESC`,
+    )
+    .all(...c.params, ...(like ? [like, like] : [])) as Parameters<typeof rowToAbmt>[0][];
+  return rows.map(rowToAbmt);
+}
+
 /** Is a single record visible to this principal? */
 export function recordVisible(db: Db, p: Principal, domain: Domain, id: string): boolean {
-  const table = domain === "mgr" ? "mgr_batches" : domain === "eia" ? "eia_activities" : "cbtmt_records";
+  const table = domain === "mgr" ? "mgr_batches" : domain === "eia" ? "eia_activities" : domain === "cbtmt" ? "cbtmt_records" : "abmt_proposals";
   const c = recordVisibilityClause(readPolicy(p), { id: "x.id", tier: "x.confidentiality", owner: "x.owner_user_id" });
   return !!db.prepare(`SELECT 1 FROM ${table} x WHERE x.id = ? AND ${c.sql}`).get(id, ...c.params);
 }
@@ -175,11 +189,12 @@ export function recentPublished(db: Db, p: Principal, limit = 8): FeedItem[] {
   const rows = db
     .prepare(
       `SELECT e.id, e.domain, e.stage, e.record_id, e.public_record_id, e.at,
-              COALESCE(mb.title, ea.title, cr.title) AS title
+              COALESCE(mb.title, ea.title, cr.title, ap.title) AS title
        FROM events e ${RECORD_JOIN}
        LEFT JOIN mgr_batches mb ON mb.id = e.record_id
        LEFT JOIN eia_activities ea ON ea.id = e.record_id
        LEFT JOIN cbtmt_records cr ON cr.id = e.record_id
+       LEFT JOIN abmt_proposals ap ON ap.id = e.record_id
        WHERE e.status = 'published' AND ${c.sql} ORDER BY e.seq DESC LIMIT ?`,
     )
     .all(...c.params, limit) as { id: string; domain: Domain; stage: string; record_id: string; public_record_id: string | null; at: string; title: string }[];
@@ -198,7 +213,7 @@ export function railCounts(db: Db, p: Principal): RailCounts {
   const c = eventClause(p);
   const count = (extra: string) =>
     (db.prepare(`SELECT COUNT(*) AS n FROM events e ${RECORD_JOIN} WHERE ${c.sql} ${extra}`).get(...c.params) as { n: number }).n;
-  const submit = listMgrBatches(db, p).length + listEiaActivities(db, p).length + listCbtmtRecords(db, p).length;
+  const submit = listMgrBatches(db, p).length + listEiaActivities(db, p).length + listCbtmtRecords(db, p).length + listAbmtProposals(db, p).length;
   const uid = userId(p);
   const notify = uid ? (db.prepare("SELECT COUNT(*) AS n FROM notifications WHERE user_id = ?").get(uid) as { n: number }).n : 0;
   return {
@@ -219,9 +234,10 @@ export function resolvePublicRecord(db: Db, p: Principal, publicRecordId: string
     .prepare(
       `SELECT 'mgr' AS domain, id FROM mgr_batches WHERE public_record_id = ?
        UNION ALL SELECT 'eia', id FROM eia_activities WHERE public_record_id = ?
-       UNION ALL SELECT 'cbtmt', id FROM cbtmt_records WHERE public_record_id = ?`,
+       UNION ALL SELECT 'cbtmt', id FROM cbtmt_records WHERE public_record_id = ?
+       UNION ALL SELECT 'abmt', id FROM abmt_proposals WHERE public_record_id = ?`,
     )
-    .get(publicRecordId, publicRecordId, publicRecordId) as { domain: Domain; id: string } | undefined;
+    .get(publicRecordId, publicRecordId, publicRecordId, publicRecordId) as { domain: Domain; id: string } | undefined;
   if (!row) return undefined;
   return recordVisible(db, p, row.domain, row.id) ? { domain: row.domain, recordId: row.id } : undefined;
 }

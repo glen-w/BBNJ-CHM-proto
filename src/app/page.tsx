@@ -26,7 +26,7 @@ export default async function HomePage({ searchParams }: Props) {
       <section className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight">Clearing-House Mechanism</h1>
         <p className="max-w-3xl text-base leading-relaxed text-muted-foreground">
-          Submit, manage, publish and notify across MGR, EIA and capacity-building — one desk, three journeys.
+          Submit, manage, publish and notify across MGR, EIA, capacity-building and (as a stub) area-based management tools — one desk, four journeys.
         </p>
         {p.kind === "anonymous" ? (
           <p className="text-sm">
@@ -41,7 +41,7 @@ export default async function HomePage({ searchParams }: Props) {
 
       <RailsStrip counts={counts} />
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <JourneyCard
           domain="mgr"
           title="MGR"
@@ -59,6 +59,12 @@ export default async function HomePage({ searchParams }: Props) {
           title="CBTMT"
           href="/capacity"
           text="Needs and offers as records; a match is a row plus a match_suggested event under a deterministic shared-theme rule."
+        />
+        <JourneyCard
+          domain="abmt"
+          title="ABMT"
+          href="/abmt"
+          text="Proposal stub on the same rails — draft → pending → published, receipt and BBNJ-ABMT id. Without prejudice to COP1; no content model yet."
         />
       </section>
 
@@ -93,7 +99,8 @@ export default async function HomePage({ searchParams }: Props) {
         </div>
         <div className="space-y-4">
           <div className="rounded-lg border border-dashed p-5 text-sm text-muted-foreground">
-            <strong className="text-foreground">ABMT</strong> — not available. Area-based management tools (Art 51.3(a)(ii)) are reserved for later packages on the same receipt and publish record.
+            <strong className="text-foreground">ABMT</strong> — thin stub only. Area-based management tools (Art 51.3(a)(ii)) are shown as a{" "}
+            <code>proposal_stub</code> pack so the receipt and publish record can be seen to carry a fourth journey. Without prejudice to COP1.
           </div>
           <div className="rounded-lg border p-5 text-sm">
             <div className="mb-2 font-medium">Identifiers, in order</div>

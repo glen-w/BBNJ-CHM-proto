@@ -11,7 +11,7 @@ describe("users I/O", () => {
   it("round-trips a seeded user and lists by username", () => {
     h = createHarness();
     const u = findUserByUsername(h.db, "party.nfp");
-    expect(u?.displayName).toMatch(/SIDS/);
+    expect(u?.displayName).toBe(SEED_USERS[0].displayName);
     expect(u?.partyCode).toBe("XSD");
     expect(u?.roles).toEqual(["party"]);
     expect(findUserById(h.db, u!.id)?.username).toBe("party.nfp");

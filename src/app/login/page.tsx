@@ -16,6 +16,8 @@ const BLURB: Record<string, string> = {
   secretariat: "Authorised publishing role. Publishes pending packs, imports offline Excel, suggests matches, sees the full audit projection.",
   public: "Read-only. Published, public-tier rows only — never drafts or pending packs.",
   stb: "Scientific and Technical Body reviewer. Sees published draft EIAs in a review queue and files one consolidated comment per version.",
+  "nonstate.uploader":
+    "PrepCom3-style registered non-State actor (demo). May post CBTMT offers only — no needs, no other domains, no amendments, no publishing. Every other attempt is refused and logged.",
 };
 
 export default async function LoginPage({ searchParams }: Props) {

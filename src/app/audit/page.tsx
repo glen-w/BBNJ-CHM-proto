@@ -12,7 +12,7 @@ import { fmtDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { resetSandboxAction } from "@/server/actions";
 import { listDigestRuns } from "@/server/digest";
-import { listImportRuns } from "@/server/import";
+import { importRunPath, listImportRuns } from "@/server/import";
 import { can, listRefusals } from "@/server/policy";
 import { auditRows } from "@/server/queries";
 import { sandboxResetEnabled } from "@/server/reset";
@@ -143,8 +143,8 @@ export default async function AuditPage({ searchParams }: Props) {
                 <ul className="divide-y text-sm">
                   {imports.map((r) => (
                     <li key={r.runId} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2">
-                      <Link href={`/mgr/import/${r.runId}`} className="underline">
-                        {fmtDate(r.at)} · {r.filename ?? "upload"}
+                      <Link href={importRunPath(r)} className="underline">
+                        {fmtDate(r.at)} · {r.domain.toUpperCase()} · {r.filename ?? "upload"}
                       </Link>
                       <span className="text-xs text-muted-foreground">
                         {r.accepted} accepted · {r.rejected} rejected · Party {r.partyCode}

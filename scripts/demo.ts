@@ -157,6 +157,61 @@ async function main() {
   assert.equal(queries.recordVisible(db, stb, "mgr", seeded.mgr.confidential), false);
   assert.equal(queries.recordVisible(db, pub, "eia", seeded.eia.restricted), false);
 
+  // 10b. CBTMT facilitation note — human brokerage on the seeded match (not ML, not an event)
+  const seededMatch = cbtmt.listMatches(db).find((m) => m.id === seeded.cbtmt.matchId)!;
+  const eventsBeforeNote = count("SELECT COUNT(*) AS n FROM events");
+  const noted = cbtmt.setMatchFacilitationNote(db, secretariat, seededMatch.id, "Demo: Secretariat introduced both focal points; scoping call proposed.");
+  checkpoint("CBTMT facilitation — Secretariat annotates the match with a human note; no new outbox event", [
+    `seeded note: ${seededMatch.facilitationNote ? `"${seededMatch.facilitationNote.slice(0, 60)}…"` : "(none in seed)"}`,
+    `now: "${noted.facilitationNote}"  events before/after: ${eventsBeforeNote}/${count("SELECT COUNT(*) AS n FROM events")}`,
+  ]);
+  assert.equal(count("SELECT COUNT(*) AS n FROM events"), eventsBeforeNote);
+  assert.throws(() => cbtmt.setMatchFacilitationNote(db, party, seededMatch.id, "hijack"), (e: unknown) => e instanceof DomainError && e.code === "forbidden");
+
+  // 10c. Non-State uploader (C9) — fifth login: CBTMT offers only; MGR/import/publish refused and logged
+  const nsUser = users.findUserByUsername(db, "nonstate.uploader");
+  if (!nsUser) {
+    // temp DB only: stand in for the fifth login until the seed carries it (owner_user_id is a FK to users)
+    users.upsertUser(db, { id: "00000000-0000-4000-8000-0000000000fe", username: "nonstate.inline", displayName: "Non-State uploader (inline)", roles: ["non_state_uploader"], active: true });
+  }
+  const nonState = policy.principalFor(nsUser ?? users.findUserByUsername(db, "nonstate.inline")!);
+  const nsOffer = cbtmt.createCbtmtRecord(db, nonState, { kind: "offer", title: "Bioinformatics mentoring (non-State provider)", themes: ["genomics"], provider: "Demo NGO" }, key());
+  const nsRefusalsBefore = count("SELECT COUNT(*) AS n FROM access_refusals WHERE actor_role = 'non_state_uploader'");
+  assert.throws(() => mgr.saveMgrDraft(db, nonState, { title: "Not allowed", locationHint: "CCZ" }, key()), (e: unknown) => e instanceof DomainError && e.code === "forbidden");
+  assert.throws(() => packs.publishPack(db, nonState, { domain: "cbtmt", recordId: nsOffer.record.id, stage: "offer_posted" }), (e: unknown) => e instanceof DomainError && e.code === "forbidden");
+  await assert.rejects(importer.importMgrExcel(db, nonState, fixture, "XSD", key()), (e: unknown) => e instanceof DomainError && e.code === "forbidden");
+  const nsRefusals = count("SELECT COUNT(*) AS n FROM access_refusals WHERE actor_role = 'non_state_uploader'");
+  checkpoint(`Non-State uploader (${nsUser ? "seeded login nonstate.uploader" : "inline principal — seed has no fifth login yet"}) — CBTMT offer accepted; MGR draft, publish and import refused`, [
+    `offer ${nsOffer.record.id.slice(0, 8)} pending (actorRole=${nsOffer.event.actorRole}); refusal rows: ${nsRefusalsBefore} → ${nsRefusals}`,
+    policy.listRefusals(db, secretariat, 1)[0].reason,
+  ]);
+  assert.equal(nsRefusals, nsRefusalsBefore + 3);
+
+  // 10d. ABMT thin stub — same rails, BBNJ-ABMT id at first publish, without prejudice
+  const abmt = await import("../src/server/abmt");
+  const abmtDraft = abmt.createAbmtProposal(db, party, { title: "Demo ABMT proposal stub (without prejudice)" }, key());
+  const abmtPending = abmt.submitAbmtProposal(db, party, abmtDraft.proposal.id, key());
+  assert.equal(abmtPending.proposal.publicRecordId, undefined);
+  const abmtPub = packs.publishPack(db, secretariat, { domain: "abmt", recordId: abmtDraft.proposal.id, stage: "proposal_stub" });
+  checkpoint("ABMT thin stub — draft → pending (receipt) → published; publicRecordId BBNJ-ABMT-… minted on first publish", [
+    `receiptId=${abmtPending.event.receiptId}  publicRecordId=${abmtPub.event.publicRecordId}`,
+    `public list count: ${queries.listAbmtProposals(db, anon).length}`,
+  ]);
+  assert.match(abmtPub.event.publicRecordId!, /^BBNJ-ABMT-\d{4}-\d{5}$/);
+  assert.ok(queries.listAbmtProposals(db, anon).some((p) => p.id === abmtDraft.proposal.id));
+
+  // 10e. EIA artifacts — references (pdf/url/note/xlsx) ride on the pack, not a file store
+  const seededArtifacts = count("SELECT COUNT(*) AS n FROM events WHERE domain = 'eia' AND artifact_refs_json <> '[]'");
+  const artAct = eia.createEiaActivity(db, party, { title: "Demo activity with artifacts", abnjBox: "CCZ" }, key());
+  const artPack = eia.addEiaPack(db, party, artAct.activity.id, "screening", "Screening with annexes", key(), {
+    screeningOutcome: "eia_required",
+    artifactRefs: [{ kind: "pdf", label: "Screening report (PDF)", href: "https://example.org/screening.pdf" }, { kind: "note", label: "Baseline data held by the proponent" }],
+  });
+  checkpoint("EIA artifacts — pack carries artifactRefs (contract ArtifactRef); seed and new pack both listed", [
+    `seeded EIA packs with artifacts: ${seededArtifacts}; new pack: ${artPack.event.artifactRefs.map((a) => `${a.kind}:${a.label}`).join(" | ")}`,
+  ]);
+  assert.equal(artPack.event.artifactRefs.length, 2);
+
   // 11. Invariants
   const mism = reconcile.reconcile(db).mismatches;
   const replay = notify.replayOutbox(db).inserted;
@@ -203,6 +258,9 @@ async function main() {
     await expect("/mgr/import", undefined, 200, /Secretariat function/);
     await expect("/mgr/import", "secretariat", 200, /Recent import runs/);
     await expect("/notifications", "secretariat", 200, /Run digest now/);
+    await expect("/capacity", undefined, 200);
+    await expect("/cbtmt", undefined, [307, 308]); // legacy path redirects to /capacity
+    await expect("/abmt", undefined, 200); // thin stub is reachable, not "unavailable"
     await expect("/api/export/mgr.csv", undefined, 200, /^publicRecordId,bSbi,title/);
     await expect("/api/export/audit.json", "secretariat", 200, /"schemaVersion"/);
     await expect("/api/export/nope.csv", undefined, 404);

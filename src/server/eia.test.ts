@@ -7,6 +7,7 @@ import {
   getEiaActivity,
   isPublishableStage,
   packsForActivity,
+  setEiaDueAt,
   stbQueue,
 } from "@/server/eia";
 import { publishPack } from "@/server/packs";
@@ -112,5 +113,23 @@ describe("EIA journey I/O", () => {
     );
     expect(act.activity.sourceChannel).toBe("assisted");
     expect(act.activity.partyCode).toBe("XSD");
+  });
+
+  it("stores pack artifactRefs and an explicit dueAt", () => {
+    h = createHarness();
+    const act = createEiaActivity(h.db, h.party(), { title: "Artefact survey", abnjBox: "CCZ" }, h.key());
+    const refs = [
+      { kind: "pdf" as const, label: "Screening extract", href: "http://127.0.0.1:3000/demo-artifacts/eia-screening-demo.pdf" },
+      { kind: "note" as const, label: "Metadata only" },
+    ];
+    const pack = addEiaPack(h.db, h.party(), act.activity.id, "screening", "required", h.key(), {
+      screeningOutcome: "eia_required",
+      artifactRefs: refs,
+    });
+    expect(pack.event.artifactRefs).toEqual(refs);
+    const updated = setEiaDueAt(h.db, h.party(), act.activity.id, "2026-10-15T12:00:00.000Z");
+    expect(updated.dueAt).toBe("2026-10-15T12:00:00.000Z");
+    expectDomainCode(() => setEiaDueAt(h.db, h.party(), act.activity.id, "not-a-date"), "validation");
+    expectDomainCode(() => setEiaDueAt(h.db, h.nonstate(), act.activity.id, "2026-10-16T12:00:00.000Z"), "forbidden");
   });
 });

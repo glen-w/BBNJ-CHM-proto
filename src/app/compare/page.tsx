@@ -21,6 +21,7 @@ export default async function ComparePage() {
   const eia2 = rec("eia-2");
   const eia3 = rec("eia-3");
   const need = rec("cbtmt-need");
+  const abmt = rec("abmt-1");
   const secretariat = can(p, "view_full_audit");
   const loginHint = secretariat ? "" : " (sign in as secretariat to see the full projection)";
 
@@ -42,26 +43,26 @@ export default async function ComparePage() {
         },
         {
           area: "Offline / SIDS loop",
-          interim: "No offline path; no validation feedback",
-          prototype: "Download → fill offline → import → per-row validation → error workbook pre-filled with failed rows → fix → re-import. Durable run record.",
-          links: [{ href: "/mgr/import", label: "Import runs" }],
+          interim: "No published offline path or validation feedback observed on the interim pages",
+          prototype: "Download → fill offline → import → per-row validation → error workbook pre-filled with failed rows → fix → re-import. Durable run record. Same loop for MGR and EIA screening.",
+          links: [{ href: "/mgr/import", label: "MGR import runs" }, { href: "/eia/import", label: "EIA screening import" }],
         },
         {
           area: "Identifiers",
-          interim: "No Art 12 B-SBI; file names",
+          interim: "No B-SBI issuance visible on the interim pages; documents identified by file name",
           prototype: "internalId → receiptId (pending) → B-SBI at valid pre-collection receipt, before publish → publicRecordId at first publish. Stable /records/<id> URL.",
           links: [...(mgrA ? [{ href: `/mgr/${mgrA}`, label: "Batch DEMO-01" }] : []), { href: "/records/BBNJ-MGR-2026-00001", label: "/records/…" }],
         },
         {
           area: "Versioning",
-          interim: "Replace the file",
+          interim: "Documents appear to be replaced in place; no visible version chain",
           prototype: "Published packs are amended as pending v+1 with a change note; material changes re-notify earlier readers; every version stays in the outbox.",
           links: mgrA ? [{ href: `/mgr/${mgrA}#versions`, label: "Version history (post-collection v1 → v2)" }] : [],
         },
         {
           area: "Confidentiality",
-          interim: "All or nothing",
-          prototype: "public / restricted / confidential enforced in SQL for lists, counts, feeds, audit, exports and notifications; each page states who can see it.",
+          interim: "Public pages only; no tiering visible",
+          prototype: "public / restricted / confidential enforced in SQL for lists, counts, feeds, audit, exports and notifications; each page states who can see it. A separate proprietary category is deferred.",
           links: [...(mgrD ? [{ href: `/mgr/${mgrD}`, label: "Restricted batch (404 for public)" }] : []), { href: "/login", label: "Switch role" }],
         },
         {
@@ -72,8 +73,8 @@ export default async function ComparePage() {
         },
         {
           area: "Reporting / export",
-          interim: "None",
-          prototype: "CSV (RFC 4180) and JSON envelopes per domain and for the audit log; per-record JSON and a one-page PDF stub — all policy-filtered.",
+          interim: "Not offered on the interim informational pages",
+          prototype: "CSV (RFC 4180) and JSON envelopes per domain, for the audit log and for digest runs; per-record JSON and a one-page PDF stub — all policy-filtered.",
           links: [
             { href: "/api/export/mgr.csv", label: "mgr.csv", external: true },
             { href: "/api/export/audit.json", label: "audit.json", external: true },
@@ -86,41 +87,47 @@ export default async function ComparePage() {
           prototype: "Pack-level publish spine: screening → notice → draft EIA → STB comments → decision. A published screening and a draft draft-EIA coexist on one activity.",
           links: [...(eia2 ? [{ href: `/eia/${eia2}`, label: "Sediment sampling, CCZ" }] : []), ...(eia3 ? [{ href: `/eia/${eia3}`, label: "Coexistence (activity 3)" }] : [])],
         },
+        {
+          area: "ABMT",
+          interim: "Informational pages only",
+          prototype: "Thin proposal_stub journey on the same rails (draft → pending → published, receipt, BBNJ-ABMT id). Without prejudice to COP1; no content model.",
+          links: [{ href: "/abmt", label: "ABMT stub" }, ...(abmt ? [{ href: `/abmt/${abmt}`, label: "Seeded proposal stub" }] : [])],
+        },
       ],
     },
     {
       n: 2,
       title: "Notification and alerts",
-      para: "PrepCom3 annex parameters: subscriptions, deadlines, digests. The interim set-up has no subscription model; the prototype fans every published outbox row out to owners, subscribers, reviewers — with cadence.",
+      para: "PrepCom3 annex parameters: subscriptions, deadlines, digests. No subscription model is visible on the interim informational pages; the prototype fans every published outbox row out to owners, subscribers, reviewers — with cadence — into an in-app bell.",
       rows: [
         {
           area: "Subscriptions",
-          interim: "Ad hoc mailing",
+          interim: "Not visible on the interim pages (contact points listed)",
           prototype: "Per-user filters by domain, ABNJ box and theme; cadence immediate / daily / weekly.",
           links: [{ href: "/preferences", label: "Preferences" }],
         },
         {
           area: "Delivery",
-          interim: "None",
-          prototype: "Synchronous dispatch after commit; idempotent (UNIQUE user × event × kind); dispatch_log; replay inserts nothing on a consistent DB.",
+          interim: "Not visible on the interim pages",
+          prototype: "In-app bell only (no e-mail or push in this build). Synchronous dispatch after commit; idempotent (UNIQUE user × event × kind); dispatch_log; replay inserts nothing on a consistent DB.",
           links: [{ href: "/notifications", label: "Bell / inbox" }, { href: "/audit", label: `Dispatch column${loginHint}` }],
         },
         {
           area: "Digests",
-          interim: "None",
-          prototype: "Daily/weekly subscribers are held back per event and receive one digest row per window; runnable on demand and idempotent.",
-          links: [{ href: "/notifications", label: "Run digest (Secretariat)" }, { href: "/audit#digests", label: "Digest windows" }],
+          interim: "Not visible on the interim pages",
+          prototype: "Daily/weekly subscribers are held back per event and receive one digest row per window, written to the bell; runnable on demand, idempotent, exportable.",
+          links: [{ href: "/notifications", label: "Run digest (Secretariat)" }, { href: "/audit#digests", label: "Digest windows" }, { href: "/api/export/digests.csv", label: "digests.csv", external: true }],
         },
         {
           area: "Deadlines",
-          interim: "None",
-          prototype: "Publishing a draft EIA emits a deadline row (demo 30-day window) to owner and subscribers, and an STB review request.",
+          interim: "Not visible on the interim pages",
+          prototype: "Publishing a draft EIA emits a deadline row (demo 30-day window, or the activity's explicit dueAt) to owner and subscribers, and an STB review request.",
           links: eia2 ? [{ href: `/eia/${eia2}`, label: "Draft EIA v1" }, { href: "/stb", label: "STB queue" }] : [{ href: "/stb", label: "STB queue" }],
         },
         {
           area: "Matches",
-          interim: "None",
-          prototype: "CBTMT match = row + match_suggested event; both owners notified; deterministic shared-theme rule.",
+          interim: "Not visible on the interim pages",
+          prototype: "CBTMT match = row + match_suggested event; both owners notified; deterministic shared-theme rule (not brokerage, not ML) plus a human facilitation note.",
           links: [{ href: "/capacity", label: "Capacity board" }, ...(need ? [{ href: `/capacity/${need}`, label: "Seeded need" }] : [])],
         },
       ],
@@ -128,23 +135,23 @@ export default async function ComparePage() {
     {
       n: 3,
       title: "User management",
-      para: "Role-based access, audit logging, account lifecycle. The interim set-up has a limited role taxonomy; the prototype enforces four roles server-side and records every refusal.",
+      para: "Role-based access, audit logging, account lifecycle. The interim informational pages expose no role taxonomy; the prototype enforces five roles server-side and records every refusal.",
       rows: [
         {
           area: "Roles",
-          interim: "Limited; uploads by Secretariat",
-          prototype: "Party / Secretariat (publishing authority) / STB / public; anonymous on any bad cookie; one can() and one SQL visibility clause for every read.",
+          interim: "Not visible on the interim pages; content appears to be published by the Secretariat",
+          prototype: "Party / Secretariat (authorised publishing role) / STB / public / registered non-State uploader (CBTMT offers only); anonymous on any bad cookie; one can() and one SQL visibility clause for every read.",
           links: [{ href: "/login", label: "Sign in" }],
         },
         {
           area: "Refusal audit",
-          interim: "Unclear",
+          interim: "Not visible on the interim pages",
           prototype: "Every denied action (publish as Party, import as public, reading a restricted record…) is an append-only refusal row in the Secretariat projection.",
           links: [{ href: "/audit#refusals", label: `Refusal log${loginHint}` }],
         },
         {
           area: "Audit trail",
-          interim: "Unclear",
+          interim: "Not visible on the interim pages",
           prototype: "Every receipt, transition and publication is an immutable outbox row; public and Secretariat projections of the same table.",
           links: [{ href: "/audit", label: "Audit" }, { href: "/api/export/audit.csv", label: "audit.csv", external: true }],
         },
@@ -162,9 +169,10 @@ export default async function ComparePage() {
     <AppShell title="DOALOS interim set-up vs this prototype — by Session 1 basic function">
       <div className="space-y-6">
         <p className="max-w-3xl text-muted-foreground">
-          The interim Cl-HM operated by DOALOS is largely static and informational: documents, meeting pages, contact points. This prototype is
+          The interim Cl-HM pages operated by DOALOS are, as far as their public pages show, informational: documents, meeting pages, contact points.
+          The &ldquo;interim&rdquo; column below describes what is visible on those pages, not what may exist behind them. This prototype is
           transactional — structured receipt → validation → storage → publication → alert → audit — organised around the three basic functions the
-          webinar series asks for. Every row below links into the live sandbox for your current role.
+          webinar series asks for. Every row links into the live sandbox for your current role.
         </p>
 
         {sections.map((s) => (
@@ -217,8 +225,9 @@ export default async function ComparePage() {
             <strong className="text-foreground">Read this honestly.</strong> Static/informational → transactional workflow across Agreement areas — same
             rails, multiple journeys. Mapping: consolidated draft study (DOALOS, Mar 2026) ¶61 basic functionalities; PrepCom3 informal outcome annex
             parameters (roles, TK, alerts, offline, languages); Art 51.5 (access for developing States / SIDS without undue burden). Demo values are
-            labelled as such (30-day comment window, B-SBI shape). Not implemented by design: production authentication, e-mail, federation, full-text
-            search, ABS tracing, ML matching, GIS. Without prejudice to COP1.
+            labelled as such (30-day comment window, B-SBI shape). Not implemented by design: production authentication, e-mail or push delivery (in-app
+            bell only), federation with ABSCH / BCH / OBIS (reference links only), full-text search, ABS tracing, ML matching, GIS, a proprietary
+            confidentiality category. ABMT is a stub. Without prejudice to COP1.
           </p>
         </section>
       </div>

@@ -18,7 +18,10 @@ export function AuditRibbon({ event }: { event: AuditRow | null }) {
   }
 
   const actor = event.actorUserId ?? event.actorRole;
-  const ids = [event.receiptId, event.publicRecordId, event.bSbi].filter(Boolean) as string[];
+  const idBits: string[] = [];
+  if (event.receiptId) idBits.push(`receiptId ${event.receiptId}`);
+  if (event.publicRecordId) idBits.push(`publicRecordId ${event.publicRecordId}`);
+  if (event.bSbi) idBits.push(`bSbi ${event.bSbi}`);
 
   return (
     <div className="sticky top-0 z-30 border-b border-line bg-muted/80 text-xs backdrop-blur-sm">
@@ -32,8 +35,8 @@ export function AuditRibbon({ event }: { event: AuditRow | null }) {
             {event.actorRole}
           </span>
           <StatusChip status={event.status} className="text-[10px]" />
-          {ids.length > 0 ? (
-            <span className="font-mono text-[11px] text-muted-foreground">{ids.join(" · ")}</span>
+          {idBits.length > 0 ? (
+            <span className="font-mono text-[11px] text-muted-foreground">{idBits.join(" · ")}</span>
           ) : (
             <span className="text-muted-foreground">{event.stage.replace(/_/g, " ")}</span>
           )}

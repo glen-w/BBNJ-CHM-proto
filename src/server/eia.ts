@@ -3,7 +3,7 @@
  * draft_eia packs; one consolidated comments_stb row per draft version.
  */
 import type { Db } from "@/lib/db";
-import { AbnjBox, EiaPublishableStages, type EiaStage, type PublishStatus } from "@/lib/contracts/events";
+import { AbnjBox, EiaPublishableStages, type ArtifactRef, type EiaStage, type PublishStatus } from "@/lib/contracts/events";
 import { StoredEiaActivity, type IdempotencyKey, type StoredEvent } from "@/lib/contracts/extensions";
 import { DomainError } from "./errors";
 import { nowIso } from "./ids";
@@ -25,6 +25,7 @@ type ActivityRow = {
   confidentiality: "public" | "restricted" | "confidential";
   version: number;
   owner_user_id: string | null;
+  due_at: string | null;
   updated_at: string;
 };
 
@@ -42,6 +43,7 @@ export function rowToActivity(row: ActivityRow): StoredEiaActivity {
     confidentiality: row.confidentiality,
     version: row.version,
     ownerUserId: row.owner_user_id ?? undefined,
+    dueAt: row.due_at ?? undefined,
     updatedAt: row.updated_at,
   });
 }
@@ -73,7 +75,14 @@ export function isPublishableStage(stage: string): stage is (typeof EiaPublishab
 export function createEiaActivity(
   db: Db,
   actor: Principal,
-  input: { title: string; abnjBox: string; partyCode?: string; confidentiality?: "public" | "restricted" | "confidential" },
+  input: {
+    title: string;
+    abnjBox: string;
+    partyCode?: string;
+    confidentiality?: "public" | "restricted" | "confidential";
+    sourceChannel?: "form" | "excel" | "assisted";
+    dueAt?: string;
+  },
   key: IdempotencyKey,
 ): EiaResult {
   requireCan(actor, "submit", undefined, { domain: "eia", db });
@@ -85,13 +94,14 @@ export function createEiaActivity(
   if (!box.success) throw new DomainError("validation", "Choose an ABNJ box from the vocabulary");
   const partyCode = hasRole(actor, "party") && actor.kind === "user" && actor.user.partyCode ? actor.user.partyCode : input.partyCode?.toUpperCase();
   if (!partyCode || !/^[A-Z]{2,3}$/.test(partyCode)) throw new DomainError("validation", "A Party code (2–3 letters) is required");
+  const channel = input.sourceChannel ?? (isSecretariat(actor) ? "assisted" : "form");
   const tx = db.transaction((): EiaResult => {
     const id = crypto.randomUUID();
     const at = nowIso();
     db.prepare(
-      `INSERT INTO eia_activities (id, current_stage, latest_pack_status, title, party_code, abnj_box, source_channel, confidentiality, version, owner_user_id, updated_at)
-       VALUES (?, 'screening', NULL, ?, ?, ?, ?, ?, 1, ?, ?)`,
-    ).run(id, title, partyCode, box.data, isSecretariat(actor) ? "assisted" : "form", input.confidentiality ?? "public", userId(actor) ?? null, at);
+      `INSERT INTO eia_activities (id, current_stage, latest_pack_status, title, party_code, abnj_box, source_channel, confidentiality, version, owner_user_id, due_at, updated_at)
+       VALUES (?, 'screening', NULL, ?, ?, ?, ?, ?, 1, ?, ?, ?)`,
+    ).run(id, title, partyCode, box.data, channel, input.confidentiality ?? "public", userId(actor) ?? null, input.dueAt ?? null, at);
     const res = openPack(db, actor, {
       domain: "eia",
       recordId: id,
@@ -106,6 +116,19 @@ export function createEiaActivity(
   return tx();
 }
 
+/** Set or clear the explicit comment-window due date (P1). */
+export function setEiaDueAt(db: Db, actor: Principal, activityId: string, dueAt: string | null): StoredEiaActivity {
+  const activity = getEiaActivity(db, activityId);
+  if (!activity) throw new DomainError("not_found", "Activity not found");
+  requireCan(actor, "submit", { ownerUserId: activity.ownerUserId ?? null }, { domain: "eia", recordId: activityId, db });
+  if (dueAt) {
+    const d = new Date(dueAt);
+    if (Number.isNaN(d.getTime())) throw new DomainError("validation", "dueAt must be an ISO datetime");
+  }
+  db.prepare("UPDATE eia_activities SET due_at = ?, updated_at = ? WHERE id = ?").run(dueAt, nowIso(), activityId);
+  return getEiaActivity(db, activityId)!;
+}
+
 /** Add a publishable pack. Screening requires an outcome up front so publish cannot fail later. */
 export function addEiaPack(
   db: Db,
@@ -114,7 +137,12 @@ export function addEiaPack(
   stage: string,
   summary: string,
   key: IdempotencyKey,
-  opts: { screeningOutcome?: "eia_required" | "no_eia"; status?: "draft" | "pending"; at?: string } = {},
+  opts: {
+    screeningOutcome?: "eia_required" | "no_eia";
+    status?: "draft" | "pending";
+    at?: string;
+    artifactRefs?: ArtifactRef[];
+  } = {},
 ): EiaResult {
   const activity = getEiaActivity(db, activityId);
   if (!activity) throw new DomainError("not_found", "Activity not found");
@@ -127,6 +155,7 @@ export function addEiaPack(
     status: opts.status ?? "pending",
     summary: summary.trim() || `${stage.replace(/_/g, " ")} pack`,
     idempotencyKey: key,
+    artifactRefs: opts.artifactRefs,
     extras: stage === "screening" ? { screeningOutcome: opts.screeningOutcome } : undefined,
     at: opts.at,
   });

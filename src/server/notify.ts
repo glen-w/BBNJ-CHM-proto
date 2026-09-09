@@ -10,6 +10,7 @@ import type { User } from "@/lib/contracts/events";
 import { DEMO_COMMENT_WINDOW_DAYS, type NotificationKind } from "@/lib/contracts/extensions";
 import type { StoredEvent } from "@/lib/contracts/extensions";
 import { nowIso } from "./ids";
+import { getEiaActivity } from "./eia";
 import { getEvent, type EventRow, rowToEvent } from "./outbox";
 import { RECORD_JOIN, principalFor, readPolicy, visibilityClause } from "./policy";
 import { getRecordMeta, type RecordMeta } from "./records";
@@ -103,8 +104,13 @@ function targetsFor(db: Db, event: StoredEvent, meta: RecordMeta): Target[] {
     for (const stbUser of listUsers(db).filter((u) => u.active && u.roles.includes("stb"))) {
       targets.push({ userId: stbUser.id, kind: "stb_review", summary: `Draft EIA${event.version > 1 ? ` v${event.version}` : ""} published for STB review — ${label} (Arts 34–35)` });
     }
-    const closes = new Date(new Date(event.at).getTime() + DEMO_COMMENT_WINDOW_DAYS * 86400000).toISOString().slice(0, 10);
-    const deadlineSummary = `Comment window on draft EIA ${label} closes ${closes} (${DEMO_COMMENT_WINDOW_DAYS}-day window)`;
+    // Prefer explicit dueAt on the activity when set; otherwise demo window from publish date.
+    const activity = getEiaActivity(db, event.recordId);
+    const closes = activity?.dueAt
+      ? activity.dueAt.slice(0, 10)
+      : new Date(new Date(event.at).getTime() + DEMO_COMMENT_WINDOW_DAYS * 86400000).toISOString().slice(0, 10);
+    const windowNote = activity?.dueAt ? "explicit dueAt" : `${DEMO_COMMENT_WINDOW_DAYS}-day demo window`;
+    const deadlineSummary = `Comment window on draft EIA ${label} closes ${closes} (${windowNote})`;
     for (const s of subs) targets.push({ userId: s.userId, kind: "deadline", summary: deadlineSummary });
     if (meta.ownerUserId) targets.push({ userId: meta.ownerUserId, kind: "deadline", summary: deadlineSummary });
   }

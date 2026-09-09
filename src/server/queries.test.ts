@@ -7,6 +7,7 @@ import { publishPack } from "@/server/packs";
 import {
   auditRows,
   getSubscription,
+  latestVisibleEvent,
   listCbtmtRecords,
   listEiaActivities,
   listMgrBatches,
@@ -160,5 +161,35 @@ describe("policy-filtered queries", () => {
     const r = reconcile(h.db);
     expect(r.mismatches).toEqual([]);
     expect(r.checked).toBeGreaterThan(0);
+  });
+
+  it("latestVisibleEvent follows outbox seq and role visibility (ribbon)", () => {
+    h = createHarness();
+    expect(latestVisibleEvent(h.db, h.pub())).toBeNull();
+
+    const draft = saveMgrDraft(h.db, h.party(), VALID_MGR, h.key());
+    const partyLatest = latestVisibleEvent(h.db, h.party());
+    expect(partyLatest?.status).toBe("draft");
+    expect(partyLatest?.recordId).toBe(draft.batch.id);
+    expect(latestVisibleEvent(h.db, h.pub())).toBeNull();
+
+    const pending = receivePreCollection(h.db, h.party(), { ...VALID_MGR, title: "Ribbon cruise" }, "form", h.key());
+    expect(pending.batch.bSbi).toMatch(/^BSBI-/);
+    expect(pending.batch.publicRecordId).toBeUndefined();
+    const afterReceipt = latestVisibleEvent(h.db, h.secretariat());
+    expect(afterReceipt?.status).toBe("pending");
+    expect(afterReceipt?.bSbi).toBe(pending.batch.bSbi);
+    expect(afterReceipt?.publicRecordId).toBeUndefined();
+    expect(afterReceipt?.bSbi).not.toBe(afterReceipt?.publicRecordId);
+
+    publishPack(h.db, h.secretariat(), { domain: "mgr", recordId: pending.batch.id, stage: "pre_collection" });
+    const published = getMgrBatch(h.db, pending.batch.id)!;
+    const pubLatest = latestVisibleEvent(h.db, h.pub());
+    expect(pubLatest?.status).toBe("published");
+    expect(pubLatest?.publicRecordId).toBe(published.publicRecordId);
+    expect(pubLatest?.bSbi).toBe(published.bSbi);
+    expect(pubLatest?.publicRecordId).not.toBe(pubLatest?.bSbi);
+    expect(pubLatest?.publicRecordId).toMatch(/^BBNJ-MGR-/);
+    expect(pubLatest?.bSbi).toMatch(/^BSBI-/);
   });
 });

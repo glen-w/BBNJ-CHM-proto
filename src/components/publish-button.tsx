@@ -9,7 +9,7 @@ export function PublishButton({
   returnTo,
   label,
 }: {
-  domain: "mgr" | "eia" | "cbtmt";
+  domain: "mgr" | "eia" | "cbtmt" | "abmt";
   recordId: string;
   stage: string;
   version: number;

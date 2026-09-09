@@ -33,7 +33,7 @@ export default async function ImportPage({ searchParams }: Props) {
     );
   }
 
-  const runs = listImportRuns(getDb(), p, 20);
+  const runs = listImportRuns(getDb(), p, 20, "mgr");
 
   return (
     <AppShell title="MGR — import offline Excel template (Secretariat)" flash={flash}>

@@ -6,7 +6,7 @@ import { Field, KeyFields, SubmitButton, selectClass } from "@/components/forms"
 import { Input } from "@/components/ui/input";
 import { AbnjBox, ConfidentialityTier } from "@/lib/contracts/events";
 import { createEiaAction } from "@/server/actions";
-import { can, hasRole, recordRefusal } from "@/server/policy";
+import { can, hasRole, isSecretariat, recordRefusal } from "@/server/policy";
 import { getSessionUser } from "@/server/session";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -45,7 +45,11 @@ export default async function NewEiaPage({ searchParams }: Props) {
           </select>
         </Field>
         {!hasRole(p, "party") ? (
-          <Field label="Party code (on behalf)" required>
+          <Field
+            label="Party code (on behalf)"
+            required
+            hint={isSecretariat(p) ? "Secretariat-assisted intake: the activity is recorded with sourceChannel = assisted, on behalf of this Party (Art 51.5)." : undefined}
+          >
             <Input name="partyCode" defaultValue="XSD" maxLength={3} />
           </Field>
         ) : null}
@@ -59,6 +63,15 @@ export default async function NewEiaPage({ searchParams }: Props) {
           </select>
         </Field>
         <SubmitButton>Create activity (opens a draft screening pack)</SubmitButton>
+        {isSecretariat(p) ? (
+          <p className="text-xs text-muted-foreground">
+            Several activities at once? Use the{" "}
+            <Link href="/eia/import" className="underline">
+              offline screening template import
+            </Link>
+            .
+          </p>
+        ) : null}
       </form>
     </AppShell>
   );

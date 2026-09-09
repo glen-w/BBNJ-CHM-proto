@@ -1,9 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTransition } from "react";
 
-import { TREATY_LANG_COOKIE, TREATY_LANGS, type TreatyLangCode } from "@/lib/locale";
+import { TREATY_LANGS, type TreatyLangCode } from "@/lib/locale";
 import { cn } from "@/lib/utils";
+import { setTreatyLangAction } from "@/server/actions";
 
 /**
  * Native-label links to official BBNJ pages. Persists treaty-text locale only —
@@ -11,11 +13,14 @@ import { cn } from "@/lib/utils";
  */
 export function LanguageControl({ active }: { active: TreatyLangCode }) {
   const router = useRouter();
+  const [, startTransition] = useTransition();
 
   function choose(code: TreatyLangCode, url: string) {
-    document.cookie = `${TREATY_LANG_COOKIE}=${code}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
     window.open(url, "_blank", "noopener,noreferrer");
-    router.refresh();
+    startTransition(async () => {
+      await setTreatyLangAction(code);
+      router.refresh();
+    });
   }
 
   return (

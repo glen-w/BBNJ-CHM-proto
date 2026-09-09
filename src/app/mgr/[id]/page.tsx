@@ -170,6 +170,24 @@ export default async function MgrBatchPage({ params, searchParams }: Props) {
         </div>
       </section>
 
+      {batch.tkFpicFlag || batch.tkProvenanceNote || batch.fpicStatusNote ? (
+        <section className="rounded-lg border p-4" id="tk-fpic">
+          <h2 className="mb-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">Traditional knowledge / FPIC (Art 13) — metadata only</h2>
+          <p className="mb-3 text-xs text-muted-foreground">
+            The CHM records that traditional knowledge is associated with this batch and how consent stands; it never stores the knowledge itself.
+            Access to the knowledge is a matter for the holders concerned (Art 13), outside this system.
+          </p>
+          <dl className="grid gap-2 text-sm sm:grid-cols-[1fr_2fr]">
+            <dt className="text-muted-foreground">TK / FPIC flag</dt>
+            <dd>{batch.tkFpicFlag ? "yes — traditional knowledge associated with this batch" : "no"}</dd>
+            <dt className="text-muted-foreground">Provenance note</dt>
+            <dd className={cn(!batch.tkProvenanceNote && "italic text-muted-foreground")}>{batch.tkProvenanceNote ?? "not recorded"}</dd>
+            <dt className="text-muted-foreground">FPIC status</dt>
+            <dd className={cn(!batch.fpicStatusNote && "italic text-muted-foreground")}>{batch.fpicStatusNote ?? "not recorded"}</dd>
+          </dl>
+        </section>
+      ) : null}
+
       <section className="rounded-lg border p-4" id="versions">
         <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">Version history (per stage; identifiers never change)</h2>
         <VersionHistory packs={packs} />

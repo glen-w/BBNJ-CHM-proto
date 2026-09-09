@@ -5,6 +5,7 @@ import {
   getCbtmtRecord,
   matchesForRecord,
   normaliseThemes,
+  setMatchFacilitationNote,
   suggestMatch,
   suggestMatches,
 } from "@/server/cbtmt";
@@ -106,6 +107,18 @@ describe("CBTMT journey I/O", () => {
     expect(hit?.created).toBe(true);
     expect(hit?.match.rule).toBe("shared_theme:taxonomy");
     expect(results.some((r) => r.match.offerId === unrelated.record.id)).toBe(false);
+  });
+
+  it("lets the Secretariat set a facilitation note without a new event", () => {
+    h = createHarness();
+    const { need, offer } = publishedPair();
+    const m = suggestMatch(h.db, h.secretariat(), need.record.id, offer.record.id, "shared_theme:taxonomy", h.key());
+    const before = (h.db.prepare("SELECT COUNT(*) AS n FROM events").get() as { n: number }).n;
+    const view = setMatchFacilitationNote(h.db, h.secretariat(), m.match.id, "Introduced both focal points.");
+    expect(view.facilitationNote).toBe("Introduced both focal points.");
+    expect((h.db.prepare("SELECT COUNT(*) AS n FROM events").get() as { n: number }).n).toBe(before);
+    expectDomainCode(() => setMatchFacilitationNote(h.db, h.party(), m.match.id, "nope"), "forbidden");
+    expectDomainCode(() => setMatchFacilitationNote(h.db, h.nonstate(), m.match.id, "nope"), "forbidden");
   });
 
   it("enforces the foreign key on cbtmt_matches", () => {

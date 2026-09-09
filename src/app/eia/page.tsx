@@ -33,6 +33,11 @@ export default async function EiaPage({ searchParams }: Props) {
               New activity
             </Link>
           ) : null}
+          {can(p, "import") ? (
+            <Link href="/eia/import" className={cn(buttonVariants({ variant: "outline", size: "sm" }))} title="Offline screening template → import (Secretariat)">
+              Import screening .xlsx
+            </Link>
+          ) : null}
           {can(p, "comment_stb") ? (
             <Link href="/stb" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
               STB review queue

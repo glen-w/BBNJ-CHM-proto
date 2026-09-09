@@ -7,16 +7,18 @@ import type { Db } from "@/lib/db";
 import { SCHEMA_VERSION } from "@/lib/db/schema";
 import type { Domain } from "@/lib/contracts/events";
 import type { StoredEvent } from "@/lib/contracts/extensions";
+import { getAbmtProposal } from "./abmt";
 import { getCbtmtRecord, matchesForRecord } from "./cbtmt";
+import { listDigestRuns } from "./digest";
 import { getEiaActivity } from "./eia";
 import { nowIso } from "./ids";
 import { getMgrBatch } from "./mgr";
 import { versionsOfPack } from "./outbox";
 import { actorRoleOf, can, type Principal, readPolicy, recordRefusal } from "./policy";
-import { auditRows, listCbtmtRecords, listEiaActivities, listMgrBatches, packsOf, resolvePublicRecord, timelineOf } from "./queries";
+import { auditRows, listAbmtProposals, listCbtmtRecords, listEiaActivities, listMgrBatches, packsOf, resolvePublicRecord, timelineOf } from "./queries";
 
-export type ExportDomain = "mgr" | "eia" | "cbtmt" | "audit";
-export const EXPORT_DOMAINS: ExportDomain[] = ["mgr", "eia", "cbtmt", "audit"];
+export type ExportDomain = "mgr" | "eia" | "cbtmt" | "abmt" | "audit" | "digests";
+export const EXPORT_DOMAINS: ExportDomain[] = ["mgr", "eia", "cbtmt", "abmt", "audit", "digests"];
 
 export type Cell = string | number | boolean | null;
 export interface Tabular {
@@ -83,6 +85,25 @@ export function exportTable(db: Db, p: Principal, domain: ExportDomain): Tabular
         })),
       };
     }
+    case "abmt": {
+      const columns = ["publicRecordId", "title", "partyCode", "currentStage", "latestPackStatus", "sourceChannel", "confidentiality", "updatedAt", "internalId"];
+      return {
+        columns,
+        rows: listAbmtProposals(db, p).map((a) => ({
+          publicRecordId: s(a.publicRecordId),
+          title: a.title,
+          partyCode: a.partyCode,
+          currentStage: a.currentStage,
+          latestPackStatus: s(a.latestPackStatus),
+          sourceChannel: a.sourceChannel,
+          confidentiality: a.confidentiality,
+          updatedAt: a.updatedAt,
+          internalId: a.id,
+        })),
+      };
+    }
+    case "digests":
+      return exportDigestsTable(db, p);
     case "audit": {
       const full = can(p, "view_full_audit");
       const columns = ["seq", "at", "domain", "stage", "status", "version", "recordId", "publicRecordId", "receiptId", "bSbi", "actorRole", "confidentiality", "summary", ...(full ? ["actorUserId", "idempotencyKey", "dispatchedAt", "deliveredCount", "dispatchError"] : [])];
@@ -115,6 +136,36 @@ export function exportTable(db: Db, p: Principal, domain: ExportDomain): Tabular
       };
     }
   }
+}
+
+/**
+ * Digest windows (digest_runs) — Secretariat projection. Anyone else gets the
+ * header row only and a refusal row, the same way the audit page hides the table.
+ */
+export function exportDigestsTable(db: Db, p: Principal): Tabular {
+  const columns = ["at", "username", "userId", "cadence", "windowStart", "windowEnd", "eventCount", "notificationId", "digestRunId"];
+  if (!can(p, "view_full_audit")) {
+    recordRefusal(p, "export_full", { path: "/api/export/digests.csv", reason: "Digest runs are a Secretariat projection", db });
+    return { columns, rows: [] };
+  }
+  const cadenceOf = new Map<string, string>();
+  for (const r of db.prepare("SELECT user_id, digest FROM subscriptions").all() as { user_id: string; digest: string }[]) cadenceOf.set(r.user_id, r.digest);
+  const notificationOf = new Map<string, string | null>();
+  for (const r of db.prepare("SELECT id, notification_id FROM digest_runs").all() as { id: string; notification_id: string | null }[]) notificationOf.set(r.id, r.notification_id);
+  return {
+    columns,
+    rows: listDigestRuns(db, 5000).map((d) => ({
+      at: d.at,
+      username: d.username,
+      userId: d.userId,
+      cadence: s(cadenceOf.get(d.userId)),
+      windowStart: d.windowStart,
+      windowEnd: d.windowEnd,
+      eventCount: d.eventCount,
+      notificationId: s(notificationOf.get(d.id)),
+      digestRunId: d.id,
+    })),
+  };
 }
 
 /** RFC 4180: CRLF line ends, quote fields containing comma/quote/CR/LF, double embedded quotes. */
@@ -175,6 +226,8 @@ export function exportRecord(db: Db, p: Principal, publicRecordId: string, path?
       return { ...base, record: projectRecord(p, getEiaActivity(db, hit.recordId)!) };
     case "cbtmt":
       return { ...base, record: projectRecord(p, getCbtmtRecord(db, hit.recordId)!), matches: matchesForRecord(db, hit.recordId) };
+    case "abmt":
+      return { ...base, record: projectRecord(p, getAbmtProposal(db, hit.recordId)!) };
     default:
       return undefined;
   }

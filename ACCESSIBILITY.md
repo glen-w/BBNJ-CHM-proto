@@ -8,6 +8,8 @@ Assessment of the BBNJ Cl-HM prototype against the [United Nations Web Accessibi
 
 This document is a living gap analysis, not a formal certification.
 
+**Art 51.5 cross-link.** `SHIPPED-VS-DEFERRED.md` marks Art 51.5 accessibility as **Partial — pattern proof**. The evidence is the offline Excel loop (MGR pre-collection and EIA screening templates → Secretariat import → error workbook → re-import) together with server-rendered pages and native forms: a demonstration of low-bandwidth, assisted access for developing States and SIDS. It is a *pattern*, not a WCAG conformance claim; the WCAG 2.1 AA verdicts in this file remain **Partial** and no third-party audit has been done.
+
 ---
 
 ## Summary
@@ -39,7 +41,8 @@ This document is a living gap analysis, not a formal certification.
 |---|---|---|
 | Keyboard | Focus-visible rings on shell links, buttons, inputs. Skip-to-content link present. | Pass |
 | Enough time / seizures | No autoplay or flashing UI; `prefers-reduced-motion` in `globals.css`. | Pass |
-| Consistent navigation | Shared `AppShell`; Rails / Journeys mark `aria-current="page"`. ABMT remains reachable to an explanatory stub with an explicit “unavailable” accessible name. | Pass |
+| Consistent navigation | Shared `AppShell`; Rails / Journeys mark `aria-current="page"`. ABMT is an enabled, quiet journey tab leading to the thin stub (list + one-field form); its accessible name is the journey name, not “unavailable”. | Pass |
+| Downloads as access path | Offline `.xlsx` templates (MGR, EIA screening) and the error workbook are the Art 51.5 pattern proof for low-bandwidth users; link text states the format. Spreadsheet accessibility itself (header rows, no merged cells, field guide sheet) is by construction, not audited. | Partial |
 | Notifications disclosure | Bell uses native `<details>`/`<summary>` (keyboard-openable) with a named `region`. Not a modal dialog; Escape-to-close is browser-dependent. | Partial |
 
 ### U — Understandable
@@ -63,7 +66,7 @@ This document is a living gap analysis, not a formal certification.
 
 1. Skip link → `#main-content`
 2. `aria-current="page"` on Rails and Journeys
-3. ABMT journey name announces unavailable; stub page unchanged
+3. ABMT journey tab enabled (EOI wave); the earlier “unavailable” accessible name was removed with the thin stub
 4. Bell panel: `role="region"` + labelled heading
 5. `Field`: ids, `aria-describedby`, `aria-invalid`, native `required`
 6. Flash banner focus on mount when notice/error present
@@ -83,7 +86,7 @@ This document is a living gap analysis, not a formal certification.
 
 ## Priority surfaces for manual check
 
-Keyboard + one screen reader pass: home, login, MGR new/edit, Excel import, EIA pack form, CBTMT post, preferences, notifications bell, `/compare`.
+Keyboard + one screen reader pass: home (incl. related-systems footer), login (five logins), MGR new/edit, Excel import (MGR + EIA screening), EIA pack form with artifact references, CBTMT post + facilitation note, ABMT stub, preferences, notifications bell, `/compare`.
 
 ---
 

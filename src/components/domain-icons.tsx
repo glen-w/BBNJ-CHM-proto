@@ -1,12 +1,13 @@
-import { Bell, ClipboardList, Dna, Handshake, Inbox, Users, type LucideIcon } from "lucide-react";
+import { Bell, ClipboardList, Dna, Handshake, Inbox, Landmark, Users, type LucideIcon } from "lucide-react";
 
-/** Domains that carry a quiet accent (VISUAL-CHARTER.md §2). ABMT has no token. */
-export type AccentDomain = "mgr" | "eia" | "cbtmt";
+/** Domains that carry a quiet accent (VISUAL-CHARTER.md §2). ABMT's token is the quietest of the four. */
+export type AccentDomain = "mgr" | "eia" | "cbtmt" | "abmt";
 
 export const DOMAIN_ICON: Record<AccentDomain, LucideIcon> = {
   mgr: Dna,
   eia: ClipboardList,
   cbtmt: Handshake,
+  abmt: Landmark,
 };
 
 /** Lucide icons for labelled chrome only — never icon-only status (charter §4 / §5). */
@@ -17,5 +18,5 @@ export const RAIL_ICON = {
 } as const;
 
 export function isAccentDomain(domain: string): domain is AccentDomain {
-  return domain === "mgr" || domain === "eia" || domain === "cbtmt";
+  return domain === "mgr" || domain === "eia" || domain === "cbtmt" || domain === "abmt";
 }

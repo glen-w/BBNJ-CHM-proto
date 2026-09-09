@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import { Event } from "@/lib/contracts/events";
 import { DEMO_COMMENT_WINDOW_DAYS, type StoredEvent } from "@/lib/contracts/extensions";
-import { addEiaPack, createEiaActivity } from "@/server/eia";
+import { addEiaPack, createEiaActivity, setEiaDueAt } from "@/server/eia";
 import { receivePreCollection } from "@/server/mgr";
 import {
   dispatch,
@@ -113,6 +113,22 @@ describe("dispatch I/O", () => {
     expect(rows.some((r) => r.user_id === SEED_USERS[3].id && r.kind === "stb_review")).toBe(true);
     expect(rows.some((r) => r.kind === "deadline" && r.summary.includes(String(DEMO_COMMENT_WINDOW_DAYS)))).toBe(true);
     expect(rows.some((r) => r.user_id === SEED_USERS[2].id && r.kind === "deadline")).toBe(true);
+  });
+
+  it("uses explicit dueAt in the deadline summary when set", () => {
+    h = createHarness();
+    const act = createEiaActivity(h.db, h.party(), { title: "DueAt EIA", abnjBox: "CCZ" }, h.key());
+    setEiaDueAt(h.db, h.party(), act.activity.id, "2026-11-01T00:00:00.000Z");
+    addEiaPack(h.db, h.party(), act.activity.id, "screening", "required", h.key(), { screeningOutcome: "eia_required" });
+    publishPack(h.db, h.secretariat(), { domain: "eia", recordId: act.activity.id, stage: "screening" });
+    addEiaPack(h.db, h.party(), act.activity.id, "draft_eia", "Draft", h.key());
+    const pub = publishPack(h.db, h.secretariat(), { domain: "eia", recordId: act.activity.id, stage: "draft_eia" });
+    const rows = h.db
+      .prepare("SELECT summary FROM notifications WHERE event_id = ? AND kind = 'deadline'")
+      .all(pub.event.id) as { summary: string }[];
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.every((r) => r.summary.includes("2026-11-01") && r.summary.includes("explicit dueAt"))).toBe(true);
+    expect(rows.some((r) => r.summary.includes(`${DEMO_COMMENT_WINDOW_DAYS}-day`))).toBe(false);
   });
 
   it("logs a dispatch error instead of throwing when the record is missing", () => {

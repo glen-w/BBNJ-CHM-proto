@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import type { StoredCbtmtRecord } from "@/lib/contracts/extensions";
 import { getDb } from "@/lib/db";
 import { fmtDate } from "@/lib/format";
-import { createCbtmtAction, suggestMatchAction, suggestMatchesAction } from "@/server/actions";
+import { Textarea } from "@/components/ui/textarea";
+import { createCbtmtAction, setFacilitationNoteAction, suggestMatchAction, suggestMatchesAction } from "@/server/actions";
 import { matchesForRecord } from "@/server/cbtmt";
 import { latestPackRow } from "@/server/outbox";
 import { can, hasRole } from "@/server/policy";
@@ -36,7 +37,9 @@ export default async function CapacityPage({ searchParams }: Props) {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <p className="max-w-3xl text-sm text-muted-foreground">
           Needs and offers are records with a pending → published pack. A <strong>match</strong> is a row (need, offer, rule, at) plus a{" "}
-          <code>match_suggested</code> outbox event carrying the <code>matchId</code>. Matching uses a deterministic shared-theme rule.
+          <code>match_suggested</code> outbox event carrying the <code>matchId</code>. Matching is a <strong>deterministic shared-theme rule</strong>, not
+          brokerage and not ML: the rule only finds the pair. What the Secretariat then does with it is written by a person as a{" "}
+          <em>facilitation note</em> on the match.
         </p>
         <ExportLinks domain="cbtmt" />
       </div>
@@ -63,19 +66,43 @@ export default async function CapacityPage({ searchParams }: Props) {
         ) : (
           <ul className="mt-2 divide-y text-sm">
             {matches.map((m) => (
-              <li key={m.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-                <span>
-                  <Link href={`/capacity/${m.needId}`} className="hover:underline">
-                    {m.needTitle}
-                  </Link>{" "}
-                  ↔{" "}
-                  <Link href={`/capacity/${m.offerId}`} className="hover:underline">
-                    {m.offerTitle}
-                  </Link>
-                </span>
-                <span className="font-mono text-xs text-muted-foreground">
-                  {m.rule} · {fmtDate(m.at)}
-                </span>
+              <li key={m.id} className="space-y-2 py-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span>
+                    <Link href={`/capacity/${m.needId}`} className="hover:underline">
+                      {m.needTitle}
+                    </Link>{" "}
+                    ↔{" "}
+                    <Link href={`/capacity/${m.offerId}`} className="hover:underline">
+                      {m.offerTitle}
+                    </Link>
+                  </span>
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {m.rule} · {fmtDate(m.at)}
+                  </span>
+                </div>
+                {m.facilitationNote ? (
+                  <p className="rounded-md border-l-2 border-domain-cbtmt-line bg-domain-cbtmt/50 px-3 py-2 text-xs leading-relaxed text-domain-cbtmt-foreground">
+                    <span className="font-medium">Secretariat facilitation note:</span> {m.facilitationNote}
+                  </p>
+                ) : canMatch ? (
+                  <p className="text-xs italic text-muted-foreground">No facilitation note yet — the rule found the pair; nobody has recorded what happened next.</p>
+                ) : null}
+                {canMatch ? (
+                  <details className="text-xs">
+                    <summary className="cursor-pointer text-muted-foreground hover:text-foreground">{m.facilitationNote ? "Revise facilitation note" : "Add facilitation note"}</summary>
+                    <form action={setFacilitationNoteAction} className="mt-2 space-y-2">
+                      <KeyFields returnTo="/capacity" />
+                      <input type="hidden" name="matchId" value={m.id} />
+                      <Field label="What the Secretariat did with this match" hint="Human annotation only: no event, no notification, no ML. Overwrites the previous note.">
+                        <Textarea name="note" rows={3} defaultValue={m.facilitationNote ?? ""} required />
+                      </Field>
+                      <SubmitButton size="sm" variant="outline">
+                        Save note
+                      </SubmitButton>
+                    </form>
+                  </details>
+                ) : null}
               </li>
             ))}
           </ul>

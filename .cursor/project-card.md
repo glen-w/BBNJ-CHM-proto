@@ -16,7 +16,7 @@ default_test_cmd: npm run typecheck && npm run lint && npm run contracts:check &
 coverage_cmd: npx vitest run --coverage
 architecture_rules:
   - one shared Cl-HM substrate (receipt → manage → publish/notify → roles)
-  - Zod in src/schemas/events.ts authoritative; parity with proposal/schemas/events.ts
+  - Zod in proposal/schemas/events.ts authoritative; byte-identical copy at src/lib/contracts/events.ts
   - Lock 1 pack status vs activity stage
   - Lock 2 STB never sees draft/pending packs
   - Lock 3 internalId / publicRecordId / bSbi
@@ -68,11 +68,13 @@ probe_small: db:check/seed + contracts:check + smoke + /api/health
 probe_large: docker compose up --build; MGR receipt→publish and EIA draft_eia
 probe_extra: replay-outbox; journey routes on :3000; npm run build
 doc_contracts:
-  - proposal/PLANNING-AGENT-PROMPT.md
-  - proposal/schemas/events.ts
-  - src/schemas/events.ts
   - README.md
+  - SHIPPED-VS-DEFERRED.md
+  - DEMO-SCRIPT.md
+  - proposal/schemas/events.ts
+  - src/lib/contracts/events.ts
+  - CONTRACT-AMENDMENTS.md
+  - proposal/PLANNING-AGENT-PROMPT.md
   - proposal/PROPOSAL.md
-  - proposal/DEMO-SCRIPT.md
 compose_service: app
 ```

@@ -2,9 +2,11 @@
 
 Gap → change → test, per P0 item. Written before the code; kept in sync as shipped. Companion: `SHIPPED-VS-DEFERRED.md` (checklist against Session‑1 basic functions and the EOI preferential criteria).
 
+**Current product truth is schema v5 (EOI wave), not this file alone.** v0.2 landed schema **v4** and the eight P0 rows below. The EOI wave then moved the live schema to **v5** (`abmt_proposals`, facilitation notes, EIA `due_at`, MGR TK captions, C9 `non_state_uploader`) — see `README.md` § EOI wave and `SHIPPED-VS-DEFERRED.md`. Keep this document as the v0.2 hardening ledger; do not treat “schema v4” here as the running version.
+
 Invariants that must survive every item: `bSbi` minted once at valid receipt and never equal to or replaced by `publicRecordId`; `proposal/schemas/events.ts` byte-identical to the app copy; outbox append-only; `reconcile()` clean; `replay-outbox` inserts nothing on a consistent DB; home page stays functions-first.
 
-Schema goes to **v4** (no migrations — `db:reset`). All additions are implementation columns/tables; the Zod contract is untouched (see `CONTRACT-AMENDMENTS.md` C6–C8).
+Schema for this wave went to **v4** (no migrations — `db:reset`). All additions are implementation columns/tables; the Zod contract is untouched for P0 (see `CONTRACT-AMENDMENTS.md` C6–C8). C9 landed later in the EOI wave.
 
 | # | Gap (v0.1) | Change (v0.2) | Test (`npm run smoke`) |
 |---|---|---|---|
@@ -19,4 +21,4 @@ Schema goes to **v4** (no migrations — `db:reset`). All additions are implemen
 
 ## Non-goals (unchanged)
 
-Production OAuth/SMTP, federation, Solr, ABS chain, ML matching, forking ABSCH, GIS EIA. ABMT stays reserved unless P1 buffer allows an empty shell.
+Production OAuth/SMTP, federation, Solr, ABS chain, ML matching, forking ABSCH, GIS EIA. ABMT is a thin `proposal_stub` journey on the shared rails (EOI wave); further stages await COP1.

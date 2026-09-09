@@ -1,6 +1,8 @@
 # BBNJ Cl-HM day prototype
 
-**One shared substrate** (receipt → manage → publish/notify → roles) demoed through **MGR · EIA · CBTMT** journeys.
+> **EOI pack (proposal/).** Planning and lock artefacts for the day build. **Running product docs live at the repo root:** [`README.md`](../README.md), [`DEMO-SCRIPT.md`](../DEMO-SCRIPT.md), [`SHIPPED-VS-DEFERRED.md`](../SHIPPED-VS-DEFERRED.md). Live schema is **v5**; five demo logins including `nonstate.uploader`; ABMT is a thin enabled stub.
+
+**One shared substrate** (receipt → manage → publish/notify → roles) demoed through **MGR · EIA · CBTMT** journeys (plus a thin ABMT stub).
 
 ## Why this prototype (DOALOS contrast)
 
@@ -24,7 +26,7 @@ docker compose up
 # sandbox logins — see DEMO-SCRIPT.md
 ```
 
-**Licence:** MIT · public GitHub · seeded SQLite · three demo roles.
+**Licence:** MIT · public GitHub · seeded SQLite · five demo logins (see root `DEMO-SCRIPT.md`).
 
 ## Pack contents
 

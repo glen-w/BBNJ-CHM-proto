@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { AppShell } from "@/components/app-shell";
 import { flashFrom } from "@/components/flash";
@@ -10,7 +10,7 @@ import { FIELD_DEFS } from "@/lib/mgr-fields";
 import { fmtDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { DomainError } from "@/server/errors";
-import { getImportRun } from "@/server/import";
+import { getImportRun, importRunPath } from "@/server/import";
 import { getSessionUser } from "@/server/session";
 
 type Props = { params: Promise<{ runId: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -39,6 +39,7 @@ export default async function ImportRunPage({ params, searchParams }: Props) {
     throw e;
   }
   if (!run) notFound();
+  if (run.domain !== "mgr") redirect(importRunPath(run));
   const rejected = run.rows.filter((r) => !r.ok);
 
   return (

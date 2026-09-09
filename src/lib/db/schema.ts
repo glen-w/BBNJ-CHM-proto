@@ -4,7 +4,7 @@
  * Zod is the schema of record; SQL adds keys, uniqueness, checks and foreign keys
  * for every claimed invariant. No migrations: SCHEMA_VERSION mismatch refuses start.
  */
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 
 export const SCHEMA_SQL = `
 CREATE TABLE IF NOT EXISTS meta (
@@ -141,6 +141,9 @@ CREATE TABLE IF NOT EXISTS mgr_batches (
   details_json TEXT NOT NULL DEFAULT '{}',
   -- Implementation (v4): previous Art 12.2 field values, one entry per superseded published version.
   details_history_json TEXT NOT NULL DEFAULT '[]',
+  -- Implementation (v5): richer TK/FPIC metadata UX (no content store).
+  tk_provenance_note TEXT,
+  fpic_status_note TEXT,
   updated_at TEXT NOT NULL,
   -- C1: B-SBI exists exactly when the batch has left pre_collection (one mint, at receipt).
   CHECK ((b_sbi IS NULL) = (current_stage = 'pre_collection'))
@@ -158,6 +161,8 @@ CREATE TABLE IF NOT EXISTS eia_activities (
   confidentiality TEXT NOT NULL DEFAULT 'public' CHECK (confidentiality IN ('public', 'restricted', 'confidential')),
   version INTEGER NOT NULL DEFAULT 1 CHECK (version >= 1),
   owner_user_id TEXT REFERENCES users(id),
+  -- Implementation (v5): explicit comment-window due date (demo; Agreement fixes no day count).
+  due_at TEXT,
   updated_at TEXT NOT NULL
 );
 
@@ -184,7 +189,24 @@ CREATE TABLE IF NOT EXISTS cbtmt_matches (
   offer_id TEXT NOT NULL REFERENCES cbtmt_records(id),
   rule TEXT NOT NULL,
   at TEXT NOT NULL,
+  -- Implementation (v5): human facilitation note (brokerage pattern; not ML).
+  facilitation_note TEXT,
   UNIQUE (need_id, offer_id),
   CHECK (need_id <> offer_id)
+);
+
+-- Implementation (v5): ABMT thin stub on the same pack rails (Art 51.3(a)(ii); without prejudice).
+CREATE TABLE IF NOT EXISTS abmt_proposals (
+  id TEXT PRIMARY KEY,
+  public_record_id TEXT UNIQUE,
+  current_stage TEXT NOT NULL DEFAULT 'proposal_stub' CHECK (current_stage = 'proposal_stub'),
+  latest_pack_status TEXT CHECK (latest_pack_status IS NULL OR latest_pack_status IN ('draft', 'pending', 'published')),
+  title TEXT NOT NULL,
+  party_code TEXT NOT NULL,
+  source_channel TEXT NOT NULL DEFAULT 'form' CHECK (source_channel IN ('form', 'excel', 'assisted')),
+  confidentiality TEXT NOT NULL DEFAULT 'public' CHECK (confidentiality IN ('public', 'restricted', 'confidential')),
+  version INTEGER NOT NULL DEFAULT 1 CHECK (version >= 1),
+  owner_user_id TEXT REFERENCES users(id),
+  updated_at TEXT NOT NULL
 );
 `;

@@ -62,6 +62,7 @@ export function createHarness(): {
   secretariat: () => Principal;
   pub: () => Principal;
   stb: () => Principal;
+  nonstate: () => Principal;
   otherParty: () => Principal;
   anon: () => Principal;
   key: () => string;
@@ -87,6 +88,7 @@ export function createHarness(): {
     secretariat: () => byName("secretariat"),
     pub: () => byName("public"),
     stb: () => byName("stb"),
+    nonstate: () => byName("nonstate.uploader"),
     otherParty: () => byName(OTHER_PARTY.username),
     anon: () => anonymous(),
     key: () => crypto.randomUUID(),

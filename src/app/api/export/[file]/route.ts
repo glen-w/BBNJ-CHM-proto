@@ -7,8 +7,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * GET /api/export/{mgr|eia|cbtmt|audit}.{csv|json}
- * Rows are exactly what the caller's role sees on the corresponding page.
+ * GET /api/export/{mgr|eia|cbtmt|abmt|audit|digests}.{csv|json}
+ * Rows are exactly what the caller's role sees on the corresponding page
+ * (digests: Secretariat projection — header only for anyone else).
  */
 export async function GET(_req: Request, ctx: { params: Promise<{ file: string }> }) {
   const { file } = await ctx.params;

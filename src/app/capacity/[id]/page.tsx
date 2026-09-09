@@ -88,6 +88,11 @@ export default async function CbtmtRecordPage({ params, searchParams }: Props) {
                 <span className="font-mono text-xs text-muted-foreground">
                   {m.rule} · {fmtDate(m.at)} · match {m.id.slice(0, 8)}
                 </span>
+                {m.facilitationNote ? (
+                  <p className="mt-1 rounded-md border-l-2 border-domain-cbtmt-line bg-domain-cbtmt/50 px-3 py-2 text-xs leading-relaxed text-domain-cbtmt-foreground">
+                    <span className="font-medium">Secretariat facilitation note:</span> {m.facilitationNote}
+                  </p>
+                ) : null}
               </li>
             ))}
           </ul>

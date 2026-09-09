@@ -52,6 +52,10 @@ export const StoredMgrBatch = MgrBatch.extend({
   ...Ownership.shape,
   details: z.record(z.string(), z.string()).default({}),
   detailsHistory: z.array(MgrDetailsHistoryEntry).default([]),
+  /** Implementation (v5): TK provenance caption — metadata only, no content store. */
+  tkProvenanceNote: z.string().optional(),
+  /** Implementation (v5): FPIC status caption — metadata only. */
+  fpicStatusNote: z.string().optional(),
 }).superRefine((val, ctx) => {
   // C1/C2: once the batch has left pre_collection, a strict-shaped B-SBI is required (minted once, at receipt).
   if (val.currentStage !== "pre_collection") {
@@ -66,13 +70,37 @@ export const StoredMgrBatch = MgrBatch.extend({
 });
 export type StoredMgrBatch = z.infer<typeof StoredMgrBatch>;
 
-export const StoredEiaActivity = EiaActivity.extend(Ownership.shape);
+export const StoredEiaActivity = EiaActivity.extend({
+  ...Ownership.shape,
+  /** Implementation (v5): explicit due date for comment windows / digests. */
+  dueAt: z.string().datetime().optional(),
+});
 export type StoredEiaActivity = z.infer<typeof StoredEiaActivity>;
 
 export const StoredCbtmtNeed = CbtmtNeed.extend(Ownership.shape);
 export const StoredCbtmtOffer = CbtmtOffer.extend(Ownership.shape);
 export const StoredCbtmtRecord = z.discriminatedUnion("kind", [StoredCbtmtNeed, StoredCbtmtOffer]);
 export type StoredCbtmtRecord = z.infer<typeof StoredCbtmtRecord>;
+
+/**
+ * Implementation (v5): ABMT proposal stub — no AbmtRecord in the locked contract;
+ * events remain AbmtEvent with stage proposal_stub only.
+ */
+export const StoredAbmtProposal = z.object({
+  domain: z.literal("abmt"),
+  id: z.string().uuid(),
+  publicRecordId: PublicRecordId.optional(),
+  currentStage: z.literal("proposal_stub"),
+  latestPackStatus: PublishStatus.optional(),
+  title: z.string().min(1),
+  partyCode: z.string().min(2).max(3),
+  sourceChannel: z.enum(["form", "excel", "assisted"]).default("form"),
+  confidentiality: z.enum(["public", "restricted", "confidential"]).default("public"),
+  version: z.number().int().positive().default(1),
+  ownerUserId: z.string().uuid().optional(),
+  updatedAt: z.string().datetime(),
+});
+export type StoredAbmtProposal = z.infer<typeof StoredAbmtProposal>;
 
 /** Stored event = contract event + implementation ordering / idempotency metadata. */
 export type StoredEvent = z.infer<typeof Event> & {

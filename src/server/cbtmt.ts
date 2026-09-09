@@ -68,7 +68,7 @@ export function createCbtmtRecord(
   input: { kind: "need" | "offer"; title: string; themes: string[] | string; partyCode?: string; provider?: string; confidentiality?: "public" | "restricted" | "confidential" },
   key: IdempotencyKey,
 ): CbtmtResult {
-  requireCan(actor, "submit", undefined, { domain: "cbtmt", db });
+  requireCan(actor, "submit", { domain: "cbtmt", recordKind: input.kind }, { domain: "cbtmt", db });
   const existing = findEventByKey(db, key);
   if (existing) return { record: getCbtmtRecord(db, existing.recordId)!, event: existing, created: false };
   const title = input.title.trim();
@@ -129,13 +129,16 @@ export function suggestMatch(db: Db, actor: Principal, needId: string, offerId: 
   }
   const tx = db.transaction((): MatchResult => {
     const existingRow = db.prepare("SELECT * FROM cbtmt_matches WHERE need_id = ? AND offer_id = ?").get(needId, offerId) as
-      | { id: string; need_id: string; offer_id: string; rule: string; at: string }
+      | { id: string; need_id: string; offer_id: string; rule: string; at: string; facilitation_note: string | null }
       | undefined;
     if (existingRow) {
-      return { match: CbtmtMatch.parse({ id: existingRow.id, needId: existingRow.need_id, offerId: existingRow.offer_id, rule: existingRow.rule, at: existingRow.at }), created: false };
+      return {
+        match: CbtmtMatch.parse({ id: existingRow.id, needId: existingRow.need_id, offerId: existingRow.offer_id, rule: existingRow.rule, at: existingRow.at }),
+        created: false,
+      };
     }
     const match = CbtmtMatch.parse({ id: crypto.randomUUID(), needId, offerId, rule: rule.trim() || "manual", at: nowIso() });
-    const ins = db.prepare("INSERT OR IGNORE INTO cbtmt_matches (id, need_id, offer_id, rule, at) VALUES (?, ?, ?, ?, ?)").run(match.id, match.needId, match.offerId, match.rule, match.at);
+    const ins = db.prepare("INSERT OR IGNORE INTO cbtmt_matches (id, need_id, offer_id, rule, at, facilitation_note) VALUES (?, ?, ?, ?, ?, NULL)").run(match.id, match.needId, match.offerId, match.rule, match.at);
     if (ins.changes === 0) throw new DomainError("invalid_transition", "Match already exists");
     const event = insertEvent(
       db,
@@ -166,6 +169,22 @@ export function suggestMatch(db: Db, actor: Principal, needId: string, offerId: 
   return result;
 }
 
+/** Secretariat facilitation note on an existing match (human brokerage pattern; not ML). */
+export function setMatchFacilitationNote(db: Db, actor: Principal, matchId: string, note: string): MatchView {
+  requireCan(actor, "suggest_match", undefined, { domain: "cbtmt", recordId: matchId, db });
+  const text = note.trim();
+  if (!text) throw new DomainError("validation", "Facilitation note is required");
+  const row = db.prepare("SELECT * FROM cbtmt_matches WHERE id = ?").get(matchId) as
+    | { id: string; need_id: string; offer_id: string; rule: string; at: string; facilitation_note: string | null }
+    | undefined;
+  if (!row) throw new DomainError("not_found", "Match not found");
+  db.prepare("UPDATE cbtmt_matches SET facilitation_note = ? WHERE id = ?").run(text, matchId);
+  const views = matchesForRecord(db, row.need_id);
+  const view = views.find((m) => m.id === matchId);
+  if (!view) throw new DomainError("not_found", "Match not found after update");
+  return view;
+}
+
 /** Deterministic rule: every published need × offer sharing a theme. */
 export function suggestMatches(db: Db, actor: Principal, key: IdempotencyKey): MatchResult[] {
   requireCan(actor, "suggest_match", undefined, { domain: "cbtmt", db });
@@ -188,6 +207,7 @@ export function suggestMatches(db: Db, actor: Principal, key: IdempotencyKey): M
 export interface MatchView extends CbtmtMatch {
   needTitle: string;
   offerTitle: string;
+  facilitationNote?: string;
 }
 
 export function matchesForRecord(db: Db, recordId: string): MatchView[] {
@@ -197,6 +217,53 @@ export function matchesForRecord(db: Db, recordId: string): MatchView[] {
        JOIN cbtmt_records n ON n.id = m.need_id JOIN cbtmt_records o ON o.id = m.offer_id
        WHERE m.need_id = ? OR m.offer_id = ? ORDER BY m.at DESC`,
     )
-    .all(recordId, recordId) as { id: string; need_id: string; offer_id: string; rule: string; at: string; need_title: string; offer_title: string }[];
-  return rows.map((r) => ({ id: r.id, needId: r.need_id, offerId: r.offer_id, rule: r.rule, at: r.at, needTitle: r.need_title, offerTitle: r.offer_title }));
+    .all(recordId, recordId) as {
+    id: string;
+    need_id: string;
+    offer_id: string;
+    rule: string;
+    at: string;
+    facilitation_note: string | null;
+    need_title: string;
+    offer_title: string;
+  }[];
+  return rows.map((r) => ({
+    id: r.id,
+    needId: r.need_id,
+    offerId: r.offer_id,
+    rule: r.rule,
+    at: r.at,
+    facilitationNote: r.facilitation_note ?? undefined,
+    needTitle: r.need_title,
+    offerTitle: r.offer_title,
+  }));
+}
+
+export function listMatches(db: Db): MatchView[] {
+  const rows = db
+    .prepare(
+      `SELECT m.*, n.title AS need_title, o.title AS offer_title FROM cbtmt_matches m
+       JOIN cbtmt_records n ON n.id = m.need_id JOIN cbtmt_records o ON o.id = m.offer_id
+       ORDER BY m.at DESC`,
+    )
+    .all() as {
+    id: string;
+    need_id: string;
+    offer_id: string;
+    rule: string;
+    at: string;
+    facilitation_note: string | null;
+    need_title: string;
+    offer_title: string;
+  }[];
+  return rows.map((r) => ({
+    id: r.id,
+    needId: r.need_id,
+    offerId: r.offer_id,
+    rule: r.rule,
+    at: r.at,
+    facilitationNote: r.facilitation_note ?? undefined,
+    needTitle: r.need_title,
+    offerTitle: r.offer_title,
+  }));
 }

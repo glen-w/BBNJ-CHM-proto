@@ -1,10 +1,38 @@
-# Contract sync — v0.1 build and v0.2 hardening
+# Contract sync — v0.1 build, v0.2 hardening and the EOI wave
 
 `proposal/schemas/events.ts` stayed authoritative throughout. `src/lib/contracts/events.ts` is a verbatim copy, enforced by `npm run contracts:check` (byte comparison, also run inside `npm run smoke`).
 
-**Result of the diff: zero changes to the locked contract were needed to build or harden the prototype.** Everything the implementation added lives in `src/lib/contracts/extensions.ts` (which only narrows or extends contract types) and in implementation-only schema columns/tables (`change_note`, `material_change`, `details_history_json`, `access_refusals`, `import_runs`, `digest_runs`).
+**Result of the diff: no change to the locked contract was needed to build or harden the prototype (v0.1, v0.2).** Everything the implementation added lives in `src/lib/contracts/extensions.ts` (which only narrows or extends contract types) and in implementation-only schema columns/tables (`change_note`, `material_change`, `details_history_json`, `access_refusals`, `import_runs`, `digest_runs`; in v5 also `abmt_proposals`, `cbtmt_matches.facilitation_note`, `eia_activities.due_at`, `mgr_batches.tk_provenance_note` / `fpic_status_note`).
 
-This file proposes what, if anything, should be folded back into the contract. Nothing below has been applied; it is a reviewed diff for a decision.
+**One amendment has since been adopted and applied — C9 (below).** C2–C8 remain reviewed diffs for a decision; nothing else has been applied.
+
+## Adopted amendment C9 — `non_state_uploader` on `ActorRole` (applied, EOI wave)
+
+The PrepCom3 annex names a "registered non-State uploader" as part of the user-role taxonomy. v0.2 modelled four roles and listed the fifth as deferred. The EOI wave adds it as a first-class actor so that audit rows, refusals and pack events can name the role truthfully instead of approximating it as `public`.
+
+Applied to `proposal/schemas/events.ts` and copied verbatim to `src/lib/contracts/events.ts` (byte-identical; `npm run contracts:check` passes):
+
+```diff
+ export const ActorRole = z.enum([
+   "public",
+   "party",
+   "stb",
+   "secretariat", // authorised publishing role (demo)
+   /** ABSCH analogue only — caption in UI; not a prescribed BBNJ organ */
+   "publishing_authority",
++  /**
++   * PrepCom3-style registered non-State actor (demo).
++   * May post CBTMT offers only; not a prescribed BBNJ organ.
++   */
++  "non_state_uploader",
+ ]);
+```
+
+Semantics live in the policy layer, not the contract: `can()` grants `submit` to the role only when the subject is `{ domain: "cbtmt", recordKind: "offer" }`; needs, MGR/EIA/ABMT submissions, amendments, import, publish, matching and every Secretariat action are refused with the reason *non-State uploader may post CBTMT offers only*, each refusal one `access_refusals` row. `readPolicy()` treats the role as an ordinary public reader plus its own rows. Seeded as the fifth login `nonstate.uploader`.
+
+Why adopt rather than extend: an enum value cannot be added from `extensions.ts` without re-declaring `ActorRole`, and every event row carries `actorRole`; leaving the role out of the contract would have forced audit rows to lie. Why it is safe without prejudice: the enum comment states it is a demo role, not a prescribed BBNJ organ, matching the existing `publishing_authority` caveat. Assertions: `npm run smoke` (`non_state_uploader` journey, second role × action matrix, `can()` predicates) and `npm run demo` checkpoint 13.
+
+No other value or type in the contract changed. The remaining sections are unchanged from v0.2 and still describe proposals only.
 
 ## Proposed amendment C2 — B-SBI shape (recommended)
 
@@ -118,6 +146,7 @@ Argument against: the version number on the anchored event already distinguishes
 | C6 | `changeNote` / `materialChange` on events | adopt |
 | C7 | `amendment` notification kind | discuss |
 | C8 | refusal record | leave in implementation |
+| C9 | `non_state_uploader` on `ActorRole` | **adopted — applied** (see above) |
 
 ## Zod 4 notes (no action required today)
 
@@ -132,4 +161,6 @@ The contract uses `z.string().uuid()`, `z.string().datetime()` and `z.ZodIssueCo
 | C4 | `ownerUserId` on records | leave in extensions |
 | C5 | named `NotificationKind` | adopt (cosmetic) |
 
-If C2/C3/C5 are adopted, update `proposal/schemas/events.ts`, copy it verbatim over `src/lib/contracts/events.ts`, delete the corresponding lines from `extensions.ts`, and run `npm run smoke`. The contracts-check will fail loudly if the two files drift.
+If C2/C3/C5 are adopted, update `proposal/schemas/events.ts`, copy it verbatim over `src/lib/contracts/events.ts`, delete the corresponding lines from `extensions.ts`, and run `npm run smoke`. The contracts-check will fail loudly if the two files drift — as it did, deliberately, during the C9 fold until both copies matched.
+
+Not proposed for the contract in the EOI wave (implementation / `extensions.ts` only): `abmt_proposals` and `StoredAbmtProposal` (the contract already reserves `AbmtEvent` with `proposal_stub`); `cbtmt_matches.facilitation_note` (Secretariat brokerage metadata, never published as an event); `eia_activities.due_at` (deadline override for digest / notification copy); MGR `tk_provenance_note` / `fpic_status_note` (Art 13 captions beside `tkFpicFlag` — still no content store).

@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 
 import { getDb } from "@/lib/db";
+import { isTreatyLang, TREATY_LANG_COOKIE } from "@/lib/locale";
 import { type Principal, principalFromCookie } from "./policy";
 
 export const SESSION_COOKIE = "chm_demo_user";
@@ -18,4 +19,11 @@ export async function setSessionUser(userId: string | null): Promise<void> {
   } else {
     store.delete(SESSION_COOKIE);
   }
+}
+
+/** Persist treaty-text locale only — never UI i18n. */
+export async function setTreatyLang(code: string): Promise<void> {
+  const store = await cookies();
+  const lang = isTreatyLang(code) ? code : "en";
+  store.set(TREATY_LANG_COOKIE, lang, { httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 365 });
 }

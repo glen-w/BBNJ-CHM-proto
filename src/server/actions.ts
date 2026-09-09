@@ -13,17 +13,18 @@ import { z } from "zod";
 import { getDb } from "@/lib/db";
 import { IdempotencyKey } from "@/lib/contracts/extensions";
 import { FIELD_DEFS } from "@/lib/mgr-fields";
-import { createCbtmtRecord, suggestMatch, suggestMatches } from "./cbtmt";
+import { createAbmtProposal, submitAbmtProposal } from "./abmt";
+import { createCbtmtRecord, setMatchFacilitationNote, suggestMatch, suggestMatches } from "./cbtmt";
 import { runDigests } from "./digest";
-import { addEiaPack, commentStb, createEiaActivity } from "./eia";
+import { addEiaPack, commentStb, createEiaActivity, setEiaDueAt } from "./eia";
 import { DomainError } from "./errors";
-import { importMgrExcel } from "./import";
+import { importEiaScreeningExcel, importMgrExcel } from "./import";
 import { addMgrPack, amendMgrPack, MGR_AMENDABLE_STAGES, saveMgrDraft, submitPreCollection } from "./mgr";
 import { amendPack, publishPack } from "./packs";
 import { getSubscription, markAllRead, upsertSubscription } from "./queries";
 import { resetSandbox } from "./reset";
-import { getSessionUser, setSessionUser } from "./session";
-import { buildMgrSample } from "./template";
+import { getSessionUser, setSessionUser, setTreatyLang } from "./session";
+import { buildEiaScreeningSample, buildMgrSample } from "./template";
 import { findUserById } from "./users";
 
 const str = (fd: FormData, k: string) => {
@@ -90,6 +91,12 @@ export async function loginAction(fd: FormData) {
   const user = id ? findUserById(getDb(), id) : undefined;
   await setSessionUser(user && user.active ? user.id : null);
   finish({ to: returnTo(fd, "/"), notice: user ? `Signed in as ${user.username}` : "Signed out" });
+}
+
+/** Persist treaty-text language; UI strings stay English. */
+export async function setTreatyLangAction(code: string) {
+  await setTreatyLang(code);
+  revalidatePath("/", "layout");
 }
 
 export async function logoutAction() {
@@ -200,10 +207,12 @@ export async function runDigestAction(fd: FormData) {
   attempt(back, () => {
     const cadence = z.enum(["daily", "weekly"]).optional().catch(undefined).parse(str(fd, "cadence") || undefined);
     const r = runDigests(getDb(), { actor: p, cadence });
-    const delivered = r.users.filter((u) => u.inserted).map((u) => `${u.username} (${u.eventCount})`);
+    const written = r.users.filter((u) => u.inserted).map((u) => `${u.username} (${u.eventCount})`);
     return {
       to: back,
-      notice: r.inserted ? `Digest run: ${r.inserted} digest${r.inserted === 1 ? "" : "s"} delivered — ${delivered.join(", ")}.` : "Digest run: nothing new held for any daily/weekly subscriber.",
+      notice: r.inserted
+        ? `Digest run: ${r.inserted} digest${r.inserted === 1 ? "" : "s"} written to the in-app bell (no e-mail in this build) — ${written.join(", ")}.`
+        : "Digest run: nothing new held for any daily/weekly subscriber.",
     };
   });
 }
@@ -223,7 +232,7 @@ export async function publishAction(fd: FormData) {
   const p = await getSessionUser();
   const back = returnTo(fd, "/");
   attempt(back, () => {
-    const domain = z.enum(["mgr", "eia", "cbtmt"]).parse(str(fd, "domain"));
+    const domain = z.enum(["mgr", "eia", "cbtmt", "abmt"]).parse(str(fd, "domain"));
     const ev = str(fd, "expectedVersion");
     const stage = str(fd, "stage");
     const r = publishPack(getDb(), p, { domain, recordId: str(fd, "recordId"), stage, expectedVersion: ev ? Number(ev) : undefined });
@@ -265,6 +274,53 @@ export async function addEiaPackAction(fd: FormData) {
     });
     return { to: `/eia/${activityId}`, notice: `${stage.replace(/_/g, " ")} pack submitted (pending).` };
   });
+}
+
+/** Set or clear the explicit comment-window due date on an activity (P1). */
+export async function setEiaDueAtAction(fd: FormData) {
+  const p = await getSessionUser();
+  const activityId = str(fd, "activityId");
+  const back = returnTo(fd, `/eia/${activityId}`);
+  attempt(back, () => {
+    const raw = str(fd, "dueAt").trim();
+    let dueAt: string | null = null;
+    if (raw) {
+      const d = new Date(raw);
+      if (Number.isNaN(d.getTime())) throw new DomainError("validation", "Due date must be a valid date");
+      dueAt = d.toISOString();
+    }
+    setEiaDueAt(getDb(), p, activityId, dueAt);
+    return { to: back, notice: dueAt ? `Due date set to ${dueAt.slice(0, 10)} (demo value — the Agreement fixes no day count).` : "Due date cleared." };
+  });
+}
+
+export async function importEiaAction(fd: FormData) {
+  const p = await getSessionUser();
+  await attemptAsync("/eia/import", async () => {
+    const file = fd.get("file");
+    const useFixture = str(fd, "fixture") === "1";
+    let bytes: Buffer;
+    let filename: string | undefined;
+    if (useFixture || !(file instanceof File) || file.size === 0) {
+      bytes = await buildEiaScreeningSample({ withInvalid: true });
+      filename = "fixture:eia-screening-sample.xlsx";
+    } else {
+      if (!file.name.toLowerCase().endsWith(".xlsx")) throw new DomainError("import_rejected", "Only .xlsx files are accepted");
+      bytes = Buffer.from(await file.arrayBuffer());
+      filename = file.name;
+    }
+    const res = await importEiaScreeningExcel(getDb(), p, bytes, str(fd, "partyCode") || "XSD", keyOf(fd), { filename });
+    return {
+      to: `/eia/import/${res.runId}`,
+      notice: `${res.accepted} accepted, ${res.rejected} rejected${res.rejected ? " — download the error report, fix the rows, re-import" : ""}`,
+    };
+  });
+}
+
+/** Same as importEiaAction with the bundled fixture forced (mirror of the MGR sample path). */
+export async function importEiaSampleAction(fd: FormData) {
+  fd.set("fixture", "1");
+  await importEiaAction(fd);
 }
 
 export async function commentStbAction(fd: FormData) {
@@ -311,6 +367,44 @@ export async function suggestMatchesAction(fd: FormData) {
   attempt("/capacity", () => {
     const r = suggestMatches(getDb(), p, keyOf(fd));
     return { to: "/capacity", notice: `Shared-theme rule: ${r.length} pair(s) evaluated, ${r.filter((m) => m.created).length} new match(es).` };
+  });
+}
+
+/** Secretariat facilitation note on a match — human brokerage pattern beside the deterministic rule. */
+export async function setFacilitationNoteAction(fd: FormData) {
+  const p = await getSessionUser();
+  const back = returnTo(fd, "/capacity");
+  attempt(back, () => {
+    setMatchFacilitationNote(getDb(), p, str(fd, "matchId"), str(fd, "note"));
+    return { to: back, notice: "Facilitation note recorded on the match (no event, no notification — a human annotation only)." };
+  });
+}
+
+// ------------------------------------------------------------------ ABMT (thin stub; without prejudice to COP1)
+
+export async function createAbmtAction(fd: FormData) {
+  const p = await getSessionUser();
+  attempt("/abmt/new", () => {
+    const r = createAbmtProposal(
+      getDb(),
+      p,
+      {
+        title: str(fd, "title"),
+        partyCode: str(fd, "partyCode") || undefined,
+        confidentiality: z.enum(["public", "restricted", "confidential"]).catch("public").parse(str(fd, "confidentiality")),
+      },
+      keyOf(fd),
+    );
+    return { to: `/abmt/${r.proposal.id}`, notice: "ABMT proposal stub opened as a draft (Art 51.3(a)(ii); without prejudice to COP1)." };
+  });
+}
+
+export async function submitAbmtAction(fd: FormData) {
+  const p = await getSessionUser();
+  const proposalId = str(fd, "proposalId");
+  attempt(`/abmt/${proposalId}`, () => {
+    const r = submitAbmtProposal(getDb(), p, proposalId, keyOf(fd));
+    return { to: `/abmt/${proposalId}`, notice: `Receipt ${r.event.receiptId ?? "—"} — proposal stub pending Secretariat publication.` };
   });
 }
 

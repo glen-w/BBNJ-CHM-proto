@@ -37,7 +37,7 @@ export default async function NotificationsPage({ searchParams }: Props) {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="max-w-2xl text-sm text-muted-foreground">
               Kinds: publish · deadline · digest · match · stb_review. Rows are produced by the dispatcher from published outbox events only; drafts and
-              pending packs never notify.{" "}
+              pending packs never notify. Delivery is <strong>in-app only</strong> (this bell) — no e-mail or push in this build.{" "}
               {sub ? (
                 sub.digest === "immediate" ? (
                   <>Your cadence is <strong>immediate</strong>: every matching publication reaches the bell at once.</>
@@ -51,12 +51,17 @@ export default async function NotificationsPage({ searchParams }: Props) {
             </p>
             <div className="flex flex-wrap gap-2">
               {canRunDigest ? (
-                <form action={runDigestAction} className="flex gap-1">
-                  <KeyFields returnTo="/notifications" />
-                  <SubmitButton variant="outline" size="sm" title="Rolls held publications into one digest row per daily/weekly subscriber (idempotent)">
-                    Run digest now
-                  </SubmitButton>
-                </form>
+                <>
+                  <form action={runDigestAction} className="flex gap-1">
+                    <KeyFields returnTo="/notifications" />
+                    <SubmitButton variant="outline" size="sm" title="Rolls held publications into one digest row per daily/weekly subscriber (idempotent); written to the in-app bell">
+                      Run digest now
+                    </SubmitButton>
+                  </form>
+                  <a href="/api/export/digests.csv" className={cn(buttonVariants({ variant: "outline", size: "sm" }))} title="Secretariat projection: one row per digest window (RFC 4180 CSV)">
+                    Digest runs (.csv)
+                  </a>
+                </>
               ) : null}
               <Link href="/preferences" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
                 Subscription preferences

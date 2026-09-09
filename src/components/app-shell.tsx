@@ -17,11 +17,18 @@ import { latestVisibleEvent, notificationsFor, unreadCount } from "@/server/quer
 import { getSessionUser } from "@/server/session";
 
 // Journeys are entry points into the shared rails, not competing brands (VISUAL-CHARTER.md §1.2, §4).
-const journeys = [
+const journeys: { href: string; label: string; caption: string; enabled: boolean }[] = [
   { href: "/mgr", label: "MGR", caption: "marine genetic resources", enabled: true },
   { href: "/eia", label: "EIA", caption: "environmental impact assessment", enabled: true },
   { href: "/capacity", label: "CBTMT", caption: "capacity-building & technology transfer", enabled: true },
-  { href: "/abmt", label: "ABMT", caption: "unavailable", enabled: false },
+  { href: "/abmt", label: "ABMT", caption: "area-based management tools (stub, without prejudice)", enabled: true },
+];
+
+/** Reference links only — no data flows to or from these systems. */
+const RELATED_SYSTEMS = [
+  { href: "https://absch.cbd.int/", label: "ABSCH" },
+  { href: "https://bch.cbd.int/", label: "BCH" },
+  { href: "https://obis.org/", label: "OBIS" },
 ] as const;
 
 const railLink = "rounded-md px-2 py-1 text-sm text-foreground/80 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
@@ -177,7 +184,7 @@ export async function AppShell({
                   key={j.href}
                   href={j.href}
                   className={cn(journeyTab, "text-muted-foreground hover:border-transparent hover:text-muted-foreground")}
-                  title="ABMT is not available"
+                  title={`${j.label} is not available`}
                 >
                   {j.label}
                 </Link>
@@ -193,8 +200,16 @@ export async function AppShell({
         {children}
       </main>
       <footer className="border-t">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-2 px-6 py-3 text-xs text-muted-foreground">
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-6 py-3 text-xs text-muted-foreground">
           <span>BBNJ Cl-HM</span>
+          <span className="flex flex-wrap items-center gap-x-2">
+            <span>Related systems (reference — not federation):</span>
+            {RELATED_SYSTEMS.map((r) => (
+              <a key={r.href} href={r.href} rel="noopener noreferrer" target="_blank" className="underline underline-offset-2 hover:text-institutional">
+                {r.label}
+              </a>
+            ))}
+          </span>
           <span>
             <Link href="/records/BBNJ-MGR-2026-00001" className="font-mono underline underline-offset-2 hover:text-institutional">
               /records/&lt;publicRecordId&gt;

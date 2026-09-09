@@ -22,6 +22,7 @@ function journeyDomain(href: string): string | undefined {
   if (href.startsWith("/mgr")) return "mgr";
   if (href.startsWith("/eia")) return "eia";
   if (href.startsWith("/capacity")) return "cbtmt";
+  if (href.startsWith("/abmt")) return "abmt";
   return undefined;
 }
 
@@ -60,21 +61,14 @@ export function JourneysNav({
         const Icon = domain && isAccentDomain(domain) ? DOMAIN_ICON[domain] : null;
         if (!j.enabled) {
           return (
-            <Link
+            <span
               key={j.href}
-              href={j.href}
-              className={cn(
-                journeyTab,
-                "text-muted-foreground hover:border-transparent hover:text-muted-foreground",
-                current && journeyTabCurrent,
-              )}
-              aria-label={`${j.label}, unavailable`}
-              title="ABMT is not available"
-              aria-current={current ? "page" : undefined}
+              className={cn(journeyTab, "cursor-not-allowed text-muted-foreground hover:border-transparent")}
+              title={j.caption || "Not available"}
+              aria-disabled="true"
             >
               {j.label}
-              <span className="sr-only"> (unavailable)</span>
-            </Link>
+            </span>
           );
         }
         return (

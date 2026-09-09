@@ -28,6 +28,11 @@ export const ActorRole = z.enum([
   "secretariat", // authorised publishing role (demo)
   /** ABSCH analogue only — caption in UI; not a prescribed BBNJ organ */
   "publishing_authority",
+  /**
+   * PrepCom3-style registered non-State actor (demo).
+   * May post CBTMT offers only; not a prescribed BBNJ organ.
+   */
+  "non_state_uploader",
 ]);
 export type ActorRole = z.infer<typeof ActorRole>;
 

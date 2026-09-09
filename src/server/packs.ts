@@ -83,7 +83,9 @@ export function openPack(db: Db, actor: Principal, args: OpenPackArgs): PackResu
 
   const meta = getRecordMeta(db, args.domain, args.recordId);
   if (!meta) throw new DomainError("not_found", "Record not found");
-  requireCan(args.actorOverride ?? actor, "submit", { ownerUserId: meta.ownerUserId ?? null }, { domain: args.domain, recordId: args.recordId, db });
+  // Subject carries domain + record kind so the non-State uploader rule (CBTMT offers only) sees the same facts as the caller.
+  const recordKind = args.domain === "cbtmt" ? (args.stage === "offer_posted" ? "offer" : args.stage === "need_posted" ? "need" : undefined) : undefined;
+  requireCan(args.actorOverride ?? actor, "submit", { ownerUserId: meta.ownerUserId ?? null, domain: args.domain, recordKind }, { domain: args.domain, recordId: args.recordId, db });
 
   const tx = db.transaction((): StoredEvent => {
     const latest = latestPackRow(db, args.recordId, args.stage);

@@ -35,14 +35,11 @@ export default async function PreferencesPage({ searchParams }: Props) {
           </p>
           <fieldset className="space-y-1">
             <legend className="text-sm font-medium">Domains</legend>
-            {(["mgr", "eia", "cbtmt"] as const).map((d) => (
-              <label key={d} className="mr-4 inline-flex items-center gap-1 text-sm">
+            {(["mgr", "eia", "cbtmt", "abmt"] as const).map((d) => (
+              <label key={d} className="mr-4 inline-flex items-center gap-1 text-sm" title={d === "abmt" ? "ABMT proposal stubs (without prejudice to COP1)" : undefined}>
                 <input type="checkbox" name="domains" value={d} defaultChecked={sub?.domains.includes(d)} /> {d.toUpperCase()}
               </label>
             ))}
-            <label className="mr-4 inline-flex items-center gap-1 text-sm opacity-50" title="ABMT is not available">
-              <input type="checkbox" disabled /> ABMT
-            </label>
           </fieldset>
           <fieldset className="space-y-1">
             <legend className="text-sm font-medium">ABNJ boxes (EIA neighbourhood)</legend>

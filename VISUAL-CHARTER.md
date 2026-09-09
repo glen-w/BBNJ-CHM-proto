@@ -37,6 +37,7 @@ This charter governs the day‑1 / second‑wave UI. It is a **team choice**, no
 | `--domain-mgr` | Domain accent | Soft slate-blue — badge tint + 2px left rail |
 | `--domain-eia` | Domain accent | Soft sea-teal — badge tint + 2px left rail |
 | `--domain-cbtmt` | Domain accent | Soft sage — badge tint + 2px left rail |
+| `--domain-abmt` | Domain accent | Soft warm grey-violet — badge tint + 2px left rail; quieter than the other three (stub domain) |
 
 **Focus:** visible focus rings use `--institutional`.
 
@@ -57,7 +58,9 @@ This charter governs the day‑1 / second‑wave UI. It is a **team choice**, no
 
 ## 4. Layout & components
 
-- **Shell:** top bar with product mark (**BBNJ Cl-HM** · working desk), rail labels + role switcher + bell; journey tabs secondary. Disabled ABMT tab is quiet (no “not in this build” badge).  
+- **Shell:** top bar with product mark (**BBNJ Cl-HM** · working desk), rail labels + role switcher + bell; journey tabs secondary. The ABMT tab is **enabled and quiet**: same weight as the other journeys, no “stub” / “not in this build” badge in the tab itself; the stub nature is stated once, in one sentence, on the ABMT page.  
+- **Footer — related systems:** a plain-text row of named links to existing clearing-houses and data systems is allowed (and encouraged) in the footer only: text links, no logos, no partner-wall grid. Caption them as *related systems*, never as “integrations” or “partners”.  
+- **Deferred capability caption:** where a proprietary or deferred capability is referenced (e-mail delivery, GIS, federation, tagged PDF), use one quiet muted caption in the relevant panel — e.g. *in-app only in this build* — not a banner, not a roadmap list.  
 - **Record lists:** domain badge (quiet tint + optional Lucide icon with label) · public record id · status chip (**text + colour**, never colour-only) · updated — scannable tables/cards, shadcn `Table` / `Badge` / `Button`.  
 - **Domain accent:** soft left rail (`border-l-2`) on journey cards and mixed-domain feed rows only — not page chrome.  
 - **Icons (Lucide):** labelled only — submit / notify / roles / MGR / EIA / capacity. No icon-only status. Manage / Publish / Audit rails stay text-only.  
@@ -107,13 +110,14 @@ UN WCAG 2.1 AA mapping, measured contrast, and remediation status: [`ACCESSIBILI
 - Ids and B‑SBI labelled distinctly.  
 - Product chrome reads as a finished working desk — no “prototype”, “substrate”, “sandbox”, “demo” chips, or COP1 disclaimers in the shell. Those caveats live in the README.  
 - Role labels: “Secretariat / authorised publishing role” — not “Publishing Authority” as a BBNJ organ.  
-- Empty ABMT: short unavailable copy, not roadmap marketing or contract-enum lectures.
+- ABMT stub page: one sentence saying it is a thin stub without prejudice, then the working list/form — not roadmap marketing or contract-enum lectures. Never “unavailable” (it is available, thinly).  
+- Deferred / proprietary captions read as facts, not apologies: *Notifications are in-app in this build.* — no “coming soon”.
 
 ---
 
 ## 9. Implementation notes (repo)
 
-- Encode tokens in CSS variables / shadcn theme — in this repo: `src/app/globals.css` (`--canvas`, `--ink`, `--institutional`, `--action`, `--draft`, `--pending`, `--published`, `--danger`, `--domain-mgr|eia|cbtmt` are mapped onto the shadcn / Tailwind theme; no second theme system).  
+- Encode tokens in CSS variables / shadcn theme — in this repo: `src/app/globals.css` (`--canvas`, `--ink`, `--institutional`, `--action`, `--draft`, `--pending`, `--published`, `--danger`, `--domain-mgr|eia|cbtmt|abmt` are mapped onto the shadcn / Tailwind theme; no second theme system).  
 - Status chip and domain badge are shared across pillars (`src/components/chips.tsx`). Domain icons live in `src/components/domain-icons.tsx`.  
 - Do not fork ABSCH CSS; reimplement the *desk* feel in shadcn.  
 - Screenshot golden paths into `docs/screenshots/` when the shell lands (optional day‑1).

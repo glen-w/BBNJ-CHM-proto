@@ -17,6 +17,12 @@ const tests: Test[] = [];
 const p0 = (name: string, fn: Test["fn"]) => tests.push({ name, group: "p0", fn });
 const p1 = (name: string, fn: Test["fn"]) => tests.push({ name, group: "p1", fn });
 
+/** Thrown by a test whose subject API is not present in this build; reported as `skip`, never as a failure. */
+class Skip extends Error {}
+const skipUnless = (present: unknown, what: string) => {
+  if (typeof present !== "function") throw new Skip(`${what} not present in this build`);
+};
+
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "chm-smoke-"));
 const dbPath = path.join(tmpDir, "smoke.sqlite");
 process.env.DATABASE_PATH = dbPath;
@@ -112,6 +118,18 @@ async function main() {
     assert.equal(policy.can(stb(), "comment_stb"), true);
     assert.equal(policy.can(pub(), "comment_stb"), false);
     assert.equal(policy.can(pub(), "submit"), false);
+    // non_state_uploader (C9): CBTMT offers only — the subject decides, not the bare action
+    const ns: import("../src/server/policy").Principal = {
+      kind: "user",
+      user: { id: "00000000-0000-4000-8000-0000000000fd", username: "nonstate.predicate", displayName: "Non-State uploader", roles: ["non_state_uploader"], active: true },
+    };
+    assert.equal(policy.can(ns, "submit", { domain: "cbtmt", recordKind: "offer" }), true);
+    assert.equal(policy.can(ns, "submit", { domain: "cbtmt", recordKind: "need" }), false);
+    assert.equal(policy.can(ns, "submit", { domain: "mgr" }), false);
+    assert.equal(policy.can(ns, "submit"), false);
+    assert.equal(policy.can(ns, "publish"), false);
+    assert.equal(policy.can(ns, "import"), false);
+    assert.equal(policy.actorRoleOf(ns), "non_state_uploader");
   });
 
   // ---------------------------------------------------------------- Lock 2 + confidentiality
@@ -631,8 +649,278 @@ async function main() {
     await assert.rejects(importer.importMgrExcel(db, party(), fixture, "XSD", key()), DomainError);
   });
 
+  // ================================================================ EOI wave (schema v5)
+  const abmt = await import("../src/server/abmt");
+  const records = await import("../src/server/records");
+  const nonStateSeeded = () => principalOf("nonstate.uploader");
+  /** Inline principal so the role matrix does not depend on the seed row. */
+  const nonStateInline = (): import("../src/server/policy").Principal => ({
+    kind: "user",
+    user: { id: "00000000-0000-4000-8000-0000000000fe", username: "nonstate.inline", displayName: "Non-State uploader (inline)", roles: ["non_state_uploader"], active: true },
+  });
+
+  // ---------------------------------------------------------------- ABMT thin stub
+  p0("ABMT thin stub — draft → submit pending → publish mints BBNJ-ABMT-YYYY-NNNNN; caches equal event-derived values; reconcile clean", () => {
+    const k1 = key();
+    const d = abmt.createAbmtProposal(db, party(), { title: "Smoke ABMT proposal (without prejudice)" }, k1);
+    assert.equal(d.created, true);
+    assert.equal(d.event.domain, "abmt");
+    assert.equal(d.event.stage, "proposal_stub");
+    assert.equal(d.event.status, "draft");
+    assert.equal(d.proposal.currentStage, "proposal_stub");
+    assert.equal(d.proposal.publicRecordId, undefined, "no publicRecordId on a draft");
+    assert.equal(abmt.createAbmtProposal(db, party(), { title: "replayed" }, k1).created, false, "same key writes nothing");
+    const k2 = key();
+    const s = abmt.submitAbmtProposal(db, party(), d.proposal.id, k2);
+    assert.equal(s.event.status, "pending");
+    assert.match(s.event.receiptId!, ext.RECEIPT_ID_PATTERN);
+    assert.equal(s.proposal.publicRecordId, undefined, "no publicRecordId before publish");
+    assert.equal(abmt.submitAbmtProposal(db, party(), d.proposal.id, k2).event.id, s.event.id, "idempotent replay");
+    // Lock 2: public/STB never see the pending proposal; owner and Secretariat do
+    assert.ok(!queries.listAbmtProposals(db, pub()).some((p) => p.id === d.proposal.id), "public list");
+    assert.ok(!queries.listAbmtProposals(db, stb()).some((p) => p.id === d.proposal.id), "stb list");
+    assert.ok(queries.listAbmtProposals(db, party()).some((p) => p.id === d.proposal.id), "owner list");
+    assert.ok(queries.listAbmtProposals(db, secretariat()).some((p) => p.id === d.proposal.id), "secretariat list");
+    // party cannot publish
+    assert.throws(() => packs.publishPack(db, party(), { domain: "abmt", recordId: d.proposal.id, stage: "proposal_stub" }), (e: unknown) => e instanceof DomainError && e.code === "forbidden");
+    const p = packs.publishPack(db, secretariat(), { domain: "abmt", recordId: d.proposal.id, stage: "proposal_stub" });
+    assert.equal(p.created, true);
+    assert.match(p.event.publicRecordId!, /^BBNJ-ABMT-\d{4}-\d{5}$/);
+    assert.match(p.event.publicRecordId!, ext.PUBLIC_RECORD_ID_PATTERN);
+    assert.ok(contracts.PublicRecordId.safeParse(p.event.publicRecordId).success);
+    const after = abmt.getAbmtProposal(db, d.proposal.id)!;
+    assert.equal(after.publicRecordId, p.event.publicRecordId);
+    assert.equal(after.latestPackStatus, "published");
+    assert.equal(packs.publishPack(db, secretariat(), { domain: "abmt", recordId: d.proposal.id, stage: "proposal_stub" }).created, false, "publish twice is a no-op");
+    // public now sees it once, through the resolver as well
+    assert.equal(queries.listAbmtProposals(db, pub()).filter((x) => x.id === d.proposal.id).length, 1);
+    assert.deepEqual(queries.resolvePublicRecord(db, pub(), after.publicRecordId!), { domain: "abmt", recordId: d.proposal.id });
+    assert.ok(queries.auditRows(db, pub(), { domain: "abmt" }).some((r) => r.recordId === d.proposal.id));
+    // caches equal event-derived values (abmt is on the same rails as the other domains)
+    const derived = records.deriveCaches(db, "abmt", d.proposal.id);
+    assert.equal(derived.publicRecordId, after.publicRecordId);
+    assert.equal(derived.latestPackStatus, "published");
+    assert.deepEqual(reconcile.reconcile(db).mismatches, []);
+  });
+
+  // ---------------------------------------------------------------- non-State uploader (C9)
+  p0("non_state_uploader — fifth login; may post a CBTMT offer; refused on CBTMT need, MGR submit, import and publish — each leaves exactly one refusal row", async () => {
+    const ns = nonStateSeeded();
+    assert.equal(ns.kind, "user");
+    assert.equal(policy.actorRoleOf(ns), "non_state_uploader");
+    assert.equal(policy.can(ns, "submit", { domain: "cbtmt", recordKind: "offer" }), true);
+    assert.equal(policy.can(ns, "submit", { domain: "cbtmt", recordKind: "need" }), false);
+    assert.equal(policy.can(ns, "submit", { domain: "mgr" }), false);
+    assert.equal(policy.can(ns, "submit"), false);
+    assert.equal(policy.can(ns, "amend", { domain: "cbtmt", recordKind: "offer" }), false, "no amend even on offers");
+    for (const a of ["publish", "import", "suggest_match", "view_full_audit", "export_full", "run_digest", "reset_sandbox"] as const) assert.equal(policy.can(ns, a), false, a);
+    assert.equal(policy.can(ns, "manage_subscription"), true);
+    // grant: a CBTMT offer goes pending on the same rails as any other submission
+    const before = count("SELECT COUNT(*) AS n FROM access_refusals");
+    const offer = cbtmt.createCbtmtRecord(db, ns, { kind: "offer", title: "Non-State bioinformatics mentoring", themes: ["genomics"], provider: "Demo NGO" }, key());
+    assert.equal(offer.created, true);
+    assert.equal(offer.record.kind, "offer");
+    assert.equal(offer.record.sourceChannel, "form");
+    assert.equal(offer.event.actorRole, "non_state_uploader");
+    assert.equal(offer.event.status, "pending");
+    assert.equal(count("SELECT COUNT(*) AS n FROM access_refusals"), before, "grant writes no refusal");
+    const nsId = ns.kind === "user" ? ns.user.id : "";
+    const refusalsFor = () => count("SELECT COUNT(*) AS n FROM access_refusals WHERE actor_user_id = ? AND actor_role = 'non_state_uploader'", nsId);
+    const expectRefusal = (label: string, fn: () => unknown, action: string) => {
+      const b = refusalsFor();
+      assert.throws(fn, (e: unknown) => e instanceof DomainError && e.code === "forbidden", label);
+      assert.equal(refusalsFor(), b + 1, `${label}: exactly one refusal row`);
+      const last = policy.listRefusals(db, secretariat(), 1)[0];
+      assert.equal(last.actorRole, "non_state_uploader", label);
+      assert.equal(last.action, action, label);
+      assert.match(last.reason, /CBTMT offers only/, label);
+    };
+    expectRefusal("CBTMT need", () => cbtmt.createCbtmtRecord(db, ns, { kind: "need", title: "x", themes: ["taxonomy"], partyCode: "XSD" }, key()), "submit");
+    expectRefusal("MGR draft", () => mgr.saveMgrDraft(db, ns, { title: "Not allowed", locationHint: "CCZ" }, key()), "submit");
+    expectRefusal("MGR receipt", () => mgr.receivePreCollection(db, ns, { title: "Not allowed", locationHint: "CCZ" }, "form", key(), { partyCode: "XSD" }), "submit");
+    expectRefusal("EIA activity", () => eia.createEiaActivity(db, ns, { title: "Not allowed", abnjBox: "CCZ", partyCode: "XSD" }, key()), "submit");
+    expectRefusal("ABMT proposal", () => abmt.createAbmtProposal(db, ns, { title: "Not allowed", partyCode: "XSD" }, key()), "submit");
+    expectRefusal("publish own offer", () => packs.publishPack(db, ns, { domain: "cbtmt", recordId: offer.record.id, stage: "offer_posted" }), "publish");
+    {
+      const b = refusalsFor();
+      const fixture = await template.buildMgrSample({ rows: 1 });
+      await assert.rejects(importer.importMgrExcel(db, ns, fixture, "XSD", key()), (e: unknown) => e instanceof DomainError && e.code === "forbidden");
+      assert.equal(refusalsFor(), b + 1, "import: exactly one refusal row");
+      assert.equal(policy.listRefusals(db, secretariat(), 1)[0].action, "import");
+    }
+    // the uploader never sees the refusal log; the Secretariat can publish the offer normally
+    assert.deepEqual(policy.listRefusals(db, ns), []);
+    const pubEvt = packs.publishPack(db, secretariat(), { domain: "cbtmt", recordId: offer.record.id, stage: "offer_posted" });
+    assert.match(pubEvt.event.publicRecordId!, /^BBNJ-CBTMT-/);
+    assert.deepEqual(reconcile.reconcile(db).mismatches, []);
+  });
+
+  p0("role × action matrix (non_state_uploader) — subject-less can() is false for every action except manage_subscription; every refusal leaves exactly one row", () => {
+    const ns = nonStateInline();
+    for (const action of policy.ALL_ACTIONS) {
+      const before = count("SELECT COUNT(*) AS n FROM access_refusals");
+      const allowed = policy.can(ns, action);
+      assert.equal(allowed, action === "manage_subscription", `non_state_uploader can ${action}`);
+      if (allowed) {
+        assert.doesNotThrow(() => policy.requireCan(ns, action, undefined, { db }));
+        assert.equal(count("SELECT COUNT(*) AS n FROM access_refusals"), before);
+      } else {
+        assert.throws(() => policy.requireCan(ns, action, undefined, { db, path: "/smoke" }), (e: unknown) => e instanceof DomainError && e.code === "forbidden");
+        assert.equal(count("SELECT COUNT(*) AS n FROM access_refusals"), before + 1, `refusal recorded for non_state_uploader/${action}`);
+      }
+    }
+    // read policy: the uploader is an ordinary public reader (published, public tier) plus own rows
+    assert.ok(queries.auditRows(db, ns, {}).every((r) => r.status === "published" && r.confidentiality === "public"));
+    assert.equal(queries.recordVisible(db, ns, "mgr", seedResult.mgr.restricted), false);
+  });
+
+  // ---------------------------------------------------------------- EIA artifacts
+  p0("seeded EIA — at least one published pack carries non-empty artifactRefs that parse against the contract; artifacts survive the public projection", () => {
+    const withArtifacts = (db.prepare("SELECT id, record_id, artifact_refs_json FROM events WHERE domain = 'eia' AND status = 'published' AND artifact_refs_json <> '[]'").all() as {
+      id: string;
+      record_id: string;
+      artifact_refs_json: string;
+    }[]);
+    assert.ok(withArtifacts.length >= 1, "seed carries EIA artifactRefs");
+    for (const row of withArtifacts) {
+      const refs = JSON.parse(row.artifact_refs_json) as unknown[];
+      assert.ok(refs.length > 0);
+      for (const r of refs) assert.ok(contracts.ArtifactRef.safeParse(r).success, JSON.stringify(r));
+    }
+    const full = eia.packsForActivity(db, secretariat(), seedResult.eia.full);
+    assert.ok(full.some((p) => p.artifactRefs.length > 0), "activity 2 (full journey) has artifacts");
+    const publicView = eia.packsForActivity(db, pub(), seedResult.eia.full);
+    const publicArtifacts = publicView.flatMap((p) => p.artifactRefs);
+    assert.ok(publicArtifacts.length > 0, "public sees artifacts of published packs");
+    assert.ok(publicArtifacts.every((a) => ["pdf", "url", "note", "xlsx"].includes(a.kind) && a.label.length > 0));
+    // a new pack with artifacts round-trips through openPack
+    const e = eia.createEiaActivity(db, party(), { title: "Artifacts round-trip", abnjBox: "CCZ" }, key());
+    const refs = [{ kind: "url" as const, label: "Screening annex", href: "https://example.org/annex.pdf" }, { kind: "note" as const, label: "Filed in hard copy" }];
+    const added = eia.addEiaPack(db, party(), e.activity.id, "screening", "Screening with artifacts", key(), { screeningOutcome: "no_eia", artifactRefs: refs });
+    assert.deepEqual(added.event.artifactRefs, refs);
+  });
+
+  // ---------------------------------------------------------------- EIA screening import (closed loop)
+  p0("EIA screening import loop — fixture with invalid row → run persisted, N-1 accepted with published-ready screening outcome; idempotent; error workbook re-imports after correction", async () => {
+    // Same shape as importMgrExcel: (db, actor, file, defaultPartyCode, key, opts)
+    const importEia = (importer as Record<string, unknown>).importEiaScreeningExcel as
+      | ((db: unknown, actor: unknown, file: Buffer, partyCode: string, key: string, opts?: { filename?: string }) => Promise<import("../src/server/import").ImportResult>)
+      | undefined;
+    const buildEiaSample = (template as Record<string, unknown>).buildEiaScreeningSample as ((opts?: { rows?: number; withInvalid?: boolean }) => Promise<Buffer>) | undefined;
+    const buildEiaErrorReport = (template as Record<string, unknown>).buildEiaScreeningErrorReport as ((run: unknown) => Promise<Buffer>) | undefined;
+    skipUnless(importEia, "importEiaScreeningExcel");
+    skipUnless(buildEiaSample, "buildEiaScreeningSample");
+    const fixture = await buildEiaSample!({ rows: 2, withInvalid: true });
+    const k = key();
+    const run = await importEia!(db, secretariat(), fixture, "XSD", k, { filename: "smoke-eia.xlsx" });
+    assert.equal(run.accepted, 2, JSON.stringify(run.rows));
+    assert.equal(run.rejected, 1);
+    const bad = run.rows.find((r) => !r.ok)!;
+    assert.ok(bad.error, "rejected row carries a field-level error");
+    assert.ok(bad.values, "rejected row keeps its values");
+    // accepted rows are EIA activities with a screening pack that already holds its Art 31 outcome
+    for (const r of run.rows.filter((x) => x.ok)) {
+      const activityId = (r as { activityId?: string; recordId?: string; batchId?: string }).activityId ?? (r as { recordId?: string }).recordId ?? r.batchId!;
+      const a = eia.getEiaActivity(db, activityId)!;
+      assert.equal(a.sourceChannel, "excel");
+      const screening = eia.packsForActivity(db, secretariat(), activityId).find((p) => p.stage === "screening")!;
+      assert.ok(["eia_required", "no_eia"].includes(String(screening.screeningOutcome)), "screening outcome captured at import");
+      assert.equal(screening.status, "pending");
+    }
+    // durable + idempotent; Secretariat-only
+    const again = await importEia!(db, secretariat(), fixture, "XSD", k, { filename: "smoke-eia.xlsx" });
+    assert.equal(again.runId, run.runId);
+    assert.equal(count("SELECT COUNT(*) AS n FROM import_runs WHERE id = ?", run.runId), 1);
+    assert.ok(importer.getImportRun(db, secretariat(), run.runId));
+    assert.throws(() => importer.getImportRun(db, party(), run.runId), DomainError);
+    await assert.rejects(importEia!(db, party(), fixture, "XSD", key()), (e: unknown) => e instanceof DomainError && e.code === "forbidden");
+    await assert.rejects(importEia!(db, nonStateInline(), fixture, "XSD", key()), (e: unknown) => e instanceof DomainError && e.code === "forbidden");
+    // MGR fixture into the EIA importer is rejected (template marker mismatch)
+    await assert.rejects(importEia!(db, secretariat(), await template.buildMgrSample({ rows: 1 }), "XSD", key()), DomainError);
+    // error workbook: only the failed row, Error column; corrected report re-imports
+    if (buildEiaErrorReport) {
+      const report = await buildEiaErrorReport(run);
+      assert.deepEqual(await template.sheetNames(report), ["Meta", "Data", "Field guide"]);
+      const ExcelJS = (await import("exceljs")).default;
+      const wb = new ExcelJS.Workbook();
+      await wb.xlsx.load(report as unknown as import("exceljs").Buffer);
+      const data = wb.getWorksheet("Data")!;
+      assert.equal(data.rowCount, 2, "header + one failed row");
+      const headerRow = data.getRow(1);
+      assert.equal(String(headerRow.getCell(headerRow.cellCount).value), template.ERROR_COLUMN_HEADER);
+      await assert.rejects(importEia!(db, secretariat(), report, "XSD", key()), DomainError);
+      // correct offline: drop the Error column, fix the two bad cells by header (EIA headers, so not template.correctErrorReport)
+      const headers: string[] = [];
+      headerRow.eachCell({ includeEmpty: false }, (c) => headers.push(String(c.value ?? "")));
+      data.spliceColumns(headers.indexOf(template.ERROR_COLUMN_HEADER) + 1, 1);
+      const fixRow = data.getRow(2);
+      for (const [header, value] of Object.entries({ abnj_box: "CCZ", screening_outcome: "no_eia" })) fixRow.getCell(headers.indexOf(header) + 1).value = value;
+      const fixed = Buffer.from(await wb.xlsx.writeBuffer());
+      const run2 = await importEia!(db, secretariat(), fixed, "XSD", key(), { filename: "smoke-eia-corrected.xlsx" });
+      assert.equal(run2.rejected, 0, JSON.stringify(run2.rows));
+      assert.equal(run2.accepted, 1);
+    }
+    assert.deepEqual(reconcile.reconcile(db).mismatches, []);
+  });
+
+  // ---------------------------------------------------------------- CBTMT facilitation note
+  p0("CBTMT facilitation — seeded match carries a facilitation_note; Secretariat can set one; party/STB/non-State refused and logged; note is not an event", () => {
+    const seededMatch = cbtmt.listMatches(db).find((m) => m.id === seedResult.cbtmt.matchId);
+    assert.ok(seededMatch, "seeded match present");
+    assert.ok(seededMatch!.facilitationNote && seededMatch!.facilitationNote.trim().length > 0, "seeded facilitation_note is non-empty");
+    const stored = db.prepare("SELECT facilitation_note FROM cbtmt_matches WHERE id = ?").get(seedResult.cbtmt.matchId) as { facilitation_note: string | null };
+    assert.equal(stored.facilitation_note, seededMatch!.facilitationNote);
+    assert.ok(cbtmt.matchesForRecord(db, seedResult.cbtmt.need).some((m) => m.id === seededMatch!.id && m.facilitationNote === seededMatch!.facilitationNote));
+    // setting a note is a Secretariat brokerage act; it does not add an outbox event
+    const eventsBefore = count("SELECT COUNT(*) AS n FROM events");
+    const updated = cbtmt.setMatchFacilitationNote(db, secretariat(), seededMatch!.id, "Smoke: introduced both focal points by e-mail; first call proposed for next month.");
+    assert.match(updated.facilitationNote!, /^Smoke: introduced/);
+    assert.equal(count("SELECT COUNT(*) AS n FROM events"), eventsBefore, "note is not an event");
+    assert.throws(() => cbtmt.setMatchFacilitationNote(db, secretariat(), seededMatch!.id, "   "), (e: unknown) => e instanceof DomainError && e.code === "validation");
+    assert.throws(() => cbtmt.setMatchFacilitationNote(db, secretariat(), crypto.randomUUID(), "orphan"), (e: unknown) => e instanceof DomainError && e.code === "not_found");
+    for (const mk of [party, stb, pub, nonStateInline]) {
+      const before = count("SELECT COUNT(*) AS n FROM access_refusals");
+      assert.throws(() => cbtmt.setMatchFacilitationNote(db, mk(), seededMatch!.id, "hijack"), (e: unknown) => e instanceof DomainError && e.code === "forbidden");
+      assert.equal(count("SELECT COUNT(*) AS n FROM access_refusals"), before + 1);
+    }
+    assert.match(cbtmt.listMatches(db).find((m) => m.id === seededMatch!.id)!.facilitationNote!, /^Smoke: introduced/);
+  });
+
+  // ---------------------------------------------------------------- digest export
+  p0("digest export — Secretariat-only table of delivered digest windows; anonymous/party get nothing (and a refusal row); CSV header equals columns", () => {
+    const exportDigests = (exporter as Record<string, unknown>).exportDigests as ((db: unknown, p: unknown, path?: string) => import("../src/server/export").Tabular | undefined) | undefined;
+    const domains = exporter.EXPORT_DOMAINS as readonly string[];
+    const viaTable = domains.includes("digests") ? (p: import("../src/server/policy").Principal) => exporter.exportTable(db, p, "digests" as never) : undefined;
+    if (!exportDigests && !viaTable) throw new Skip("exportDigests / exportTable('digests') not present in this build");
+    const get = (p: import("../src/server/policy").Principal) => (exportDigests ? exportDigests(db, p, "/api/export/digests.csv") : viaTable!(p));
+    // make sure at least one digest window exists
+    digest.runDigests(db, { actor: secretariat() });
+    const runs = count("SELECT COUNT(*) AS n FROM digest_runs");
+    assert.ok(runs >= 1, "digest_runs populated by seed/runDigests");
+    const sec = get(secretariat())!;
+    assert.ok(sec, "secretariat gets a table");
+    assert.equal(sec.rows.length, runs, "one row per digest window");
+    for (const c of ["username", "cadence", "eventCount"]) assert.ok(sec.columns.some((x) => x.toLowerCase() === c.toLowerCase()), `column ${c}`);
+    const csv = exporter.toCsv(sec);
+    const [header, ...rest] = csv.split("\r\n");
+    assert.equal(header, sec.columns.join(","));
+    assert.equal(rest.filter((l) => l !== "").length, sec.rows.length);
+    for (const mk of [anon, pub, party, stb, nonStateInline]) {
+      const before = count("SELECT COUNT(*) AS n FROM access_refusals");
+      let out: import("../src/server/export").Tabular | undefined;
+      try {
+        out = get(mk());
+      } catch (e) {
+        assert.ok(e instanceof DomainError && e.code === "forbidden");
+      }
+      assert.ok(!out || out.rows.length === 0, "non-Secretariat gets no digest rows");
+      assert.ok(count("SELECT COUNT(*) AS n FROM access_refusals") >= before, "probe never deletes refusals");
+    }
+  });
+
   // ---------------------------------------------------------------- run
   let failed = 0;
+  let skipped = 0;
   let ran = 0;
   for (const t of tests) {
     if (only && t.group !== only) continue;
@@ -641,6 +929,11 @@ async function main() {
       await t.fn();
       console.log(`  ok   [${t.group}] ${t.name}`);
     } catch (err) {
+      if (err instanceof Skip) {
+        skipped++;
+        console.log(`  skip [${t.group}] ${t.name}\n         ${err.message}`);
+        continue;
+      }
       failed++;
       console.log(`  FAIL [${t.group}] ${t.name}`);
       console.log(String(err instanceof Error ? err.stack ?? err.message : err).split("\n").map((l) => "         " + l).join("\n"));
@@ -648,7 +941,7 @@ async function main() {
   }
   dbMod.closeDb();
   fs.rmSync(tmpDir, { recursive: true, force: true });
-  console.log(`\n${ran - failed}/${ran} passed${only ? ` (${only})` : ""}`);
+  console.log(`\n${ran - failed - skipped}/${ran} passed${skipped ? `, ${skipped} skipped (API not in this build)` : ""}${only ? ` (${only})` : ""}`);
   process.exit(failed ? 1 : 0);
 }
 

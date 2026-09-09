@@ -76,15 +76,27 @@ export function actorRoleOf(p: Principal): ActorRole {
   if (hasRole(p, "publishing_authority")) return "publishing_authority";
   if (hasRole(p, "party")) return "party";
   if (hasRole(p, "stb")) return "stb";
+  if (hasRole(p, "non_state_uploader")) return "non_state_uploader";
   return "public";
 }
 
-export function can(p: Principal, action: Action, subject?: { ownerUserId?: string | null }): boolean {
+/** Optional domain/kind context for non-State uploader (CBTMT offers only). */
+export type ActionSubject = {
+  ownerUserId?: string | null;
+  domain?: string;
+  recordKind?: string;
+};
+
+export function can(p: Principal, action: Action, subject?: ActionSubject): boolean {
   if (p.kind === "anonymous") return false;
   switch (action) {
     case "submit":
     case "amend": // amend = submit a new version of a published pack; same ownership rule
       if (isSecretariat(p)) return true; // on behalf → sourceChannel "assisted"
+      if (hasRole(p, "non_state_uploader")) {
+        // PrepCom3-style: may post CBTMT offers only (not needs, not other domains, not amend).
+        return action === "submit" && subject?.domain === "cbtmt" && subject?.recordKind === "offer";
+      }
       if (!hasRole(p, "party")) return false;
       if (subject && subject.ownerUserId != null) return subject.ownerUserId === p.user.id;
       return true;
@@ -177,6 +189,7 @@ export const RECORD_JOIN = `
     SELECT id, owner_user_id, confidentiality, 'mgr' AS domain FROM mgr_batches
     UNION ALL SELECT id, owner_user_id, confidentiality, 'eia' FROM eia_activities
     UNION ALL SELECT id, owner_user_id, confidentiality, 'cbtmt' FROM cbtmt_records
+    UNION ALL SELECT id, owner_user_id, confidentiality, 'abmt' FROM abmt_proposals
   ) r ON r.id = e.record_id`;
 
 export interface RefusalContext {
@@ -219,10 +232,14 @@ export function recordRefusal(p: Principal, action: Action | string, ctx: Refusa
 }
 
 /** Authorise or record-and-throw. Every domain mutation and gated read goes through here. */
-export function requireCan(p: Principal, action: Action, subject?: { ownerUserId?: string | null }, ctx: RefusalContext = {}): void {
+export function requireCan(p: Principal, action: Action, subject?: ActionSubject, ctx: RefusalContext = {}): void {
   if (!can(p, action, subject)) {
     const reason =
-      subject && subject.ownerUserId != null && p.kind === "user" && hasRole(p, "party") ? `Not permitted: ${action} — record owned by another Party` : `Not permitted: ${action}`;
+      subject && subject.ownerUserId != null && p.kind === "user" && hasRole(p, "party")
+        ? `Not permitted: ${action} — record owned by another Party`
+        : hasRole(p, "non_state_uploader")
+          ? `Not permitted: ${action} — non-State uploader may post CBTMT offers only`
+          : `Not permitted: ${action}`;
     recordRefusal(p, action, { ...ctx, reason: ctx.reason ?? reason });
     throw new DomainError("forbidden", reason);
   }

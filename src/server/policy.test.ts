@@ -27,6 +27,20 @@ const secretariatUser = SEED_USERS[1];
 const publicUser = SEED_USERS[2];
 const stbUser = SEED_USERS[3];
 
+describe("non_state_uploader policy", () => {
+  it("may submit CBTMT offers only", () => {
+    const uploader = principalFor(SEED_USERS[4]);
+    expect(actorRoleOf(uploader)).toBe("non_state_uploader");
+    expect(can(uploader, "submit")).toBe(false);
+    expect(can(uploader, "submit", { domain: "cbtmt", recordKind: "offer" })).toBe(true);
+    expect(can(uploader, "submit", { domain: "cbtmt", recordKind: "need" })).toBe(false);
+    expect(can(uploader, "submit", { domain: "mgr" })).toBe(false);
+    expect(can(uploader, "publish")).toBe(false);
+    expect(can(uploader, "import")).toBe(false);
+    expect(can(uploader, "manage_subscription")).toBe(true);
+  });
+});
+
 describe("principals", () => {
   it("treats inactive users as anonymous", () => {
     const inactive: User = { ...partyUser, active: false };

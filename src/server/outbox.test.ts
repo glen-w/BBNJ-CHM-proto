@@ -37,12 +37,17 @@ function draftEvent(over: Record<string, unknown> = {}) {
 }
 
 describe("recordTable", () => {
-  it("maps domains and reserves ABMT", () => {
+  it("maps all four domains, ABMT included (v5 thin stub)", () => {
     expect(recordTable("mgr")).toBe("mgr_batches");
     expect(recordTable("eia")).toBe("eia_activities");
     expect(recordTable("cbtmt")).toBe("cbtmt_records");
-    expect(() => recordTable("abmt")).toThrow(/reserved/);
-    expect(getRecordMeta({} as never, "abmt", "x")).toBeUndefined();
+    expect(recordTable("abmt")).toBe("abmt_proposals");
+    const h = createHarness();
+    try {
+      expect(getRecordMeta(h.db, "abmt", "00000000-0000-4000-8000-0000000000ff")).toBeUndefined();
+    } finally {
+      h.cleanup();
+    }
   });
 });
 

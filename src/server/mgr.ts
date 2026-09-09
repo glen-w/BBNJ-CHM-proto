@@ -28,6 +28,8 @@ type BatchRow = {
   owner_user_id: string | null;
   details_json: string;
   details_history_json: string;
+  tk_provenance_note?: string | null;
+  fpic_status_note?: string | null;
   updated_at: string;
 };
 
@@ -48,6 +50,8 @@ export function rowToBatch(row: BatchRow): StoredMgrBatch {
     ownerUserId: row.owner_user_id ?? undefined,
     details: JSON.parse(row.details_json),
     detailsHistory: JSON.parse(row.details_history_json ?? "[]"),
+    tkProvenanceNote: row.tk_provenance_note ?? undefined,
+    fpicStatusNote: row.fpic_status_note ?? undefined,
     updatedAt: row.updated_at,
   });
 }
