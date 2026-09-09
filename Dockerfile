@@ -21,8 +21,9 @@ ENV NODE_ENV=production
 WORKDIR /app
 
 # Full install (incl. tsx) so the seed scripts run at container start.
+# NODE_ENV=production would otherwise make npm omit devDependencies.
 COPY package.json package-lock.json .npmrc ./
-RUN npm ci
+RUN npm ci --include=dev
 
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public

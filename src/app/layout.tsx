@@ -12,6 +12,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Every page reads the demo cookie and SQLite: render at request time, on Node.
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export const metadata: Metadata = {
   title: "BBNJ Cl-HM prototype",
   description:

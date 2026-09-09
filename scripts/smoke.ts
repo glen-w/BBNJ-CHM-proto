@@ -31,7 +31,6 @@ async function main() {
   const ext = await import("../src/lib/contracts/extensions");
   const policy = await import("../src/server/policy");
   const ids = await import("../src/server/ids");
-  const outbox = await import("../src/server/outbox");
   const packs = await import("../src/server/packs");
   const mgr = await import("../src/server/mgr");
   const eia = await import("../src/server/eia");
