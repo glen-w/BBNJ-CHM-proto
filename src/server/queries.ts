@@ -9,7 +9,8 @@ import { rowToAbmt } from "./abmt";
 import { rowToCbtmt } from "./cbtmt";
 import { rowToActivity } from "./eia";
 import { rowToBatch } from "./mgr";
-import { type EventRow, rowToEvent } from "./outbox";
+import { domainPath } from "@/lib/format";
+import { getEvent, type EventRow, rowToEvent } from "./outbox";
 import { RECORD_JOIN, can, type Principal, readPolicy, recordVisibilityClause, userId, visibilityClause } from "./policy";
 import { provenanceBadgeForRecord, type ProvenanceBadge } from "./seed-pack";
 
@@ -475,11 +476,32 @@ export function resolvePublicRecord(db: Db, p: Principal, publicRecordId: string
 
 type NotificationRow = { id: string; user_id: string; event_id: string; kind: Notification["kind"]; at: string; read: number; summary: string };
 
-export function notificationsFor(db: Db, p: Principal, limit = 50): Notification[] {
+export type NotificationView = Notification & { domain?: Domain; recordHref?: string };
+
+export function notificationRecordLink(db: Db, eventId: string): { domain: Domain; recordHref: string } | undefined {
+  const ev = getEvent(db, eventId);
+  if (!ev) return undefined;
+  return { domain: ev.domain, recordHref: domainPath(ev.domain, ev.recordId) };
+}
+
+export function notificationsFor(db: Db, p: Principal, limit = 50): NotificationView[] {
   const uid = userId(p);
   if (!uid) return [];
   const rows = db.prepare("SELECT * FROM notifications WHERE user_id = ? ORDER BY at DESC, rowid DESC LIMIT ?").all(uid, limit) as NotificationRow[];
-  return rows.map((r) => ({ id: r.id, userId: r.user_id, eventId: r.event_id, kind: r.kind, at: r.at, read: r.read === 1, summary: r.summary }));
+  return rows.map((r) => {
+    const link = notificationRecordLink(db, r.event_id);
+    return {
+      id: r.id,
+      userId: r.user_id,
+      eventId: r.event_id,
+      kind: r.kind,
+      at: r.at,
+      read: r.read === 1,
+      summary: r.summary,
+      domain: link?.domain,
+      recordHref: link?.recordHref,
+    };
+  });
 }
 
 export function unreadCount(db: Db, p: Principal): number {

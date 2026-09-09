@@ -2,7 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AppShell } from "@/components/app-shell";
+import { AbnjSchematic } from "@/components/abnj-schematic";
 import { ChannelBadge, ConfidentialityBadge, Identifier, ProvenanceBadge, StageChip, TierNote } from "@/components/chips";
+import { MintStepper } from "@/components/mint-stepper";
+import { ProvenanceCaption } from "@/components/provenance-caption";
 import { RecordExportLinks } from "@/components/export-links";
 import { flashFrom } from "@/components/flash";
 import { Field, KeyFields, SubmitButton, selectClass } from "@/components/forms";
@@ -66,6 +69,17 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
         <RecordExportLinks publicRecordId={activity.publicRecordId} />
       </div>
       <TierNote tier={activity.confidentiality} />
+      {provenance ? <ProvenanceCaption badge={provenance} /> : null}
+
+      <MintStepper
+        domain="eia"
+        highlight={flash.minted}
+        values={{
+          internal: activity.id,
+          receipt: packs.find((e) => e.receiptId)?.receiptId,
+          publicRecordId: activity.publicRecordId,
+        }}
+      />
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Identifier label="internalId" value={activity.id} caption="UUID at creation" />
@@ -190,10 +204,11 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
           ) : null}
           <div className="rounded-lg border p-4">
             <h2 className="mb-1 text-sm font-medium uppercase tracking-wide text-muted-foreground">Neighbourhood — same ABNJ box</h2>
-            <p className="mb-2 text-xs text-muted-foreground">
-              Other activities in <strong>{activity.abnjBox}</strong> visible to your role. A fixed demo vocabulary, not GIS: the box is the only spatial
-              key in this build.
-            </p>
+            <AbnjSchematic
+              currentBox={activity.abnjBox}
+              neighbours={neighbours.map((n) => ({ id: n.id, title: n.title, href: `/eia/${n.id}` }))}
+              className="mb-3"
+            />
             {neighbours.length === 0 ? (
               <p className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
                 No other activities visible in this box. Cumulative-effects context (Art 30) would appear here as the box fills.

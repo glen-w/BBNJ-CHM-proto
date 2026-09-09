@@ -6,8 +6,6 @@ Built for **Party and Secretariat staff, reviewers, and anyone comparing a trans
 
 Repository: [github.com/glen-w/BBNJ-CHM-proto](https://github.com/glen-w/BBNJ-CHM-proto)
 
-![Diagram of the five shared Cl-HM rails: Submit, Review/manage, Publish, Notify, Audit, with MGR, EIA, CBTMT and ABMT journey labels](public/clhm-rails-overview.png)
-
 ---
 
 ## In brief
@@ -72,9 +70,9 @@ What this release already proves vs what a production Cl-HM would still need. Wa
 | **Wave A — Operate the desk** | Day-to-day Secretariat use | **Admin / user-management backend**; vocabularies; scheduled digests; import monitoring; richer audit filters; hosted **public URL** if required |
 | **Wave B — Reach people** | Alerts beyond the browser | **SMTP** (optional SMS later) on the same outbox; **mailing lists / circulars** vs transactional notify; preference centre with real channels and unsubscribe |
 | **Wave C — Trust & language** | Production posture | Institutional IdP / OAuth, TLS, session hardening; **six-language UI by human i18n** (treaty-text links already stubbed); formal WCAG audit |
-| **Wave D — Content & geography** | Deeper records | File/object store for artifacts (today: references only); map/GIS neighbourhood as progressive enhancement; ABMT content beyond `proposal_stub` when COP1 clarifies |
+| **Wave D — Content & geography** | Deeper records | File/object store for artifacts (today: references only); **tile/GIS neighbourhood** as progressive enhancement (schematic ABNJ diagram ships now); ABMT content beyond `proposal_stub` when COP1 clarifies |
 | **Wave E — Interoperate** | Ecosystem | Versioned **API + webhooks**; federation / node protocol on the outbox; search beyond SQLite FTS; machine-readable exchange with related clearing-houses (today: named links only) |
-| **Cross-cut** | Assist, hosting & proof | Guarded **LLM assist** (never authority); pick an **infrastructure pathway**; grow **testing** with each seam (CI, a11y gate, channel/API fixtures) without replacing `npm run smoke` |
+| **Cross-cut** | Assist, hosting & proof | Guarded **LLM assist** (never authority) incl. CBTMT match-card UX (rule vs facilitation split); **printable EOI exhibit** one-pager from live DB; pick an **infrastructure pathway**; grow **testing** with each seam without replacing `npm run smoke` |
 
 ### Translation — need and modalities
 
@@ -101,7 +99,7 @@ If a later build uses an LLM, it is an **assistant**, not a rail. Same `readPoli
 | May help (human confirms) | Must not |
 |---|---|
 | Explain a form field; suggest themes or ABNJ boxes | Mint `receiptId` / B-SBI / `publicRecordId` |
-| Draft a Secretariat facilitation note | Publish, amend, or change confidentiality |
+| Draft a Secretariat facilitation note; surface **rule-found pair vs human facilitation** on CBTMT match cards | Publish, amend, or change confidentiality |
 | Reformulate a public search query; summarise a **public** record | Replace CBTMT matchmaking or STB review |
 | Help translate **UI catalogs** for a human editor | Translate treaty/filings as official; train on confidential packs |
 
@@ -330,7 +328,7 @@ npm test                 # Vitest
 
 Environment: `DATABASE_PATH` (default `data/chm.sqlite`); `SANDBOX_RESET=1` (or `force` in a hosted evaluation image) for Secretariat *Reset database*.
 
-**Latency / SIDS:** SSR HTML, native forms (works without client JS), no map tiles; offline Excel is the Art 51.5 pattern proof — not a WCAG certification (`ACCESSIBILITY.md`). The Secretariat-only **speed lab** (`/lab/speed`, or `npm run speed`) times the closed loop on named connection profiles (office, 4G, SIDS 3G, satellite, offline): wire time is *calculated* from nominal bandwidth + RTT, parse time is *measured* with a validate-only pass — mocked, not a field measurement; trials go to `data/speed-runs.jsonl`, not the audit log.
+**Latency / SIDS:** SSR HTML, native forms (works without client JS), no map tiles; offline Excel is the Art 51.5 pattern proof — not a WCAG certification (`ACCESSIBILITY.md`). **Speed tests** live under Settings → Speed (`/settings?tab=speed`, or `npm run speed`): wire time is *calculated* from nominal bandwidth + RTT, parse time is *measured* with a validate-only pass — mocked, not a field measurement; trials go to `data/speed-runs.jsonl`, not the audit log.
 
 ### Guarantees (`npm run smoke`)
 

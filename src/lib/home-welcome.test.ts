@@ -26,7 +26,7 @@ describe("home welcome band preference", () => {
 
 describe("home welcome navigation", () => {
   it("jumps to get started, recent records and about — not a map", () => {
-    expect(HOME_WELCOME_JUMPS.map((j) => j.href)).toEqual(["#get-started", "#recent-records", "#about-desk"]);
+    expect(HOME_WELCOME_JUMPS.map((j) => j.href)).toEqual(["#get-started", "#recent-records", "/about"]);
     expect(HOME_WELCOME_JUMPS.some((j) => /map/i.test(j.label))).toBe(false);
   });
 
@@ -37,7 +37,7 @@ describe("home welcome navigation", () => {
 
     const pub = homeWelcomeGetStarted("public");
     expect(pub.map((c) => c.key)).toEqual(["learn", "search", "submit"]);
-    expect(pub.find((c) => c.key === "submit")?.links.map((l) => l.href)).toEqual(["/login", "#about-desk"]);
+    expect(pub.find((c) => c.key === "submit")?.links.map((l) => l.href)).toEqual(["/login", "/about"]);
 
     const party = homeWelcomeGetStarted("party");
     expect(party.find((c) => c.key === "submit")?.links.map((l) => l.href)).toContain("/mgr/new");
@@ -45,5 +45,8 @@ describe("home welcome navigation", () => {
     const offer = homeWelcomeGetStarted("offer");
     expect(offer.find((c) => c.key === "submit")?.headerHref).toBe("/capacity");
     expect(offer.find((c) => c.key === "submit")?.links.map((l) => l.href)).toContain("/capacity");
+
+    const learn = homeWelcomeGetStarted("public").find((c) => c.key === "learn");
+    expect(learn?.links.map((l) => l.href)).toContain("/settings?tab=demo");
   });
 });

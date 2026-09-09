@@ -13,7 +13,7 @@ export function homeWelcomeVisible(value: string | undefined | null): boolean {
 export const HOME_WELCOME_JUMPS = [
   { href: "#get-started", label: "Get started" },
   { href: "#recent-records", label: "Recent records" },
-  { href: "#about-desk", label: "About this desk" },
+  { href: "/about", label: "About this desk" },
 ] as const;
 
 export type HomeWelcomeSubmitMode = "party" | "offer" | "public";
@@ -44,26 +44,27 @@ export function homeWelcomeGetStarted(mode: HomeWelcomeSubmitMode): HomeWelcomeC
       ? [
           { href: "/login", label: "Sign in" },
           { href: "/mgr/new", label: "Notify an MGR collection" },
-          { href: "#about-desk", label: "Help submitting records" },
+          { href: "/about", label: "Help submitting records" },
         ]
       : mode === "offer"
         ? [
             { href: "/login", label: "Sign in" },
             { href: "/capacity", label: "Post a CBTMT offer" },
-            { href: "#about-desk", label: "Help submitting records" },
+            { href: "/about", label: "Help submitting records" },
           ]
         : [
             { href: "/login", label: "Sign in" },
-            { href: "#about-desk", label: "Help submitting records" },
+            { href: "/about", label: "Help submitting records" },
           ];
 
   return [
     {
       key: "learn",
       label: "Learn",
-      headerHref: "#about-desk",
+      headerHref: "/about",
       links: [
-        { href: "#about-desk", label: "Learn about the Cl-HM" },
+        { href: "/about", label: "Learn about the Cl-HM" },
+        { href: "/settings?tab=demo", label: "Demo user path" },
         { href: "#journeys", label: "The four journeys" },
         { href: "https://www.un.org/bbnjagreement/en", label: "About the Agreement", external: true },
       ],

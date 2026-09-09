@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
+import { DomainBadge } from "@/components/chips";
 import { flashFrom } from "@/components/flash";
 import { KeyFields, SubmitButton } from "@/components/forms";
 import { buttonVariants } from "@/components/ui/button";
@@ -81,9 +82,19 @@ export default async function NotificationsPage({ searchParams }: Props) {
               {items.map((n) => (
                 <li key={n.id} className={cn("flex flex-wrap items-start justify-between gap-2 p-3 text-sm", !n.read && "bg-institutional/5")}>
                   <div>
-                    <span className="mr-2 rounded bg-muted px-1.5 text-xs uppercase">{n.kind.replace("_", " ")}</span>
-                    <Link href={`/audit?event=${n.eventId}`} className="hover:underline">
-                      {n.summary}
+                    <span className="mr-2 inline-flex items-center gap-1.5">
+                      {n.domain ? <DomainBadge domain={n.domain} /> : null}
+                      <span className="rounded bg-muted px-1.5 text-xs uppercase">{n.kind.replace("_", " ")}</span>
+                    </span>
+                    {n.recordHref ? (
+                      <Link href={n.recordHref} className="hover:underline">
+                        {n.summary}
+                      </Link>
+                    ) : (
+                      <span>{n.summary}</span>
+                    )}
+                    <Link href={`/audit?event=${n.eventId}`} className="ms-2 text-xs text-muted-foreground hover:underline">
+                      timeline
                     </Link>
                   </div>
                   <span className="whitespace-nowrap font-mono text-xs text-muted-foreground">{fmtDate(n.at)}</span>

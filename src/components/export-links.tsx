@@ -35,7 +35,7 @@ export function RecordExportLinks({ publicRecordId }: { publicRecordId: string |
         className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
         title="One-page text PDF extract"
       >
-        Export PDF (.pdf)
+        One-page text extract (stub)
       </a>
     </span>
   );

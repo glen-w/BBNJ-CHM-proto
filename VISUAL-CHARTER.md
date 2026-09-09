@@ -59,7 +59,8 @@ This charter governs the Cl-HM desk UI. It is a **team choice** for this prototy
 ## 4. Layout & components
 
 - **Shell:** three bands — UN masthead (welcome + treaty-text locale); product/account (emblem · **BBNJ Cl-HM** · rails · global “Search all Cl-HM records” · role switcher · bell); contextual (journey tabs · labelled **Latest transaction** from the last visible outbox event, public identifiers only). The long Agreement title does not sit in chrome. The ABMT tab is **enabled and quiet**: same weight as the other journeys, no “stub” / “not in this build” badge in the tab itself; the stub nature is stated once, in one sentence, on the ABMT page.  
-- **About this desk:** related-systems links, identifier order, and `/records/<id>` notes live in a closed technical panel (home `#about-desk` and per-journey “About this workflow”), not in the footer or as stacked essays above tables. Caption related systems as *related systems*, never as “integrations” or “partners”. Footer is product mark + About link.  
+- **About this desk:** lives at `/about` (footer link + welcome hero jump). Related-systems links, identifier order, comparison highlights, speed-test explanation and `/records/<id>` notes — not stacked above journey tables on home. Per-journey “About this workflow” stays on journey cards. Caption related systems as *related systems*, never as “integrations” or “partners”. Footer is product mark + About link.
+- **Settings (gear):** icon-only in band 2 (after search, before bell). Demo user path, speed tests and desk-config placeholders — not in primary nav.  
 - **Deferred capability caption:** where a proprietary or deferred capability is referenced (e-mail delivery, GIS, federation, tagged PDF), use one quiet muted caption in the relevant panel — e.g. *in-app only in this build* — not a banner, not a roadmap list.  
 - **Record lists:** domain badge (quiet tint + optional Lucide icon with label) · public record id · status chip (**text + colour**, never colour-only) · **Updated** as a scan column — scannable tables, shadcn `Table` / `Badge` / `Button`. List pages **Filter … records** (live); header search is global FTS. MGR/EIA actions: primary **New** · **Import▾** (template underneath) · **Export▾**.  
 - **Home cards:** operational launchers (count + short rail + Open); essays behind “About this workflow”. Recently published: title / status / id+date on separate rows.  
@@ -69,7 +70,8 @@ This charter governs the Cl-HM desk UI. It is a **team choice** for this prototy
 - **CBTMT:** two-column needs↔offers; match as chip, not confetti.  
 - **Forms:** clear labels, inline validation, “Download template” as a first-class control on MGR intake.  
 - **Notify:** bell drawer — list, not toast spam.  
-- **Compare (`/compare`):** docs-style contrast page; **not** linked from the shell — open by URL from README / demo script.
+- **Compare (`/compare`):** docs-style contrast page; **not** linked from the shell — open from `/about`, Settings → Demo user, or README / demo script.
+- **Neighbourhood (EIA):** schematic ABNJ diagram (labelled dots, not GIS tiles) above the same-box list — charter-allowed maps-without-hardcore-GIS.
 
 **Elevation:** flat / one soft shadow max. Prefer borders over shadows.
 

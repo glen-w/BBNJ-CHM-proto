@@ -1,19 +1,15 @@
 import Link from "next/link";
 
-import { AboutPanel } from "@/components/about-panel";
 import { AppShell } from "@/components/app-shell";
 import { ConfidentialityBadge, DomainBadge, DOMAIN_RAIL, ProvenanceBadge, StatusChip } from "@/components/chips";
 import { DOMAIN_ICON, isAccentDomain, type AccentDomain } from "@/components/domain-icons";
 import { flashFrom } from "@/components/flash";
 import { HomeWelcomeBand } from "@/components/home-welcome-band";
 import { RailsStrip } from "@/components/rails-strip";
-import { RelatedSystemsList } from "@/components/related-systems";
-import { buttonVariants } from "@/components/ui/button";
 import { getDb } from "@/lib/db";
 import { domainPath, fmtDate, stageLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { listAbmtProposals, listCbtmtRecords, listEiaActivities, listMgrBatches, railCounts, recentPublished } from "@/server/queries";
-import { SEED_HONESTY } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -113,54 +109,6 @@ export default async function HomePage({ searchParams }: Props) {
           </ul>
         )}
       </section>
-
-      <AboutPanel id="about-desk" title="About this desk">
-        <p>{SEED_HONESTY}</p>
-        <p>
-          Submit, manage, publish and notify across MGR, EIA, capacity-building and (as a stub) area-based management tools — one desk, four
-          journeys.
-        </p>
-        <div>
-          <div className="mb-1 font-medium text-foreground">Identifiers, in order</div>
-          <ol className="list-decimal space-y-1 pl-5">
-            <li>
-              <span className="font-mono text-foreground">internalId</span> — UUID, at creation
-            </li>
-            <li>
-              <span className="font-mono text-foreground">receiptId</span> — pack enters pending
-            </li>
-            <li>
-              <span className="font-mono text-foreground">B-SBI</span> — valid MGR pre-collection receipt (Art 12), before any publish
-            </li>
-            <li>
-              <span className="font-mono text-foreground">publicRecordId</span> — first pack publish on the record
-            </li>
-          </ol>
-        </div>
-        <p>
-          Stable public URL:{" "}
-          <Link href="/records/BBNJ-MGR-2026-00001" className="font-mono text-foreground underline underline-offset-2 hover:text-institutional">
-            /records/&lt;publicRecordId&gt;
-          </Link>
-          — resolves to the owning record, subject to the same read policy.
-        </p>
-        <div>
-          <div className="mb-1 font-medium text-foreground">Related systems (reference — not federation)</div>
-          <RelatedSystemsList />
-        </div>
-        <p>
-          <strong className="text-foreground">ABMT</strong> is a thin stub only. Area-based management tools (Art 51.3(a)(ii)) ride a{" "}
-          <code>proposal_stub</code> pack so receipt and publish can be seen to carry a fourth journey. Without prejudice to COP1.
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <a href="/api/export/mgr.csv" className={cn(buttonVariants({ variant: "outline", size: "sm" }))} title="CSV of the MGR rows visible to your role">
-            Export CSV (.csv)
-          </a>
-          <a href="/api/export/audit.json" className={cn(buttonVariants({ variant: "outline", size: "sm" }))} title="JSON envelope of the audit rows visible to your role">
-            Audit JSON (.json)
-          </a>
-        </div>
-      </AboutPanel>
     </AppShell>
   );
 }

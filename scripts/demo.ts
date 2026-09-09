@@ -251,6 +251,10 @@ async function main() {
     const prid = (serverDb.prepare("SELECT public_record_id FROM mgr_batches WHERE public_record_id IS NOT NULL AND confidentiality = 'public' ORDER BY public_record_id LIMIT 1").get() as { public_record_id: string } | undefined)?.public_record_id;
     const restricted = (serverDb.prepare("SELECT public_record_id FROM mgr_batches WHERE confidentiality = 'restricted' AND public_record_id IS NOT NULL LIMIT 1").get() as { public_record_id: string } | undefined)?.public_record_id;
     await expect("/", undefined, 200, /Clearing-House Mechanism/);
+    await expect("/about", undefined, 200, /Identifiers, in order/);
+    await expect("/settings", undefined, 200, /Demo user path/);
+    await expect("/settings?tab=speed", "secretariat", 200, /Run the loop/);
+    await expect("/lab/speed", undefined, [307, 308]);
     await expect("/compare", undefined, 200, /Receipt, management and storage/);
     await expect("/compare", "secretariat", 200, /Refusal log/);
     await expect("/audit", "secretariat", 200, /Refusal log/);

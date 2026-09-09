@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { AppShell } from "@/components/app-shell";
 import { ConfidentialityBadge, Identifier, StageChip, TierNote } from "@/components/chips";
+import { MintStepper } from "@/components/mint-stepper";
 import { RecordExportLinks } from "@/components/export-links";
 import { flashFrom } from "@/components/flash";
 import { PublishButton } from "@/components/publish-button";
@@ -54,6 +55,15 @@ export default async function CbtmtRecordPage({ params, searchParams }: Props) {
         <RecordExportLinks publicRecordId={record.publicRecordId} />
       </div>
       <TierNote tier={record.confidentiality} />
+      <MintStepper
+        domain="cbtmt"
+        highlight={flash.minted}
+        values={{
+          internal: record.id,
+          receipt: packs.find((e) => e.receiptId)?.receiptId,
+          publicRecordId: record.publicRecordId,
+        }}
+      />
       <section className="grid gap-3 sm:grid-cols-3">
         <Identifier label="internalId" value={record.id} caption="UUID at creation" />
         <Identifier label="receiptId" value={packs.find((e) => e.receiptId)?.receiptId} caption="Issued when the pack entered pending" />

@@ -36,6 +36,8 @@ export interface OpenPackArgs {
 export interface PackResult {
   event: StoredEvent;
   created: boolean;
+  /** True when this publish minted the record's first publicRecordId. */
+  mintedPublicRecordId?: boolean;
 }
 
 function buildEvent(args: {
@@ -201,6 +203,8 @@ export function publishPack(db: Db, actor: Principal, args: PublishArgs): PackRe
   if (latest.status === "published") return { event: latest, created: false };
   if (latest.status !== "pending") throw new DomainError("not_pending", `Latest ${args.stage} pack is ${latest.status}, not pending`);
 
+  const mintingPublicId = !meta.publicRecordId;
+
   const tx = db.transaction((): StoredEvent => {
     const at = args.at ?? nowIso();
     let publicRecordId = meta.publicRecordId;
@@ -229,5 +233,5 @@ export function publishPack(db: Db, actor: Principal, args: PublishArgs): PackRe
   });
   const event = tx();
   dispatch(db, event.id); // the NEW published event id, after commit
-  return { event, created: true };
+  return { event, created: true, mintedPublicRecordId: mintingPublicId };
 }

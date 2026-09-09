@@ -27,6 +27,7 @@ import { resetSandbox } from "./reset";
 import { getSessionUser, setHomeWelcome, setSessionUser, setTreatyLang } from "./session";
 import { appendSpeedTrials, runSpeedMatrix } from "./speed-lab";
 import { buildEiaScreeningSample, buildMgrSample } from "./template";
+import type { MintKind } from "@/lib/mint";
 import { findUserById } from "./users";
 
 const str = (fd: FormData, k: string) => {
@@ -55,13 +56,14 @@ function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
 
-type Outcome = { to: string; notice?: string; error?: string };
+type Outcome = { to: string; notice?: string; error?: string; minted?: MintKind };
 
 function finish(o: Outcome): never {
   if (!o.error) revalidatePath("/", "layout");
   const url = new URL(o.to, "http://x");
   if (o.notice) url.searchParams.set("notice", o.notice.slice(0, 300));
   if (o.error) url.searchParams.set("error", o.error.slice(0, 500));
+  if (o.minted) url.searchParams.set("minted", o.minted);
   redirect(url.pathname + url.search);
 }
 
@@ -140,7 +142,7 @@ export async function submitMgrAction(fd: FormData) {
       batchId = saveMgrDraft(db, p, mgrFields(fd), `${key}:draft`, { partyCode: str(fd, "partyCode") || undefined }).batch.id;
     }
     const r = submitPreCollection(db, p, batchId, mgrFields(fd), key);
-    return { to: `/mgr/${r.batch.id}`, notice: `Receipt ${r.event.receiptId} accepted — B-SBI ${r.batch.bSbi} issued (Art 12).` };
+    return { to: `/mgr/${r.batch.id}`, notice: `Receipt ${r.event.receiptId} accepted — B-SBI ${r.batch.bSbi} issued (Art 12).`, minted: "bSbi" };
   });
 }
 
@@ -150,7 +152,7 @@ export async function addMgrPackAction(fd: FormData) {
   attempt(`/mgr/${batchId}`, () => {
     const stage = z.enum(["post_collection", "utilisation"]).parse(str(fd, "stage"));
     addMgrPack(getDb(), p, batchId, stage, str(fd, "summary"), keyOf(fd));
-    return { to: `/mgr/${batchId}`, notice: `${stage.replace("_", "-")} pack submitted (pending Secretariat publication).` };
+    return { to: `/mgr/${batchId}`, notice: `${stage.replace("_", "-")} pack submitted (pending Secretariat publication).`, minted: "receipt" };
   });
 }
 
@@ -184,12 +186,13 @@ export async function importMgrAction(fd: FormData) {
  */
 export async function runSpeedTrialAction(fd: FormData) {
   const p = await getSessionUser();
-  await attemptAsync("/lab/speed", async () => {
+  await attemptAsync("/settings?tab=speed", async () => {
     const picked = fd.getAll("profile").filter(isConnectionProfileId);
     const profiles = picked.length ? CONNECTION_PROFILE_IDS.filter((id) => picked.includes(id)) : CONNECTION_PROFILE_IDS;
     const trials = await runSpeedMatrix(p, profiles, { db: getDb() });
     appendSpeedTrials(trials);
-    return { to: "/lab/speed", notice: `${trials.length} trials logged for ${profiles.length} profile${profiles.length === 1 ? "" : "s"} — mocked transfer, measured parse.` };
+    const back = returnTo(fd, "/settings?tab=speed");
+    return { to: back, notice: `${trials.length} trials logged for ${profiles.length} profile${profiles.length === 1 ? "" : "s"} — mocked transfer, measured parse.` };
   });
 }
 
@@ -262,6 +265,7 @@ export async function publishAction(fd: FormData) {
     return {
       to: back,
       notice: r.created ? `Published ${stage.replace(/_/g, " ")} v${r.event.version} — ${r.event.publicRecordId}. Subscribers notified.` : "Already published — nothing changed.",
+      minted: r.mintedPublicRecordId ? "publicRecordId" : undefined,
     };
   });
 }
@@ -295,7 +299,7 @@ export async function addEiaPackAction(fd: FormData) {
     addEiaPack(getDb(), p, activityId, stage, str(fd, "summary"), keyOf(fd), {
       screeningOutcome: outcome ? z.enum(["eia_required", "no_eia"]).parse(outcome) : undefined,
     });
-    return { to: `/eia/${activityId}`, notice: `${stage.replace(/_/g, " ")} pack submitted (pending).` };
+    return { to: `/eia/${activityId}`, notice: `${stage.replace(/_/g, " ")} pack submitted (pending).`, minted: "receipt" };
   });
 }
 
@@ -349,8 +353,9 @@ export async function importEiaSampleAction(fd: FormData) {
 export async function commentStbAction(fd: FormData) {
   const p = await getSessionUser();
   attempt("/stb", () => {
-    commentStb(getDb(), p, str(fd, "activityId"), str(fd, "text"), keyOf(fd));
-    return { to: "/stb", notice: "Consolidated STB comment recorded as a published comments_stb pack." };
+    const activityId = str(fd, "activityId");
+    commentStb(getDb(), p, activityId, str(fd, "text"), keyOf(fd));
+    return { to: `/stb?cleared=${activityId}`, notice: "Consolidated STB comment recorded as a published comments_stb pack." };
   });
 }
 
@@ -427,7 +432,7 @@ export async function submitAbmtAction(fd: FormData) {
   const proposalId = str(fd, "proposalId");
   attempt(`/abmt/${proposalId}`, () => {
     const r = submitAbmtProposal(getDb(), p, proposalId, keyOf(fd));
-    return { to: `/abmt/${proposalId}`, notice: `Receipt ${r.event.receiptId ?? "—"} — proposal stub pending Secretariat publication.` };
+    return { to: `/abmt/${proposalId}`, notice: `Receipt ${r.event.receiptId ?? "—"} — proposal stub pending Secretariat publication.`, minted: "receipt" };
   });
 }
 

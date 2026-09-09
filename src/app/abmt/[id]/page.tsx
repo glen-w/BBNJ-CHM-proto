@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 
 import { AppShell } from "@/components/app-shell";
 import { ChannelBadge, ConfidentialityBadge, DomainBadge, Identifier, ProvenanceBadge, StageChip, TierNote } from "@/components/chips";
+import { MintStepper } from "@/components/mint-stepper";
+import { ProvenanceCaption } from "@/components/provenance-caption";
 import { RecordExportLinks } from "@/components/export-links";
 import { flashFrom } from "@/components/flash";
 import { KeyFields, SubmitButton } from "@/components/forms";
@@ -63,6 +65,17 @@ export default async function AbmtProposalPage({ params, searchParams }: Props) 
         <RecordExportLinks publicRecordId={proposal.publicRecordId} />
       </div>
       <TierNote tier={proposal.confidentiality} />
+      {provenance ? <ProvenanceCaption badge={provenance} /> : null}
+
+      <MintStepper
+        domain="abmt"
+        highlight={flash.minted}
+        values={{
+          internal: proposal.id,
+          receipt: packs.find((e) => e.receiptId)?.receiptId,
+          publicRecordId: proposal.publicRecordId,
+        }}
+      />
 
       <section className="grid gap-3 sm:grid-cols-3">
         <Identifier label="internalId" value={proposal.id} caption="UUID at creation — never shown as a public identifier" />

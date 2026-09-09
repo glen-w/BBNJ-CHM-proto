@@ -1,9 +1,10 @@
-import { Bell } from "lucide-react";
+import { Bell, Settings } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { cookies } from "next/headers";
 
 import { AuditRibbon } from "@/components/audit-ribbon";
+import { DomainBadge } from "@/components/chips";
 import { FlashBanner, type Flash } from "@/components/flash";
 import { LanguageControl } from "@/components/language-control";
 import { InstitutionalNav, JourneysNav, RailsNav } from "@/components/shell-nav";
@@ -88,6 +89,14 @@ export async function AppShell({
           </Link>
           <div className="ms-auto flex shrink-0 flex-nowrap items-center gap-1.5">
             <RailsNav items={railItems} />
+            <Link
+              href="/settings"
+              className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "shrink-0 px-2")}
+              title="Settings"
+              aria-label="Settings"
+            >
+              <Settings aria-hidden="true" className="size-4" />
+            </Link>
             <form action="/search" method="get" className="flex min-w-0 items-center gap-1.5" role="search">
               <Input
                 name="q"
@@ -126,11 +135,21 @@ export async function AppShell({
                       {recent.map((n) => (
                         <li key={n.id} className={cn("rounded-md border p-2", !n.read && "border-institutional/40 bg-institutional/5")}>
                           <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                            <span className="uppercase">{n.kind.replace("_", " ")}</span>
+                            <span className="flex items-center gap-1.5 uppercase">
+                              {n.domain ? <DomainBadge domain={n.domain} /> : null}
+                              {n.kind.replace("_", " ")}
+                            </span>
                             <span>{fmtDate(n.at)}</span>
                           </div>
-                          <Link href={`/audit?event=${n.eventId}`} className="mt-1 block hover:underline">
-                            {n.summary}
+                          {n.recordHref ? (
+                            <Link href={n.recordHref} className="mt-1 block hover:underline">
+                              {n.summary}
+                            </Link>
+                          ) : (
+                            <span className="mt-1 block">{n.summary}</span>
+                          )}
+                          <Link href={`/audit?event=${n.eventId}`} className="mt-0.5 block text-xs text-muted-foreground hover:underline">
+                            On the timeline
                           </Link>
                         </li>
                       ))}
@@ -184,7 +203,7 @@ export async function AppShell({
       <footer className="border-t">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-1 px-6 py-2 text-xs text-muted-foreground">
           <span>Clearing House</span>
-          <Link href="/#about-desk" className="underline underline-offset-2 hover:text-institutional">
+          <Link href="/about" className="underline underline-offset-2 hover:text-institutional">
             About this desk
           </Link>
         </div>

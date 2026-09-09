@@ -16,11 +16,11 @@ import { setHomeWelcomeAction } from "@/server/actions";
 import { can } from "@/server/policy";
 import { getSessionUser } from "@/server/session";
 
-const JUMP_ICON = {
+const JUMP_ICON: Record<string, typeof Lightbulb> = {
   "#get-started": Lightbulb,
   "#recent-records": List,
-  "#about-desk": ScrollText,
-} as const;
+  "/about": ScrollText,
+};
 
 const CARD_ICON = {
   learn: Lightbulb,
@@ -91,19 +91,23 @@ export async function HomeWelcomeBand() {
           </div>
           <nav aria-label="Welcome shortcuts" className="grid gap-2 sm:grid-cols-3">
             {HOME_WELCOME_JUMPS.map((jump) => {
-              const Icon = JUMP_ICON[jump.href];
-              return (
-                <a
-                  key={jump.href}
-                  href={jump.href}
-                  className="inline-flex min-h-11 items-center justify-between gap-2 rounded-md border border-white/75 bg-[color-mix(in_oklch,var(--institutional)_38%,white)]/35 px-3 py-2.5 text-xs font-medium uppercase tracking-wide text-institutional-foreground shadow-sm backdrop-blur-[2px] hover:bg-[color-mix(in_oklch,var(--institutional)_48%,white)]/50 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-                >
+              const Icon = JUMP_ICON[jump.href] ?? ScrollText;
+              const isHash = jump.href.startsWith("#");
+              const className =
+                "inline-flex min-h-11 items-center justify-between gap-2 rounded-md border border-white/75 bg-[color-mix(in_oklch,var(--institutional)_38%,white)]/35 px-3 py-2.5 text-xs font-medium uppercase tracking-wide text-institutional-foreground shadow-sm backdrop-blur-[2px] hover:bg-[color-mix(in_oklch,var(--institutional)_48%,white)]/50 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
+              const inner = (
+                <>
                   <span className="inline-flex items-center gap-2">
                     <Icon aria-hidden="true" className="size-4" />
                     {jump.label}
                   </span>
                   <ChevronDown aria-hidden="true" className="size-4 opacity-80" />
-                </a>
+                </>
+              );
+              return isHash ? (
+                <a key={jump.href} href={jump.href} className={className}>{inner}</a>
+              ) : (
+                <Link key={jump.href} href={jump.href} className={className}>{inner}</Link>
               );
             })}
           </nav>

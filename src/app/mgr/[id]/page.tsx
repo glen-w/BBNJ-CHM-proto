@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 
 import { AppShell } from "@/components/app-shell";
 import { ChannelBadge, ConfidentialityBadge, Identifier, ProvenanceBadge, StageChip, TierNote } from "@/components/chips";
+import { MintStepper } from "@/components/mint-stepper";
+import { ProvenanceCaption } from "@/components/provenance-caption";
 import { RecordExportLinks } from "@/components/export-links";
 import { flashFrom } from "@/components/flash";
 import { Field, KeyFields, SubmitButton, selectClass } from "@/components/forms";
@@ -68,6 +70,18 @@ export default async function MgrBatchPage({ params, searchParams }: Props) {
         <RecordExportLinks publicRecordId={batch.publicRecordId} />
       </div>
       <TierNote tier={batch.confidentiality} />
+      {provenance ? <ProvenanceCaption badge={provenance} /> : null}
+
+      <MintStepper
+        domain="mgr"
+        highlight={flash.minted}
+        values={{
+          internal: batch.id,
+          receipt: packs.find((e) => e.receiptId)?.receiptId,
+          bSbi: batch.bSbi,
+          publicRecordId: batch.publicRecordId,
+        }}
+      />
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Identifier label="internalId" value={batch.id} caption="UUID at creation — never shown as a public identifier" />

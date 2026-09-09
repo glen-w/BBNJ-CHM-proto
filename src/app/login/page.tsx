@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/app-shell";
+import { cn } from "@/lib/utils";
 import { RAIL_ICON } from "@/components/domain-icons";
 import { flashFrom } from "@/components/flash";
 import { SubmitButton } from "@/components/forms";
@@ -24,6 +25,7 @@ export default async function LoginPage({ searchParams }: Props) {
   const flash = await flashFrom(searchParams);
   const sp = await searchParams;
   const ret = typeof sp.return === "string" && sp.return.startsWith("/") ? sp.return : "/";
+  const hintUser = typeof sp.user === "string" ? sp.user : undefined;
   const p = await getSessionUser();
   const users = listUsers(getDb());
 
@@ -40,7 +42,14 @@ export default async function LoginPage({ searchParams }: Props) {
       </p>
       <div className="grid gap-4 sm:grid-cols-2">
         {users.map((u) => (
-          <form key={u.id} action={loginAction} className="flex flex-col justify-between rounded-lg border bg-card p-4">
+          <form
+            key={u.id}
+            action={loginAction}
+            className={cn(
+              "flex flex-col justify-between rounded-lg border bg-card p-4",
+              hintUser === u.username && "border-institutional ring-2 ring-institutional/30",
+            )}
+          >
             <input type="hidden" name="userId" value={u.id} />
             <input type="hidden" name="_return" value={ret} />
             <div>

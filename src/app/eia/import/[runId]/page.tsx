@@ -68,7 +68,7 @@ export default async function EiaImportRunPage({ params, searchParams }: Props) 
       <p className="max-w-3xl text-sm text-muted-foreground">
         Accepted rows are activities with a <em>pending</em> screening pack carrying its Art 31 outcome and a receiptId; the Secretariat publishes from
         the activity page. Rejected rows carry field-level validation errors; nothing was written for them. This run is durable and appears in the
-        Secretariat audit projection.
+        Secretariat audit projection. Connection timings: <Link href="/settings?tab=speed" className="underline">Settings → Speed</Link>.
       </p>
 
       <div className="overflow-x-auto rounded-lg border">

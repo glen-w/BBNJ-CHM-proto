@@ -15,6 +15,8 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 
 export default async function StbPage({ searchParams }: Props) {
   const flash = await flashFrom(searchParams);
+  const sp = await searchParams;
+  const clearedId = typeof sp.cleared === "string" ? sp.cleared : undefined;
   const p = await getSessionUser();
   const queue = stbQueue(getDb(), p);
   const canComment = can(p, "comment_stb");
@@ -35,7 +37,17 @@ export default async function StbPage({ searchParams }: Props) {
         </p>
       ) : null}
       {queue.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Queue is empty.</p>
+        clearedId ? (
+          <p className="rounded-lg border border-published-line bg-published/10 p-4 text-sm">
+            Queue cleared — consolidated <code>comments_stb</code> comment recorded.{" "}
+            <Link href={`/eia/${clearedId}`} className="font-medium underline">
+              Open the activity
+            </Link>
+            .
+          </p>
+        ) : (
+          <p className="text-sm text-muted-foreground">Queue is empty.</p>
+        )
       ) : (
         <ul className="space-y-4">
           {queue.map((q) => (
