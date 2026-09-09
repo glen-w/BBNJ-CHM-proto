@@ -64,11 +64,11 @@ export async function HomeWelcomeBand() {
             fill
             preload
             sizes="(max-width: 1152px) 100vw, 1152px"
-            className="object-cover object-[70%_45%] opacity-60"
+            className="object-cover object-[68%_42%] opacity-80"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[color-mix(in_oklch,var(--institutional)_78%,black)] from-[6%] via-[color-mix(in_oklch,var(--institutional)_58%,transparent)] via-[52%] to-[color-mix(in_oklch,var(--institutional)_22%,transparent)]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[color-mix(in_oklch,var(--institutional)_55%,black)]/88 from-[0%] via-[color-mix(in_oklch,var(--institutional)_32%,transparent)] via-[48%] to-transparent" />
         </div>
-        <div className="relative z-10 flex flex-col gap-4 px-5 py-5 sm:px-6 sm:py-6">
+        <div className="relative z-10 flex min-h-52 flex-col justify-between gap-5 px-5 py-6 sm:min-h-60 sm:px-6 sm:py-7">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 max-w-2xl">
               <h1 id="home-welcome-heading" className="text-xl font-semibold tracking-tight text-institutional-foreground sm:text-2xl">
@@ -96,7 +96,7 @@ export async function HomeWelcomeBand() {
                 <a
                   key={jump.href}
                   href={jump.href}
-                  className="inline-flex min-h-10 items-center justify-between gap-2 rounded-md border border-institutional-foreground/55 bg-[color-mix(in_oklch,var(--institutional)_55%,transparent)] px-3 py-2 text-xs font-medium uppercase tracking-wide text-institutional-foreground hover:bg-[color-mix(in_oklch,var(--institutional)_72%,transparent)] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className="inline-flex min-h-11 items-center justify-between gap-2 rounded-md border border-white/75 bg-[color-mix(in_oklch,var(--institutional)_38%,white)]/35 px-3 py-2.5 text-xs font-medium uppercase tracking-wide text-institutional-foreground shadow-sm backdrop-blur-[2px] hover:bg-[color-mix(in_oklch,var(--institutional)_48%,white)]/50 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
                   <span className="inline-flex items-center gap-2">
                     <Icon aria-hidden="true" className="size-4" />
