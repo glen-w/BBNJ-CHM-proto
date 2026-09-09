@@ -69,7 +69,6 @@ export async function AppShell({
               className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground"
               dir={treatyLang.code === "ar" ? "rtl" : "ltr"}
             >
-              <span>UI: English · Treaty text: {treatyLang.label}</span>
               <LanguageControl active={treatyLang.code} />
             </div>
           </div>

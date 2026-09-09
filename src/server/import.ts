@@ -12,7 +12,7 @@ import ExcelJS from "exceljs";
 import type { Db } from "@/lib/db";
 import type { IdempotencyKey } from "@/lib/contracts/extensions";
 import { EIA_SCREENING_FIELDS, EIA_SCREENING_TEMPLATE_NAME, EIA_SCREENING_TEMPLATE_VERSION, coerceEiaScreeningInput, normaliseEiaHeader } from "@/lib/eia-fields";
-import { FIELD_DEFS, MGR_TEMPLATE_NAME, MGR_TEMPLATE_VERSION, normaliseHeader } from "@/lib/mgr-fields";
+import { FIELD_DEFS, MGR_TEMPLATE_NAME, MGR_TEMPLATE_VERSION, MgrPreCollectionInput, coerceMgrInput, normaliseHeader } from "@/lib/mgr-fields";
 import { addEiaPack, createEiaActivity } from "./eia";
 import { DomainError } from "./errors";
 import { nowIso } from "./ids";
@@ -174,6 +174,106 @@ function cellText(cell: ExcelJS.Cell): string {
   return String(v);
 }
 
+/** Header row must equal the template's field headers exactly (after normalisation); returns the column index per header. */
+function headerColumns(data: ExcelJS.Worksheet, expected: string[], normalise: (v: unknown) => string): Map<string, number> {
+  const headerRow = data.getRow(1);
+  const headers: string[] = [];
+  headerRow.eachCell({ includeEmpty: false }, (c) => headers.push(normalise(c.value)));
+  const missing = expected.filter((h) => !headers.includes(h));
+  const unknown = headers.filter((h) => !expected.includes(h));
+  if (missing.length || unknown.length) {
+    throw new DomainError("import_rejected", `Header mismatch — missing: [${missing.join(", ")}] unknown: [${unknown.join(", ")}]`);
+  }
+  const colForHeader = new Map<string, number>();
+  headerRow.eachCell({ includeEmpty: false }, (c, col) => colForHeader.set(normalise(c.value), col));
+  return colForHeader;
+}
+
+/** Gate + header check + bounded data rows for an MGR pre-collection workbook. */
+async function openMgrWorkbook(file: Buffer | Uint8Array): Promise<{ colForHeader: Map<string, number>; dataRows: ExcelJS.Row[] }> {
+  const { data } = await loadWorkbook(file, { name: MGR_TEMPLATE_NAME, version: MGR_TEMPLATE_VERSION });
+  const colForHeader = headerColumns(
+    data,
+    FIELD_DEFS.map((f) => f.excelHeader),
+    (v) => normaliseHeader(v),
+  );
+  return { colForHeader, dataRows: dataRowsOf(data) };
+}
+
+/** Gate + header check + bounded data rows for an EIA screening workbook. */
+async function openEiaWorkbook(file: Buffer | Uint8Array): Promise<{ colForHeader: Map<string, number>; dataRows: ExcelJS.Row[] }> {
+  const { data } = await loadWorkbook(file, { name: EIA_SCREENING_TEMPLATE_NAME, version: EIA_SCREENING_TEMPLATE_VERSION });
+  const colForHeader = headerColumns(
+    data,
+    EIA_SCREENING_FIELDS.map((f) => f.excelHeader),
+    (v) => normaliseEiaHeader(String(v ?? "")),
+  );
+  return { colForHeader, dataRows: dataRowsOf(data) };
+}
+
+/** Outcome of a validate-only pass: same row shape as a real run, but nothing was written. */
+export interface DryRunResult {
+  domain: ImportDomain;
+  bytes: number;
+  rows: ImportRowResult[];
+  accepted: number;
+  rejected: number;
+}
+
+function tally(domain: ImportDomain, bytes: number, rows: ImportRowResult[]): DryRunResult {
+  return { domain, bytes, rows, accepted: rows.filter((r) => r.ok).length, rejected: rows.filter((r) => !r.ok).length };
+}
+
+/**
+ * Validate an MGR workbook exactly as import would — gate, headers, per-row Zod —
+ * but write nothing: no batches, no B-SBIs, no import_runs row. Used by the
+ * speed lab so parse time can be measured without polluting the desk.
+ */
+export async function dryRunMgrExcel(actor: Principal, file: Buffer | Uint8Array, opts: { db?: Db } = {}): Promise<DryRunResult> {
+  requireCan(actor, "import", undefined, { domain: "mgr", path: "/lab/speed", db: opts.db });
+  const { colForHeader, dataRows } = await openMgrWorkbook(file);
+  const results: ImportRowResult[] = [];
+  for (const row of dataRows) {
+    const n = row.number;
+    const values: Record<string, string> = {};
+    try {
+      for (const f of FIELD_DEFS) values[f.key] = cellText(row.getCell(colForHeader.get(f.excelHeader)!));
+      const parsed = MgrPreCollectionInput.safeParse(coerceMgrInput(values));
+      if (!parsed.success) throw new DomainError("validation", "Pre-collection notification incomplete", parsed.error.issues);
+      results.push({ row: n, ok: true, title: parsed.data.title as string });
+    } catch (err) {
+      results.push({ row: n, ok: false, error: rowErrorMessage(err), values });
+    }
+  }
+  return tally("mgr", file.byteLength, results);
+}
+
+/** EIA screening twin of {@link dryRunMgrExcel}: validate only, write nothing. */
+export async function dryRunEiaScreeningExcel(actor: Principal, file: Buffer | Uint8Array, partyCode: string, opts: { db?: Db } = {}): Promise<DryRunResult> {
+  requireCan(actor, "import", undefined, { domain: "eia", path: "/lab/speed", db: opts.db });
+  const { colForHeader, dataRows } = await openEiaWorkbook(file);
+  const defaultParty = partyCode.trim().toUpperCase();
+  const results: ImportRowResult[] = [];
+  for (const row of dataRows) {
+    const n = row.number;
+    const values: Record<string, string> = {};
+    try {
+      for (const f of EIA_SCREENING_FIELDS) values[f.key] = cellText(row.getCell(colForHeader.get(f.excelHeader)!));
+      let input;
+      try {
+        input = coerceEiaScreeningInput({ ...values, partyCode: values.partyCode.trim() || defaultParty });
+      } catch (e) {
+        const issues = (e as { issues?: unknown }).issues;
+        throw new DomainError("validation", "Screening row incomplete", Array.isArray(issues) ? issues : undefined);
+      }
+      results.push({ row: n, ok: true, title: input.title, screeningOutcome: input.screeningOutcome });
+    } catch (err) {
+      results.push({ row: n, ok: false, error: rowErrorMessage(err), values });
+    }
+  }
+  return tally("eia", file.byteLength, results);
+}
+
 export async function importMgrExcel(
   db: Db,
   actor: Principal,
@@ -186,21 +286,7 @@ export async function importMgrExcel(
   // Idempotent: the same key returns the stored run.
   const prior = db.prepare("SELECT * FROM import_runs WHERE id = ?").get(runIdFor(key)) as RunRow | undefined;
   if (prior) return rowToRun(prior);
-  const { data } = await loadWorkbook(file, { name: MGR_TEMPLATE_NAME, version: MGR_TEMPLATE_VERSION });
-
-  const expected = FIELD_DEFS.map((f) => f.excelHeader);
-  const headerRow = data.getRow(1);
-  const headers: string[] = [];
-  headerRow.eachCell({ includeEmpty: false }, (c) => headers.push(normaliseHeader(c.value)));
-  const missing = expected.filter((h) => !headers.includes(h));
-  const unknown = headers.filter((h) => !expected.includes(h));
-  if (missing.length || unknown.length) {
-    throw new DomainError("import_rejected", `Header mismatch — missing: [${missing.join(", ")}] unknown: [${unknown.join(", ")}]`);
-  }
-  const colForHeader = new Map<string, number>();
-  headerRow.eachCell({ includeEmpty: false }, (c, col) => colForHeader.set(normaliseHeader(c.value), col));
-
-  const dataRows = dataRowsOf(data);
+  const { colForHeader, dataRows } = await openMgrWorkbook(file);
 
   const results: ImportRowResult[] = [];
   for (const row of dataRows) {
@@ -253,21 +339,7 @@ export async function importEiaScreeningExcel(
   requireCan(actor, "import", undefined, { domain: "eia", path: "/eia/import", db });
   const prior = db.prepare("SELECT * FROM import_runs WHERE id = ?").get(runIdFor(key)) as RunRow | undefined;
   if (prior) return rowToRun(prior);
-  const { data } = await loadWorkbook(file, { name: EIA_SCREENING_TEMPLATE_NAME, version: EIA_SCREENING_TEMPLATE_VERSION });
-
-  const expected = EIA_SCREENING_FIELDS.map((f) => f.excelHeader);
-  const headerRow = data.getRow(1);
-  const headers: string[] = [];
-  headerRow.eachCell({ includeEmpty: false }, (c) => headers.push(normaliseEiaHeader(String(c.value ?? ""))));
-  const missing = expected.filter((h) => !headers.includes(h));
-  const unknown = headers.filter((h) => !expected.includes(h));
-  if (missing.length || unknown.length) {
-    throw new DomainError("import_rejected", `Header mismatch — missing: [${missing.join(", ")}] unknown: [${unknown.join(", ")}]`);
-  }
-  const colForHeader = new Map<string, number>();
-  headerRow.eachCell({ includeEmpty: false }, (c, col) => colForHeader.set(normaliseEiaHeader(String(c.value ?? "")), col));
-
-  const dataRows = dataRowsOf(data);
+  const { colForHeader, dataRows } = await openEiaWorkbook(file);
   const defaultParty = partyCode.trim().toUpperCase();
 
   const results: ImportRowResult[] = [];

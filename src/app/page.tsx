@@ -5,6 +5,7 @@ import { AppShell } from "@/components/app-shell";
 import { ConfidentialityBadge, DomainBadge, DOMAIN_RAIL, ProvenanceBadge, StatusChip } from "@/components/chips";
 import { DOMAIN_ICON, isAccentDomain, type AccentDomain } from "@/components/domain-icons";
 import { flashFrom } from "@/components/flash";
+import { HomeWelcomeBand } from "@/components/home-welcome-band";
 import { RailsStrip } from "@/components/rails-strip";
 import { RelatedSystemsList } from "@/components/related-systems";
 import { buttonVariants } from "@/components/ui/button";
@@ -32,18 +33,17 @@ export default async function HomePage({ searchParams }: Props) {
 
   return (
     <AppShell flash={flash}>
-      <section className="space-y-1.5">
-        <h1 className="text-xl font-semibold tracking-tight">Clearing-House Mechanism</h1>
-        {p.kind === "anonymous" ? (
-          <p className="text-sm">
-            You are browsing as the public.{" "}
-            <Link href="/login" className="text-institutional underline underline-offset-2">
-              Sign in
-            </Link>{" "}
-            to submit, publish or review.
-          </p>
-        ) : null}
-      </section>
+      <HomeWelcomeBand />
+
+      {p.kind === "anonymous" ? (
+        <p className="text-sm">
+          You are browsing as the public.{" "}
+          <Link href="/login" className="text-institutional underline underline-offset-2">
+            Sign in
+          </Link>{" "}
+          to submit, publish or review.
+        </p>
+      ) : null}
 
       <RailsStrip counts={counts} />
 

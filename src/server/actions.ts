@@ -23,7 +23,7 @@ import { addMgrPack, amendMgrPack, MGR_AMENDABLE_STAGES, saveMgrDraft, submitPre
 import { amendPack, publishPack } from "./packs";
 import { getSubscription, markAllRead, upsertSubscription } from "./queries";
 import { resetSandbox } from "./reset";
-import { getSessionUser, setSessionUser, setTreatyLang } from "./session";
+import { getSessionUser, setHomeWelcome, setSessionUser, setTreatyLang } from "./session";
 import { buildEiaScreeningSample, buildMgrSample } from "./template";
 import { findUserById } from "./users";
 
@@ -97,6 +97,12 @@ export async function loginAction(fd: FormData) {
 export async function setTreatyLangAction(code: string) {
   await setTreatyLang(code);
   revalidatePath("/", "layout");
+}
+
+/** Show or hide the Home welcome band. Defaults on; no flash. */
+export async function setHomeWelcomeAction(formData: FormData) {
+  await setHomeWelcome(str(formData, "show") !== "0");
+  revalidatePath("/");
 }
 
 export async function logoutAction() {
