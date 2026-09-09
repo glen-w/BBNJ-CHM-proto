@@ -41,7 +41,7 @@ docker compose up --build
 
 Health: [`/api/health`](http://localhost:3000/api/health). Demo walk-through: `DEMO-SCRIPT.md`. Unattended demo path: `npm run demo`.
 
-> **EOI wave (schema v5).** Schema is now **v5** (was v4 in v0.2) — an existing `data/chm.sqlite` from an earlier build refuses to open; run `npm run db:reset` (Docker: `docker compose down -v`). v5 adds `abmt_proposals`, `cbtmt_matches.facilitation_note`, EIA `due_at`, MGR TK provenance / FPIC status caption columns, and the `non_state_uploader` actor role (contract amendment C9, applied). What changed in v0.2 and why: `HARDENING.md`; what is shipped vs deferred against Session‑1 and the EOI criteria: `SHIPPED-VS-DEFERRED.md`; contract folds: `CONTRACT-AMENDMENTS.md`.
+> **EOI wave (schema v6).** Schema is now **v6** (was v5 in the prior EOI cut) — an existing `data/chm.sqlite` from an earlier build refuses to open; run `npm run db:reset` (Docker: `docker compose down -v`). v6 adds SQLite **FTS5** search (`records_fts` + sync triggers) for policy-aware retrieval across MGR / EIA / CBTMT / ABMT, with a global `/search` page and list filters. v5 had added `abmt_proposals`, `cbtmt_matches.facilitation_note`, EIA `due_at`, MGR TK provenance / FPIC status caption columns, and the `non_state_uploader` actor role (contract amendment C9, applied). What changed in v0.2 and why: `HARDENING.md`; what is shipped vs deferred against Session‑1 and the EOI criteria: `SHIPPED-VS-DEFERRED.md`; contract folds: `CONTRACT-AMENDMENTS.md`.
 
 ## Sandbox logins (`/login`)
 
@@ -92,7 +92,9 @@ Informational → transactional workflow across Agreement areas — same rails, 
 7. **`/compare`** is organised by the Session‑1 basic functions and deep-links into the live journeys.
 8. **Sandbox.** *Reset database* on `/audit` for the Secretariat when `SANDBOX_RESET=1` (never in production); `npm run demo` runs the 10‑minute journey unattended (add `BASE_URL=` to also check HTTP status codes against a running server).
 
-## EOI wave (schema v5) — what was added
+## EOI wave (schema v5 → v6) — what was added
+
+- **v6:** SQLite FTS5 `records_fts` index with sync triggers; policy-aware `searchRecords()`; global `/search` page and list `?q=` filters (MGR / EIA / CBTMT).
 
 1. **Fifth login — non-State uploader (C9).** `non_state_uploader` is now a first-class `ActorRole` in the locked contract (`CONTRACT-AMENDMENTS.md`, adopted and applied). The role may post **CBTMT offers only**; needs, MGR/EIA/ABMT submissions, import and publish are refused by `requireCan()` with a role-specific reason, and each refusal is one `access_refusals` row.
 2. **ABMT thin journey.** `abmt_proposals` + a single `proposal_stub` stage on the shared pack machine: draft → pending (receipt id) → published (`BBNJ-ABMT-YYYY-NNNNN`). Same visibility clause, same publish idempotency, same audit rows. The ABMT tab is enabled (quiet) — a stub without prejudice, not a fake ABMT data set.
@@ -144,7 +146,7 @@ Environment: `DATABASE_PATH` (default `data/chm.sqlite`); `SANDBOX_RESET=1` show
 | `src/lib/contracts/extensions.ts` | Implementation-only extensions (B-SBI shape, stored-record shapes, idempotency key, StoredAbmtProposal, TK captions, EIA `dueAt`) |
 | `src/lib/mgr-fields.ts` | `FIELD_DEFS` — one source for form, Zod input, Excel headers, field guide |
 | `src/lib/eia-fields.ts` | EIA screening field definitions — one source for Excel headers and import validator |
-| `src/lib/db/` | SQLite schema **v5** (constraints for every invariant) + `schema_version` gate |
+| `src/lib/db/` | SQLite schema **v6** (FTS5 search; v5 EOI tables retained) (constraints for every invariant) + `schema_version` gate |
 | `src/server/policy.ts` | `can()`, `requireCan()` (records refusals), the single visibility clause used by every read |
 | `src/server/packs.ts` | pack machine: server-side versions, idempotency, mints, publish, **amend** |
 | `src/server/notify.ts` | idempotent dispatcher + `dispatch_log`, replay, hold semantics, material re-notify; deadline text prefers explicit EIA `dueAt` |

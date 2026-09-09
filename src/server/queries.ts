@@ -14,52 +14,250 @@ import { RECORD_JOIN, can, type Principal, readPolicy, recordVisibilityClause, u
 
 const eventClause = (p: Principal) => visibilityClause(readPolicy(p), { status: "e.status", tier: "e.confidentiality", owner: "r.owner_user_id" });
 
+/**
+ * Turn raw user input into a safe FTS5 MATCH expression.
+ * Strips quotes / FTS operators, then AND-joins prefix tokens (`token*`).
+ */
+export function toFtsQuery(raw: string): string | null {
+  const tokens = raw
+    .trim()
+    .replace(/["'^~*():]/g, " ")
+    .split(/\s+/)
+    .map((t) => t.trim())
+    .filter((t) => t.length > 0);
+  if (tokens.length === 0) return null;
+  return tokens.map((t) => `"${t}"*`).join(" AND ");
+}
+
+const DOMAIN_HREF: Record<Domain, (id: string) => string> = {
+  mgr: (id) => `/mgr/${id}`,
+  eia: (id) => `/eia/${id}`,
+  cbtmt: (id) => `/capacity/${id}`,
+  abmt: (id) => `/abmt/${id}`,
+};
+
+export interface SearchHit {
+  domain: Domain;
+  id: string;
+  title: string;
+  subtitle?: string;
+  stage: string;
+  publicRecordId?: string;
+  href: string;
+  updatedAt: string;
+}
+
+export function searchRecords(
+  db: Db,
+  p: Principal,
+  opts: { q: string; domain?: Domain; limit?: number },
+): SearchHit[] {
+  const match = toFtsQuery(opts.q);
+  if (!match) return [];
+  const limit = opts.limit ?? 50;
+  const domains: Domain[] = opts.domain ? [opts.domain] : ["mgr", "eia", "cbtmt", "abmt"];
+  const hits: SearchHit[] = [];
+
+  for (const domain of domains) {
+    if (domain === "mgr") {
+      const c = recordVisibilityClause(readPolicy(p), { id: "b.id", tier: "b.confidentiality", owner: "b.owner_user_id" });
+      const rows = db
+        .prepare(
+          `SELECT b.id, b.title, b.location_hint AS subtitle, b.current_stage AS stage,
+                  b.public_record_id, b.updated_at, bm25(records_fts) AS rank
+           FROM records_fts
+           JOIN mgr_batches b ON b.id = records_fts.record_id
+           WHERE records_fts.domain = 'mgr' AND records_fts MATCH ? AND ${c.sql}
+           ORDER BY rank, b.updated_at DESC
+           LIMIT ?`,
+        )
+        .all(match, ...c.params, limit) as {
+        id: string;
+        title: string;
+        subtitle: string | null;
+        stage: string;
+        public_record_id: string | null;
+        updated_at: string;
+      }[];
+      for (const r of rows) {
+        hits.push({
+          domain,
+          id: r.id,
+          title: r.title,
+          subtitle: r.subtitle ?? undefined,
+          stage: r.stage,
+          publicRecordId: r.public_record_id ?? undefined,
+          href: DOMAIN_HREF.mgr(r.id),
+          updatedAt: r.updated_at,
+        });
+      }
+    } else if (domain === "eia") {
+      const c = recordVisibilityClause(readPolicy(p), { id: "a.id", tier: "a.confidentiality", owner: "a.owner_user_id" });
+      const rows = db
+        .prepare(
+          `SELECT a.id, a.title, a.abnj_box AS subtitle, a.current_stage AS stage,
+                  a.public_record_id, a.updated_at, bm25(records_fts) AS rank
+           FROM records_fts
+           JOIN eia_activities a ON a.id = records_fts.record_id
+           WHERE records_fts.domain = 'eia' AND records_fts MATCH ? AND ${c.sql}
+           ORDER BY rank, a.updated_at DESC
+           LIMIT ?`,
+        )
+        .all(match, ...c.params, limit) as {
+        id: string;
+        title: string;
+        subtitle: string | null;
+        stage: string;
+        public_record_id: string | null;
+        updated_at: string;
+      }[];
+      for (const r of rows) {
+        hits.push({
+          domain,
+          id: r.id,
+          title: r.title,
+          subtitle: r.subtitle ?? undefined,
+          stage: r.stage,
+          publicRecordId: r.public_record_id ?? undefined,
+          href: DOMAIN_HREF.eia(r.id),
+          updatedAt: r.updated_at,
+        });
+      }
+    } else if (domain === "cbtmt") {
+      const c = recordVisibilityClause(readPolicy(p), { id: "r.id", tier: "r.confidentiality", owner: "r.owner_user_id" });
+      const rows = db
+        .prepare(
+          `SELECT r.id, r.title, r.kind AS subtitle, r.stage,
+                  r.public_record_id, r.updated_at, bm25(records_fts) AS rank
+           FROM records_fts
+           JOIN cbtmt_records r ON r.id = records_fts.record_id
+           WHERE records_fts.domain = 'cbtmt' AND records_fts MATCH ? AND ${c.sql}
+           ORDER BY rank, r.updated_at DESC
+           LIMIT ?`,
+        )
+        .all(match, ...c.params, limit) as {
+        id: string;
+        title: string;
+        subtitle: string | null;
+        stage: string;
+        public_record_id: string | null;
+        updated_at: string;
+      }[];
+      for (const r of rows) {
+        hits.push({
+          domain,
+          id: r.id,
+          title: r.title,
+          subtitle: r.subtitle ?? undefined,
+          stage: r.stage,
+          publicRecordId: r.public_record_id ?? undefined,
+          href: DOMAIN_HREF.cbtmt(r.id),
+          updatedAt: r.updated_at,
+        });
+      }
+    } else {
+      const c = recordVisibilityClause(readPolicy(p), { id: "a.id", tier: "a.confidentiality", owner: "a.owner_user_id" });
+      const rows = db
+        .prepare(
+          `SELECT a.id, a.title, a.party_code AS subtitle, a.current_stage AS stage,
+                  a.public_record_id, a.updated_at, bm25(records_fts) AS rank
+           FROM records_fts
+           JOIN abmt_proposals a ON a.id = records_fts.record_id
+           WHERE records_fts.domain = 'abmt' AND records_fts MATCH ? AND ${c.sql}
+           ORDER BY rank, a.updated_at DESC
+           LIMIT ?`,
+        )
+        .all(match, ...c.params, limit) as {
+        id: string;
+        title: string;
+        subtitle: string | null;
+        stage: string;
+        public_record_id: string | null;
+        updated_at: string;
+      }[];
+      for (const r of rows) {
+        hits.push({
+          domain,
+          id: r.id,
+          title: r.title,
+          subtitle: r.subtitle ?? undefined,
+          stage: r.stage,
+          publicRecordId: r.public_record_id ?? undefined,
+          href: DOMAIN_HREF.abmt(r.id),
+          updatedAt: r.updated_at,
+        });
+      }
+    }
+  }
+
+  hits.sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : a.updatedAt > b.updatedAt ? -1 : 0));
+  return hits.slice(0, limit);
+}
+
 // ------------------------------------------------------------------ records
 
 export function listMgrBatches(db: Db, p: Principal, q?: string): StoredMgrBatch[] {
   const c = recordVisibilityClause(readPolicy(p), { id: "b.id", tier: "b.confidentiality", owner: "b.owner_user_id" });
-  const like = q ? `%${q.trim()}%` : null;
+  const match = q ? toFtsQuery(q) : null;
   const rows = db
     .prepare(
-      `SELECT b.* FROM mgr_batches b WHERE ${c.sql}
-       ${like ? "AND (b.title LIKE ? OR b.location_hint LIKE ? OR b.b_sbi LIKE ? OR b.public_record_id LIKE ?)" : ""}
-       ORDER BY b.updated_at DESC`,
+      match
+        ? `SELECT b.* FROM records_fts
+           JOIN mgr_batches b ON b.id = records_fts.record_id
+           WHERE records_fts.domain = 'mgr' AND records_fts MATCH ? AND ${c.sql}
+           ORDER BY bm25(records_fts), b.updated_at DESC`
+        : `SELECT b.* FROM mgr_batches b WHERE ${c.sql} ORDER BY b.updated_at DESC`,
     )
-    .all(...c.params, ...(like ? [like, like, like, like] : [])) as Parameters<typeof rowToBatch>[0][];
+    .all(...(match ? [match, ...c.params] : c.params)) as Parameters<typeof rowToBatch>[0][];
   return rows.map(rowToBatch);
 }
 
 export function listEiaActivities(db: Db, p: Principal, q?: string): StoredEiaActivity[] {
   const c = recordVisibilityClause(readPolicy(p), { id: "a.id", tier: "a.confidentiality", owner: "a.owner_user_id" });
-  const like = q ? `%${q.trim()}%` : null;
+  const match = q ? toFtsQuery(q) : null;
   const rows = db
     .prepare(
-      `SELECT a.* FROM eia_activities a WHERE ${c.sql}
-       ${like ? "AND (a.title LIKE ? OR a.abnj_box LIKE ? OR a.public_record_id LIKE ?)" : ""}
-       ORDER BY a.updated_at DESC`,
+      match
+        ? `SELECT a.* FROM records_fts
+           JOIN eia_activities a ON a.id = records_fts.record_id
+           WHERE records_fts.domain = 'eia' AND records_fts MATCH ? AND ${c.sql}
+           ORDER BY bm25(records_fts), a.updated_at DESC`
+        : `SELECT a.* FROM eia_activities a WHERE ${c.sql} ORDER BY a.updated_at DESC`,
     )
-    .all(...c.params, ...(like ? [like, like, like] : [])) as Parameters<typeof rowToActivity>[0][];
+    .all(...(match ? [match, ...c.params] : c.params)) as Parameters<typeof rowToActivity>[0][];
   return rows.map(rowToActivity);
 }
 
-export function listCbtmtRecords(db: Db, p: Principal, kind?: "need" | "offer"): StoredCbtmtRecord[] {
+export function listCbtmtRecords(db: Db, p: Principal, kind?: "need" | "offer", q?: string): StoredCbtmtRecord[] {
   const c = recordVisibilityClause(readPolicy(p), { id: "r.id", tier: "r.confidentiality", owner: "r.owner_user_id" });
+  const match = q ? toFtsQuery(q) : null;
+  const kindSql = kind ? "AND r.kind = ?" : "";
   const rows = db
-    .prepare(`SELECT r.* FROM cbtmt_records r WHERE ${c.sql} ${kind ? "AND r.kind = ?" : ""} ORDER BY r.updated_at DESC`)
-    .all(...c.params, ...(kind ? [kind] : [])) as Parameters<typeof rowToCbtmt>[0][];
+    .prepare(
+      match
+        ? `SELECT r.* FROM records_fts
+           JOIN cbtmt_records r ON r.id = records_fts.record_id
+           WHERE records_fts.domain = 'cbtmt' AND records_fts MATCH ? AND ${c.sql} ${kindSql}
+           ORDER BY bm25(records_fts), r.updated_at DESC`
+        : `SELECT r.* FROM cbtmt_records r WHERE ${c.sql} ${kindSql} ORDER BY r.updated_at DESC`,
+    )
+    .all(...(match ? [match, ...c.params] : [...c.params]), ...(kind ? [kind] : [])) as Parameters<typeof rowToCbtmt>[0][];
   return rows.map(rowToCbtmt);
 }
 
 export function listAbmtProposals(db: Db, p: Principal, q?: string): StoredAbmtProposal[] {
   const c = recordVisibilityClause(readPolicy(p), { id: "a.id", tier: "a.confidentiality", owner: "a.owner_user_id" });
-  const like = q ? `%${q.trim()}%` : null;
+  const match = q ? toFtsQuery(q) : null;
   const rows = db
     .prepare(
-      `SELECT a.* FROM abmt_proposals a WHERE ${c.sql}
-       ${like ? "AND (a.title LIKE ? OR a.public_record_id LIKE ?)" : ""}
-       ORDER BY a.updated_at DESC`,
+      match
+        ? `SELECT a.* FROM records_fts
+           JOIN abmt_proposals a ON a.id = records_fts.record_id
+           WHERE records_fts.domain = 'abmt' AND records_fts MATCH ? AND ${c.sql}
+           ORDER BY bm25(records_fts), a.updated_at DESC`
+        : `SELECT a.* FROM abmt_proposals a WHERE ${c.sql} ORDER BY a.updated_at DESC`,
     )
-    .all(...c.params, ...(like ? [like, like] : [])) as Parameters<typeof rowToAbmt>[0][];
+    .all(...(match ? [match, ...c.params] : c.params)) as Parameters<typeof rowToAbmt>[0][];
   return rows.map(rowToAbmt);
 }
 

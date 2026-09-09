@@ -4,7 +4,7 @@
  * Zod is the schema of record; SQL adds keys, uniqueness, checks and foreign keys
  * for every claimed invariant. No migrations: SCHEMA_VERSION mismatch refuses start.
  */
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;
 
 export const SCHEMA_SQL = `
 CREATE TABLE IF NOT EXISTS meta (
@@ -209,4 +209,123 @@ CREATE TABLE IF NOT EXISTS abmt_proposals (
   owner_user_id TEXT REFERENCES users(id),
   updated_at TEXT NOT NULL
 );
+
+-- Implementation (v6): SQLite FTS5 index for policy-aware record search (Session-1 search & retrieval).
+-- Standalone content table kept in sync by triggers — no app-level reindex on write.
+CREATE VIRTUAL TABLE IF NOT EXISTS records_fts USING fts5(
+  domain UNINDEXED,
+  record_id UNINDEXED,
+  title,
+  body,
+  identifiers,
+  tokenize = 'porter unicode61'
+);
+
+CREATE TRIGGER IF NOT EXISTS mgr_batches_fts_ai AFTER INSERT ON mgr_batches BEGIN
+  INSERT INTO records_fts(domain, record_id, title, body, identifiers)
+  VALUES (
+    'mgr',
+    new.id,
+    new.title,
+    trim(coalesce(new.location_hint, '') || ' ' || coalesce(new.party_code, '')),
+    trim(coalesce(new.public_record_id, '') || ' ' || coalesce(new.b_sbi, ''))
+  );
+END;
+CREATE TRIGGER IF NOT EXISTS mgr_batches_fts_ad AFTER DELETE ON mgr_batches BEGIN
+  DELETE FROM records_fts WHERE domain = 'mgr' AND record_id = old.id;
+END;
+CREATE TRIGGER IF NOT EXISTS mgr_batches_fts_au AFTER UPDATE ON mgr_batches BEGIN
+  DELETE FROM records_fts WHERE domain = 'mgr' AND record_id = old.id;
+  INSERT INTO records_fts(domain, record_id, title, body, identifiers)
+  VALUES (
+    'mgr',
+    new.id,
+    new.title,
+    trim(coalesce(new.location_hint, '') || ' ' || coalesce(new.party_code, '')),
+    trim(coalesce(new.public_record_id, '') || ' ' || coalesce(new.b_sbi, ''))
+  );
+END;
+
+CREATE TRIGGER IF NOT EXISTS eia_activities_fts_ai AFTER INSERT ON eia_activities BEGIN
+  INSERT INTO records_fts(domain, record_id, title, body, identifiers)
+  VALUES (
+    'eia',
+    new.id,
+    new.title,
+    trim(coalesce(new.abnj_box, '') || ' ' || coalesce(new.party_code, '')),
+    coalesce(new.public_record_id, '')
+  );
+END;
+CREATE TRIGGER IF NOT EXISTS eia_activities_fts_ad AFTER DELETE ON eia_activities BEGIN
+  DELETE FROM records_fts WHERE domain = 'eia' AND record_id = old.id;
+END;
+CREATE TRIGGER IF NOT EXISTS eia_activities_fts_au AFTER UPDATE ON eia_activities BEGIN
+  DELETE FROM records_fts WHERE domain = 'eia' AND record_id = old.id;
+  INSERT INTO records_fts(domain, record_id, title, body, identifiers)
+  VALUES (
+    'eia',
+    new.id,
+    new.title,
+    trim(coalesce(new.abnj_box, '') || ' ' || coalesce(new.party_code, '')),
+    coalesce(new.public_record_id, '')
+  );
+END;
+
+CREATE TRIGGER IF NOT EXISTS cbtmt_records_fts_ai AFTER INSERT ON cbtmt_records BEGIN
+  INSERT INTO records_fts(domain, record_id, title, body, identifiers)
+  VALUES (
+    'cbtmt',
+    new.id,
+    new.title,
+    trim(
+      replace(replace(replace(coalesce(new.themes_json, ''), '"', ' '), '[', ''), ']', '')
+      || ' ' || coalesce(new.party_code, '')
+      || ' ' || coalesce(new.provider, '')
+    ),
+    coalesce(new.public_record_id, '')
+  );
+END;
+CREATE TRIGGER IF NOT EXISTS cbtmt_records_fts_ad AFTER DELETE ON cbtmt_records BEGIN
+  DELETE FROM records_fts WHERE domain = 'cbtmt' AND record_id = old.id;
+END;
+CREATE TRIGGER IF NOT EXISTS cbtmt_records_fts_au AFTER UPDATE ON cbtmt_records BEGIN
+  DELETE FROM records_fts WHERE domain = 'cbtmt' AND record_id = old.id;
+  INSERT INTO records_fts(domain, record_id, title, body, identifiers)
+  VALUES (
+    'cbtmt',
+    new.id,
+    new.title,
+    trim(
+      replace(replace(replace(coalesce(new.themes_json, ''), '"', ' '), '[', ''), ']', '')
+      || ' ' || coalesce(new.party_code, '')
+      || ' ' || coalesce(new.provider, '')
+    ),
+    coalesce(new.public_record_id, '')
+  );
+END;
+
+CREATE TRIGGER IF NOT EXISTS abmt_proposals_fts_ai AFTER INSERT ON abmt_proposals BEGIN
+  INSERT INTO records_fts(domain, record_id, title, body, identifiers)
+  VALUES (
+    'abmt',
+    new.id,
+    new.title,
+    coalesce(new.party_code, ''),
+    coalesce(new.public_record_id, '')
+  );
+END;
+CREATE TRIGGER IF NOT EXISTS abmt_proposals_fts_ad AFTER DELETE ON abmt_proposals BEGIN
+  DELETE FROM records_fts WHERE domain = 'abmt' AND record_id = old.id;
+END;
+CREATE TRIGGER IF NOT EXISTS abmt_proposals_fts_au AFTER UPDATE ON abmt_proposals BEGIN
+  DELETE FROM records_fts WHERE domain = 'abmt' AND record_id = old.id;
+  INSERT INTO records_fts(domain, record_id, title, body, identifiers)
+  VALUES (
+    'abmt',
+    new.id,
+    new.title,
+    coalesce(new.party_code, ''),
+    coalesce(new.public_record_id, '')
+  );
+END;
 `;

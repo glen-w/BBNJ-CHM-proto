@@ -23,9 +23,11 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 
 export default async function CapacityPage({ searchParams }: Props) {
   const flash = await flashFrom(searchParams);
+  const sp = await searchParams;
+  const q = typeof sp.q === "string" ? sp.q : "";
   const p = await getSessionUser();
   const db = getDb();
-  const records = listCbtmtRecords(db, p);
+  const records = listCbtmtRecords(db, p, undefined, q || undefined);
   const needs = records.filter((r) => r.kind === "need");
   const offers = records.filter((r) => r.kind === "offer");
   const matchesSeen = new Set<string>();
@@ -43,6 +45,13 @@ export default async function CapacityPage({ searchParams }: Props) {
         </p>
         <ExportLinks domain="cbtmt" />
       </div>
+
+      <form className="flex gap-2" method="get">
+        <Input name="q" placeholder="Search title, themes, provider, public id…" defaultValue={q} className="max-w-sm" />
+        <SubmitButton size="sm" variant="secondary">
+          Search
+        </SubmitButton>
+      </form>
 
       <section className="grid gap-4 lg:grid-cols-2">
         <Board title="Needs (Parties, Art 42)" items={needs} p={p} kind="need" />
