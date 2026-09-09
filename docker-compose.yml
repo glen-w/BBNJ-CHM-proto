@@ -1,0 +1,13 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_PATH: /app/data/chm.sqlite
+    volumes:
+      - chm-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  chm-data:

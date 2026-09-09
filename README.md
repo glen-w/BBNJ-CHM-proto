@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BBNJ Cl-HM prototype
 
-## Getting Started
+**One shared substrate** (receipt → manage → publish/notify → roles) demoed through **MGR · EIA · CBTMT** journeys.
 
-First, run the development server:
+Repository: [github.com/glen-w/BBNJ-CHM-proto](https://github.com/glen-w/BBNJ-CHM-proto)
+
+## Stack
+
+- Next.js App Router · TypeScript · Zod · shadcn/ui
+- better-sqlite3 (seeded SQLite, no ORM)
+- Docker Compose for local/production-like runs
+- MIT licence · sandbox logins (see below)
+
+## Quick start
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). Health check: [http://localhost:3000/api/health](http://localhost:3000/api/health).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Docker
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+docker compose up --build
+```
 
-## Learn More
+SQLite data persists in the `chm-data` volume.
 
-To learn more about Next.js, take a look at the following resources:
+## Sandbox logins (target)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Username | Role |
+|---|---|
+| `party.nfp` | Party / NFP-linked submitter |
+| `secretariat` | Authorised publishing role (demo) |
+| `public` | View published packs only (switch to **stb** for draft-EIA review queue) |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Why this prototype (DOALOS contrast)
 
-## Deploy on Vercel
+Interim DOALOS Cl-HM is largely **static / informational**. This build is **transactional**: structured intake, role-gated publish, Art 12 **B-SBI** on valid pre-collection receipt, pack-level EIA publications, subscriptions/digests, CBTMT match rows, append-only audit outbox.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+See `/compare` or `proposal/DEMO-SCRIPT.md` for the required slide.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Project layout
+
+| Path | Purpose |
+|---|---|
+| `src/app/` | App Router pages and API routes |
+| `src/schemas/events.ts` | Locked Zod contracts |
+| `src/lib/db/` | SQLite schema + connection |
+| `proposal/` | Planning pack (PROPOSAL, demo script, agent prompt) |
+| `context/` | Briefing notes (not shipped in the app) |
+
+## Planning pack
+
+| File | Purpose |
+|---|---|
+| `proposal/PROPOSAL.md` | Product + EOI framing |
+| `proposal/PLANNING-AGENT-PROMPT.md` | Locked build contract |
+| `proposal/schemas/events.ts` | Source copy of Zod contracts |
+| `proposal/DEMO-SCRIPT.md` | 5–10 min journey + DOALOS slide |
+| `proposal/KEEPERS.md` | OSS pattern keepers |
+
+## Development status
+
+Scaffold is in place: routes, schema, database layer, Docker, and journey placeholders. Next implementation steps follow `proposal/PLANNING-AGENT-PROMPT.md` sections A–I.
+
+## Scripts
+
+```bash
+npm run dev      # local development
+npm run build    # production build
+npm run start    # start production server
+npm run lint     # ESLint
+```
