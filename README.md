@@ -215,13 +215,14 @@ npm run db:reset         # DEV/TEST ONLY (refused in production)
 npm run db:check         # contracts:check + reconcile
 npm run digest           # roll held publications into digest rows
 npm run demo             # 17 narrated checkpoints; BASE_URL=… adds HTTP checks
+npm run speed            # offline Excel loop timed on mocked connection profiles (--log appends to data/speed-runs.jsonl)
 npm run contracts:check  # locked Zod contract loads
 npm test                 # Vitest
 ```
 
 Environment: `DATABASE_PATH` (default `data/chm.sqlite`); `SANDBOX_RESET=1` (or `force` in a hosted evaluation image) for Secretariat *Reset database*.
 
-**Latency / SIDS:** SSR HTML, native forms (works without client JS), no map tiles; offline Excel is the Art 51.5 pattern proof — not a WCAG certification (`ACCESSIBILITY.md`).
+**Latency / SIDS:** SSR HTML, native forms (works without client JS), no map tiles; offline Excel is the Art 51.5 pattern proof — not a WCAG certification (`ACCESSIBILITY.md`). The Secretariat-only **speed lab** (`/lab/speed`, or `npm run speed`) times the closed loop on named connection profiles (office, 4G, SIDS 3G, satellite, offline): wire time is *calculated* from nominal bandwidth + RTT, parse time is *measured* with a validate-only pass — mocked, not a field measurement; trials go to `data/speed-runs.jsonl`, not the audit log.
 
 ### Guarantees (`npm run smoke`)
 

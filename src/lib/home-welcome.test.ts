@@ -7,8 +7,8 @@ describe("home welcome band preference", () => {
     expect(HOME_WELCOME_COOKIE).toBe("chm_home_welcome");
     expect(homeWelcomeVisible(undefined)).toBe(true);
     expect(homeWelcomeVisible(null)).toBe(true);
+    expect(homeWelcomeVisible("")).toBe(true);
     expect(homeWelcomeVisible("1")).toBe(true);
-    expect(homeWelcomeVisible("on")).toBe(true);
   });
 
   it("hides only on an explicit off value", () => {

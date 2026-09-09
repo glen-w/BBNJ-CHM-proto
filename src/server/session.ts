@@ -29,8 +29,12 @@ export async function setTreatyLang(code: string): Promise<void> {
   store.set(TREATY_LANG_COOKIE, lang, { httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 365 });
 }
 
-/** Persist Home welcome band visibility (on by default). */
+/** Persist Home welcome hide only. Missing cookie = shown (first compose / first visit). */
 export async function setHomeWelcome(show: boolean): Promise<void> {
   const store = await cookies();
-  store.set(HOME_WELCOME_COOKIE, show ? "1" : "0", { httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 365 });
+  if (show) {
+    store.delete(HOME_WELCOME_COOKIE);
+    return;
+  }
+  store.set(HOME_WELCOME_COOKIE, "0", { httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 365 });
 }

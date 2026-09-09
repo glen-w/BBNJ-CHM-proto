@@ -45,7 +45,11 @@ export default async function ComparePage() {
           area: "Offline / SIDS loop",
           interim: "No published offline path or validation feedback observed on the interim pages",
           prototype: "Download → fill offline → import → per-row validation → error workbook pre-filled with failed rows → fix → re-import. Durable run record. Same loop for MGR and EIA screening.",
-          links: [{ href: "/mgr/import", label: "MGR import runs" }, { href: "/eia/import", label: "EIA screening import" }],
+          links: [
+            { href: "/mgr/import", label: "MGR import runs" },
+            { href: "/eia/import", label: "EIA screening import" },
+            { href: "/lab/speed", label: `Speed lab (mocked links)${loginHint}` },
+          ],
         },
         {
           area: "Identifiers",

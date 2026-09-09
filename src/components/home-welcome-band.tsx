@@ -29,6 +29,17 @@ export async function HomeWelcomeBand() {
       aria-labelledby="home-welcome-heading"
       className="relative flex max-h-[11.25rem] overflow-hidden rounded-lg border border-institutional/20 bg-[color-mix(in_oklch,var(--institutional)_9%,var(--canvas))]"
     >
+      <div className="pointer-events-none absolute inset-0">
+        <Image
+          src="/home-welcome-still.jpg"
+          alt=""
+          fill
+          priority
+          sizes="(max-width: 1152px) 100vw, 1152px"
+          className="object-cover object-[72%_48%] opacity-[0.38]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[color-mix(in_oklch,var(--institutional)_11%,var(--canvas))] from-[12%] via-[color-mix(in_oklch,var(--institutional)_9%,var(--canvas))]/75 via-[48%] to-transparent" />
+      </div>
       <div className="relative z-10 min-w-0 flex-1 px-4 py-3">
         <h1 id="home-welcome-heading" className="text-lg font-semibold tracking-tight text-foreground">
           BBNJ Clearing-House Mechanism
@@ -53,17 +64,6 @@ export async function HomeWelcomeBand() {
             </button>
           </form>
         </div>
-      </div>
-      <div className="relative hidden min-h-[6.75rem] w-[min(42%,20rem)] shrink-0 sm:block">
-        <Image
-          src="/home-welcome-still.jpg"
-          alt=""
-          fill
-          priority
-          sizes="320px"
-          className="object-cover object-[center_40%] opacity-50"
-        />
-        <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[color-mix(in_oklch,var(--institutional)_9%,var(--canvas))] to-transparent" />
       </div>
     </section>
   );

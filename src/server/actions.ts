@@ -10,6 +10,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { CONNECTION_PROFILE_IDS, isConnectionProfileId } from "@/lib/connection-profiles";
 import { getDb } from "@/lib/db";
 import { IdempotencyKey } from "@/lib/contracts/extensions";
 import { FIELD_DEFS } from "@/lib/mgr-fields";
@@ -24,6 +25,7 @@ import { amendPack, publishPack } from "./packs";
 import { getSubscription, markAllRead, upsertSubscription } from "./queries";
 import { resetSandbox } from "./reset";
 import { getSessionUser, setHomeWelcome, setSessionUser, setTreatyLang } from "./session";
+import { appendSpeedTrials, runSpeedMatrix } from "./speed-lab";
 import { buildEiaScreeningSample, buildMgrSample } from "./template";
 import { findUserById } from "./users";
 
@@ -173,6 +175,21 @@ export async function importMgrAction(fd: FormData) {
       to: `/mgr/import/${res.runId}`,
       notice: `${res.accepted} accepted, ${res.rejected} rejected${res.rejected ? " — download the error report, fix the rows, re-import" : ""}`,
     };
+  });
+}
+
+/**
+ * Speed lab: run the closed loop under the ticked connection profiles (default: all),
+ * log the trials to data/speed-runs.jsonl. Writes nothing to SQLite.
+ */
+export async function runSpeedTrialAction(fd: FormData) {
+  const p = await getSessionUser();
+  await attemptAsync("/lab/speed", async () => {
+    const picked = fd.getAll("profile").filter(isConnectionProfileId);
+    const profiles = picked.length ? CONNECTION_PROFILE_IDS.filter((id) => picked.includes(id)) : CONNECTION_PROFILE_IDS;
+    const trials = await runSpeedMatrix(p, profiles, { db: getDb() });
+    appendSpeedTrials(trials);
+    return { to: "/lab/speed", notice: `${trials.length} trials logged for ${profiles.length} profile${profiles.length === 1 ? "" : "s"} — mocked transfer, measured parse.` };
   });
 }
 

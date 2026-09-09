@@ -17,6 +17,7 @@
     "replay-outbox": "tsx scripts/replay-outbox.ts",
     "digest": "tsx scripts/digest.ts",
     "demo": "tsx scripts/demo.ts",
+    "speed": "tsx scripts/speed.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"
