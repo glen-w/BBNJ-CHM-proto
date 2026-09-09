@@ -27,7 +27,13 @@ Sargasso Sea Core · Costa Rica Thermal Dome · CCZ precautionary network node �
 
 ## Files
 
-See `csv/`. Runtime seeds live in `src/server/seed-pack.ts` (typed constants) and `src/server/seedFromCsv.ts` (domain API wiring), loaded from `seedDatabase`.
+See `csv/`. **Runtime does not parse these CSVs** — they are the authored pack. Seed execution uses typed constants in `src/server/seed-pack.ts` and domain wiring in `src/server/seedFromCsv.ts` (idempotent keys `seed:csv:…`), loaded from `seedDatabase`. When you edit a CSV, update `seed-pack.ts` to match.
+
+| CSV | Runtime role |
+|---|---|
+| `abnj_boxes.csv` | Source for `AbnjBox` / `SEED_ABNJ_BOXES` (asserted in tests) |
+| `mgr_batches.csv`, `eia_activities.csv`, `eia_packs.csv`, `cbtmt_*.csv`, `abmt_proposals.csv` | Transpiled into seed constants / `seedFromCsv` |
+| `sources.csv`, `interim_links.csv`, `provenance_badges.csv`, `related_systems.csv`, `secretariat_notices.csv` | Narrative / pack documentation; mirrored in `seed-pack.ts` + footer links |
 
 ## Schema note
 

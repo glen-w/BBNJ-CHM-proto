@@ -12,7 +12,7 @@ import { fmtDate, stageLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { can } from "@/server/policy";
 import { listMgrBatches } from "@/server/queries";
-import { provenanceBadgeForTitle } from "@/server/seed-pack";
+import { SEED_HONESTY, provenanceBadgeForTitle } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -32,6 +32,7 @@ export default async function MgrPage({ searchParams }: Props) {
           Pre-collection notification (Art 12.2) → valid receipt issues the <strong>B-SBI</strong> → Secretariat publishes the pack →{" "}
           <strong>publicRecordId</strong> → bell and audit. Post-collection and utilisation packs attach to the same batch.
         </p>
+        <p className="w-full text-xs text-muted-foreground">{SEED_HONESTY}</p>
         <div className="flex flex-wrap gap-2">
           {can(p, "submit") ? (
             <Link href="/mgr/new" className={cn(buttonVariants({ size: "sm" }))}>

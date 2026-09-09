@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { afterEach, describe, expect, it } from "vitest";
 
 import { AbnjBox } from "@/lib/contracts/events";
@@ -13,6 +16,17 @@ import {
   SEED_ABNJ_BOXES,
 } from "@/server/seed-pack";
 import { createHarness, type Harness } from "@/test/helpers";
+
+/** Boxes listed in the authored pack CSV — keep `seed-pack.ts` / AbnjBox in sync when this file changes. */
+function abnjBoxesFromFixtureCsv(): string[] {
+  const raw = readFileSync(join(process.cwd(), "fixtures/bbnj-chm-seed-pack/csv/abnj_boxes.csv"), "utf8");
+  return raw
+    .trim()
+    .split("\n")
+    .slice(1)
+    .map((line) => line.split(",")[0]!.trim())
+    .filter(Boolean);
+}
 
 describe("seed I/O", () => {
   let h: Harness;
@@ -71,6 +85,7 @@ describe("seed I/O", () => {
     expect(getAbmtProposal(h.db, ids.rich.abmt.crDome)!.publicRecordId).toBeUndefined();
 
     expect([...SEED_ABNJ_BOXES]).toEqual([...AbnjBox.options]);
+    expect([...SEED_ABNJ_BOXES]).toEqual(abnjBoxesFromFixtureCsv());
     expect(AbnjBox.safeParse("Mid-Atlantic Splashdown Corridor").success).toBe(true);
     expect(AbnjBox.safeParse("NE Atlantic Mesopelagic Belt").success).toBe(true);
 
