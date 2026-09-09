@@ -47,7 +47,7 @@ export default async function HomePage({ searchParams }: Props) {
 
       <RailsStrip counts={counts} />
 
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <section id="journeys" className="grid scroll-mt-20 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <JourneyCard
           domain="mgr"
           title="MGR"
@@ -82,7 +82,7 @@ export default async function HomePage({ searchParams }: Props) {
         />
       </section>
 
-      <section className="rounded-lg border bg-card p-5">
+      <section id="recent-records" className="scroll-mt-20 rounded-lg border bg-card p-5">
         <h2 className="mb-1 text-sm font-medium uppercase tracking-wide text-muted-foreground">Recently published (visible to your role)</h2>
         {feed.length === 0 ? (
           <p className="text-sm text-muted-foreground">Nothing published yet.</p>
