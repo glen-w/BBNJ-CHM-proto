@@ -1,0 +1,5 @@
+link_id,domain,label,url,maps_to_seed_key
+IL-MGR-TEMP-001,mgr,BBNJ-MGR-TEMP-2026-001,https://www.un.org/bbnjagreement/en/mgr-notifications/bbnj-mgr-temp-2026-001,mgr-interim-temp-001
+IL-CBTMT,cbtmt,CBTMT information-sharing (interim),https://www.un.org/bbnjagreement/en/Information-sharing/CBTMT,cbtmt-interim-hub
+IL-FOCAL,cross,Focal points — formal communications,https://www.un.org/bbnjagreement/en/focal-points-formal-communications,focal-points-list
+IL-NOTIF-001,cross,Notification 2026-001,https://www.un.org/bbnjagreement/en/notification-2026-001,notif-2026-001

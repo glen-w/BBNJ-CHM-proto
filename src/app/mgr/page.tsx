@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
-import { ChannelBadge, ConfidentialityBadge } from "@/components/chips";
+import { ChannelBadge, ConfidentialityBadge, ProvenanceBadge } from "@/components/chips";
 import { ExportLinks } from "@/components/export-links";
 import { flashFrom } from "@/components/flash";
 import { buttonVariants } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { fmtDate, stageLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { can } from "@/server/policy";
 import { listMgrBatches } from "@/server/queries";
+import { provenanceBadgeForTitle } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -84,6 +85,14 @@ export default async function MgrPage({ searchParams }: Props) {
                     <Link href={`/mgr/${b.id}`} className="font-medium hover:underline">
                       {b.title}
                     </Link>
+                    {(() => {
+                      const badge = provenanceBadgeForTitle(b.title);
+                      return badge ? (
+                        <div className="mt-1">
+                          <ProvenanceBadge badge={badge} />
+                        </div>
+                      ) : null;
+                    })()}
                     {b.locationHint ? <div className="text-xs text-muted-foreground">{b.locationHint}</div> : null}
                   </TableCell>
                   <TableCell className="font-mono text-xs">{b.partyCode}</TableCell>

@@ -140,6 +140,10 @@ export function suggestMatch(db: Db, actor: Principal, needId: string, offerId: 
     const match = CbtmtMatch.parse({ id: crypto.randomUUID(), needId, offerId, rule: rule.trim() || "manual", at: nowIso() });
     const ins = db.prepare("INSERT OR IGNORE INTO cbtmt_matches (id, need_id, offer_id, rule, at, facilitation_note) VALUES (?, ?, ?, ?, ?, NULL)").run(match.id, match.needId, match.offerId, match.rule, match.at);
     if (ins.changes === 0) throw new DomainError("invalid_transition", "Match already exists");
+    // One match_suggested event per match row; version increments per need so UNIQUE (record, stage, version, status) holds.
+    const prev = db
+      .prepare("SELECT COALESCE(MAX(version), 0) AS v FROM events WHERE record_id = ? AND stage = 'match_suggested'")
+      .get(needId) as { v: number };
     const event = insertEvent(
       db,
       {
@@ -150,7 +154,7 @@ export function suggestMatch(db: Db, actor: Principal, needId: string, offerId: 
         recordId: needId,
         relatedRecordId: offerId,
         matchId: match.id,
-        version: 1,
+        version: prev.v + 1,
         actorRole: actorRoleOf(actor),
         actorUserId: userId(actor),
         at: match.at,

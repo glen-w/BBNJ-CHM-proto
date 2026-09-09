@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
-import { ConfidentialityBadge, DomainBadge, StatusChip } from "@/components/chips";
+import { ConfidentialityBadge, DomainBadge, ProvenanceBadge, StatusChip } from "@/components/chips";
 import { ExportLinks } from "@/components/export-links";
 import { flashFrom } from "@/components/flash";
 import { buttonVariants } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { fmtDate, stageLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { can } from "@/server/policy";
 import { listAbmtProposals } from "@/server/queries";
+import { SEED_HONESTY, provenanceBadgeForTitle } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -24,6 +25,7 @@ export default async function AbmtPage({ searchParams }: Props) {
   return (
     <AppShell title="Area-based management tools (ABMT) — Part III" flash={flash}>
       <WithoutPrejudiceBanner />
+      <p className="text-xs text-muted-foreground">{SEED_HONESTY}</p>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="max-w-2xl text-sm text-muted-foreground">
           Proposals under Art 51.3(a)(ii) ride the same rails as every other journey: one record, a <code>proposal_stub</code> pack that moves{" "}
@@ -67,6 +69,14 @@ export default async function AbmtPage({ searchParams }: Props) {
                       <DomainBadge domain="abmt" withIcon />
                       {a.title}
                     </Link>
+                    {(() => {
+                      const badge = provenanceBadgeForTitle(a.title);
+                      return badge ? (
+                        <div className="mt-1">
+                          <ProvenanceBadge badge={badge} />
+                        </div>
+                      ) : null;
+                    })()}
                   </TableCell>
                   <TableCell className="font-mono text-xs">{a.partyCode}</TableCell>
                   <TableCell className="text-xs">{stageLabel(a.currentStage)}</TableCell>

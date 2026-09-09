@@ -15,10 +15,10 @@ Wording rule for this file: a row is **shipped** only when the smoke suite or th
 | Validation with actionable feedback | shipped | per-row field-level errors, rejected rows retain values, error workbook pre-filled (MGR and EIA screening) | — |
 | Identifiers (Art 12 B-SBI) | shipped | B-SBI at valid receipt, before publish; `publicRecordId` at first publish (`BBNJ-MGR|EIA|CBTMT|ABMT-…`); never equal, never swapped (`smoke` identifiers + ABMT + amend tests) | B-SBI shape is a demo choice (`CONTRACT-AMENDMENTS.md` C2) |
 | Version control | shipped | `amendPack()` → pending v+1 with change note + material flag; version history on every record; superseded Art 12.2 values kept (`P0‑4`) | "material" is a submitter's declaration |
-| Artifacts / documents | shipped | `artifactRefs` (`pdf | url | note | xlsx` + label, optional href) on every pack; seeded EIA packs carry them; shown on the pack and in exports | references only — no file store, no upload |
+| Artifacts / documents | shipped | `artifactRefs` (`pdf | url | note | xlsx` + label, optional href) on every pack; seeded EIA packs carry them; interim MGR TEMP mirror carries DOALOS URL; shown on the pack and in exports | references only — no file store, no upload |
 | Storage | shipped | SQLite, append-only outbox, caches reconciled from events (`reconcile()`), ABMT on the same rails | single node; federation deferred |
 | Search & retrieval | partial | role-filtered lists with `LIKE` search on title/area/ids; stable `/records/<publicRecordId>` | no full-text index (Solr deferred) |
-| Neighbourhood (same ABNJ box) | shipped | list of other visible activities in the same box on `/eia/[id]` | a list, not a map |
+| Neighbourhood (same ABNJ box) | shipped | list of other visible activities in the same box on `/eia/[id]` | a list, not a map; ABNJ vocabulary extended for rich seed (splashdown corridor, mesopelagic belt, OAE trial, Sargasso, Costa Rica Dome) |
 | Reporting & export | shipped | CSV/JSON per domain and audit; per-record JSON; PDF stub (`P0‑6`); **digest windows CSV** (Secretariat) | PDF is a one-page text stub |
 | Confidentiality controls | shipped | three tiers enforced in SQL for every read path; seeds for all tiers; tier × role matrix (`P0‑5`) | no field-level redaction inside a public record |
 
@@ -57,7 +57,7 @@ Wording rule for this file: a row is **shipped** only when the smoke suite or th
 | User role taxonomy | shipped | five roles incl. non-State uploader (contract amendment C9, applied) |
 | TK as metadata + FPIC flag | partial | `tkFpicFlag` on MGR batches; badge on lists and record page; seeded confidential batch (DEMO-05) carries the flag plus **provenance** and **FPIC status** caption notes (`tk_provenance_note`, `fpic_status_note`); Art 13 cite in § Agreement basis; panel on the record page | **no content store by design** — captions only; no holder registry or consent instrument upload |
 | Subscription alerts (thematic / geo) | shipped | `/preferences` |
-| Early interoperability links | partial | stable public URLs + JSON export as the seam; **related systems** footer with named links to existing clearing-houses and data systems | links only — no federation, no data exchange |
+| Early interoperability links | partial | stable public URLs + JSON export as the seam; **related systems** footer with named links to existing clearing-houses, data systems, and DOALOS interim pages (MGR TEMP, CBTMT, focal points, Notif 2026-001) | links only — no federation, no data exchange |
 | Design for future nodes | partial | outbox + idempotent dispatch make replication feasible; no node protocol |
 | English first, six languages later | partial | **treaty-text locale stub shipped**: header language control opens the official BBNJ text in the chosen UN language and persists that choice (Arabic RTL on the banner only); **full UI i18n deferred**; no AI translation (PrepCom3 caution respected) |
 | Cybersecurity baseline | partial | server-side authorisation, refusal log, no client-side trust, Docker bound to loopback; no OAuth/TLS in the image |
@@ -69,7 +69,7 @@ Wording rule for this file: a row is **shipped** only when the smoke suite or th
 |---|---|---|
 | Mini-prototype of ≥1 basic function | shipped | all three functions, one substrate, four domains (ABMT thin) |
 | Explicit comparison to interim set-up | shipped | `/compare` by basic function with deep links (`P0‑7`); README table. Both describe the interim DOALOS pages *as understood from public materials* and as a design contrast, not a critique |
-| Hands-on interaction | shipped (clone / Docker) | **five** sandbox logins, no passwords; `npm run demo`; *Reset sandbox* button (`SANDBOX_RESET=1`) so a host can restore state between participants (`P0‑8`). **No hosted public URL — C1 public sandbox hosting is out of scope** |
+| Hands-on interaction | shipped (clone / Docker) | **five** sandbox logins, no passwords; `npm run demo`; *Reset sandbox* button (`SANDBOX_RESET=1`) so a host can restore state between participants (`P0‑8`). **Rich seed pack** (idempotent `seed:csv:…`): interim DOALOS TEMP MGR mirror, rocket / mCDR / mesopelagic EIA storylines, ABMT stubs, CBTMT matches — list badges distinguish **Interim (DOALOS)** vs **Demo scenario**. **No hosted public URL — C1 public sandbox hosting is out of scope** |
 | Open source | shipped | MIT, pinned lockfile, Docker Compose, contract byte-checked against `proposal/schemas/events.ts` |
 | Developing country / SIDS experience | shipped (design) | offline Excel loops with error workbooks, low-bandwidth pages, Secretariat-assisted channel (`sourceChannel = assisted|excel`), non-State uploader for providers; `VISUAL-CHARTER.md` — text-labelled chips, visible focus rings, light payload, no maps or hero imagery (team charter, not an EOI mandate) |
 | Prior CHM/portal experience | n/a | a people criterion, not a software one |
@@ -96,7 +96,7 @@ Wording rule for this file: a row is **shipped** only when the smoke suite or th
 ## E. How to verify
 
 ```bash
-npm run smoke                                  # 34 tests — invariants incl. all eight P0 items + EOI wave (defensive skip only if an EOI API is absent)
+npm run smoke                                  # 35 tests — invariants incl. all eight P0 items + EOI wave (defensive skip only if an EOI API is absent)
 npm test                                       # Vitest unit suite (temp SQLite; does not touch data/chm.sqlite)
 npm run demo                                   # 17 narrated checkpoints on a temp DB
 BASE_URL=http://localhost:3000 npm run demo    # + HTTP status/body checks with each demo cookie (incl. /cbtmt → /capacity, /abmt)

@@ -108,6 +108,23 @@ export function StageChip({ stage, status, version }: { stage: string; status: s
   );
 }
 
+/** List badge distinguishing Interim (DOALOS) mirrors from fictional demo scenarios. */
+export function ProvenanceBadge({ badge }: { badge: "Interim (DOALOS)" | "Demo scenario" }) {
+  const interim = badge === "Interim (DOALOS)";
+  return (
+    <Badge
+      variant="outline"
+      className={cn(
+        "font-normal",
+        interim ? "border-institutional/50 text-institutional" : "border-line text-muted-foreground",
+      )}
+      title={interim ? "Mirrors a live DOALOS interim page — not a Party filing through this desk" : "Plausible demo scenario; not a real Party filing"}
+    >
+      {badge}
+    </Badge>
+  );
+}
+
 export function Identifier({
   label,
   value,

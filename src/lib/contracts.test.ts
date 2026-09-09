@@ -155,7 +155,16 @@ describe("Domain records schemas", () => {
   });
 
   it("validates EiaActivity and AbnjBox enum", () => {
-    expect(AbnjBox.options).toEqual(["CCZ", "Reykjanes Ridge", "Clarion-Clipperton South"]);
+    expect(AbnjBox.options).toEqual([
+      "CCZ",
+      "Reykjanes Ridge",
+      "Clarion-Clipperton South",
+      "Mid-Atlantic Splashdown Corridor",
+      "NE Atlantic Mesopelagic Belt",
+      "North Atlantic OAE Trial Box",
+      "Sargasso Sea Core",
+      "Costa Rica Thermal Dome",
+    ]);
     expect(
       EiaActivity.safeParse({
         domain: "eia",

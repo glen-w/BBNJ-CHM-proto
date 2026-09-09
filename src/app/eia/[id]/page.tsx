@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AppShell } from "@/components/app-shell";
-import { ChannelBadge, ConfidentialityBadge, Identifier, StageChip, TierNote } from "@/components/chips";
+import { ChannelBadge, ConfidentialityBadge, Identifier, ProvenanceBadge, StageChip, TierNote } from "@/components/chips";
 import { RecordExportLinks } from "@/components/export-links";
 import { flashFrom } from "@/components/flash";
 import { Field, KeyFields, SubmitButton, selectClass } from "@/components/forms";
@@ -21,6 +21,7 @@ import { EIA_STAGE_ORDER, getEiaActivity, packsForActivity } from "@/server/eia"
 import { DEMO_COMMENT_WINDOW_DAYS } from "@/lib/contracts/extensions";
 import { can } from "@/server/policy";
 import { listEiaActivities, recordVisible, timelineOf } from "@/server/queries";
+import { agreementBasisExtrasForTitle, provenanceBadgeForTitle } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -44,6 +45,8 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
   const amendable = Array.from(latestByStage.values())
     .filter((e) => e.status === "published" && e.stage !== "comments_stb")
     .map((e) => ({ stage: e.stage, version: e.version }));
+  const basis = agreementBasisExtrasForTitle(activity.title);
+  const provenance = provenanceBadgeForTitle(activity.title);
 
   return (
     <AppShell title={`EIA activity — ${activity.title}`} flash={flash}>
@@ -54,10 +57,11 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
           </Link>
           <ConfidentialityBadge tier={activity.confidentiality} />
           <ChannelBadge channel={activity.sourceChannel} />
+          {provenance ? <ProvenanceBadge badge={provenance} /> : null}
           <span className="text-xs text-muted-foreground">
             ABNJ box <strong>{activity.abnjBox}</strong> · Party <span className="font-mono">{activity.partyCode}</span>
           </span>
-          <TreatyCiteDrawer domain="eia" stages={packs.map((e) => e.stage)} />
+          <TreatyCiteDrawer domain="eia" stages={packs.map((e) => e.stage)} extras={basis.extras} footnotes={basis.footnotes} />
         </div>
         <RecordExportLinks publicRecordId={activity.publicRecordId} />
       </div>

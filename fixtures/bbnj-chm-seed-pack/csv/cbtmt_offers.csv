@@ -1,0 +1,4 @@
+seed_key,provider,title,themes,status_path,source_ids,notes
+cbt-offer-eia-course,Demo Regional Training Centre,Short course: BBNJ Part IV EIA workflow & CHM packs,eia_practice;training,publish,SRC-UN-CBTMT,
+cbt-offer-acoustic,Demo Ocean Acoustics Lab,Acoustic & trawl survey design mentoring for mesopelagic trials,fisheries;mesopelagic;eia_practice,publish,SRC-ZOT-MESO,
+cbt-offer-oae-lab,Demo Biogeochemistry Consortium,Lab & shipboard alkalinity measurement protocols (open materials),mcdr;monitoring,publish,SRC-ZOT-MCDR,

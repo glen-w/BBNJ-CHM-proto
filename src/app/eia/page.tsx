@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
-import { ConfidentialityBadge, StatusChip } from "@/components/chips";
+import { ConfidentialityBadge, ProvenanceBadge, StatusChip } from "@/components/chips";
 import { ExportLinks } from "@/components/export-links";
 import { flashFrom } from "@/components/flash";
 import { buttonVariants } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { fmtDate, stageLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { can } from "@/server/policy";
 import { listEiaActivities } from "@/server/queries";
+import { SEED_HONESTY, provenanceBadgeForTitle } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -30,6 +31,7 @@ export default async function EiaPage({ searchParams }: Props) {
           Each activity is one record carrying many <strong>packs</strong> (screening, notices, draft EIA, STB comments, decision, monitoring). Pack
           status is <em>draft → pending → published</em>; the record only caches the latest stage. Published draft EIAs feed the STB queue.
         </p>
+        <p className="w-full text-xs text-muted-foreground">{SEED_HONESTY}</p>
         <div className="flex gap-2">
           {can(p, "submit") ? (
             <Link href="/eia/new" className={cn(buttonVariants({ size: "sm" }))}>
@@ -83,6 +85,14 @@ export default async function EiaPage({ searchParams }: Props) {
                     <Link href={`/eia/${a.id}`} className="font-medium hover:underline">
                       {a.title}
                     </Link>
+                    {(() => {
+                      const badge = provenanceBadgeForTitle(a.title);
+                      return badge ? (
+                        <div className="mt-1">
+                          <ProvenanceBadge badge={badge} />
+                        </div>
+                      ) : null;
+                    })()}
                   </TableCell>
                   <TableCell className="text-xs">{a.abnjBox}</TableCell>
                   <TableCell className="font-mono text-xs">{a.partyCode}</TableCell>

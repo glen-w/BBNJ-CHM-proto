@@ -25,8 +25,12 @@ const journeys: { href: string; label: string; caption: string; enabled: boolean
   { href: "/abmt", label: "ABMT", caption: "area-based management tools (stub, without prejudice)", enabled: true },
 ];
 
-/** Reference links only — no data flows to or from these systems. */
+/** Reference links only — no data flows to or from these systems. Includes DOALOS interim anchors from the rich seed pack. */
 const RELATED_SYSTEMS = [
+  { href: "https://www.un.org/bbnjagreement/en/mgr-notifications/bbnj-mgr-temp-2026-001", label: "MGR TEMP-2026-001" },
+  { href: "https://www.un.org/bbnjagreement/en/Information-sharing/CBTMT", label: "CBTMT (interim)" },
+  { href: "https://www.un.org/bbnjagreement/en/focal-points-formal-communications", label: "Focal points" },
+  { href: "https://www.un.org/bbnjagreement/en/notification-2026-001", label: "Notif 2026-001" },
   { href: "https://absch.cbd.int/", label: "ABSCH" },
   { href: "https://bch.cbd.int/", label: "BCH" },
   { href: "https://obis.org/", label: "OBIS" },

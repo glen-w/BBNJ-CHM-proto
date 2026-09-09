@@ -8,7 +8,7 @@ Honesty rules for the presenter: notifications are **in-app only** (no e-mail); 
 
 ```bash
 npm run db:reset      # fresh seeded database, schema v5 (dev only)
-npm run smoke         # 34 tests expected to pass (two may report `skip` if an optional API is absent)
+npm run smoke         # 35 tests expected to pass (two may report `skip` if an optional API is absent)
 SANDBOX_RESET=1 npm run dev     # http://localhost:3000 — the env var shows the Secretariat's Reset database button
 ```
 
@@ -30,7 +30,9 @@ Cookie-based, no passwords. Any bad cookie = anonymous public.
 
 ## Journey (≈ 1 minute per step)
 
-1. **Home `/`** as the anonymous public — rails with counts filtered by role: 0 pending packs, no notifications. The *Export CSV* button downloads exactly the rows the public can see. Scroll to the footer: **Related systems** links to existing clearing-houses and data systems — say: "an early interoperability seam: named links, not federation". Say: "counts, lists, exports and notifications all go through one SQL visibility clause".
+1. **Home `/`** as the anonymous public — rails with counts filtered by role: 0 pending packs, no notifications. The *Export CSV* button downloads exactly the rows the public can see. Scroll to the footer: **Related systems** links to existing clearing-houses and data systems — say: "an early interoperability seam: named links, not federation". Say: "counts, lists, exports and notifications all go through one SQL visibility clause". Honesty caption on the home: *Plausible demo data; not real Party filings.*
+
+1b. **Rich seed beat (optional, ~90 s)** — open `/mgr` and find **Interim (DOALOS)** badge on *BBNJ-MGR-TEMP-2026-001 (mirrored)* → open it: DMP / artefact URL points at the live DOALOS TEMP page; B-SBI and `publicRecordId` are real Cl-HM ids (never equal to the TEMP label). Then `/eia` → **Demo scenario** badges on rocket splashdown (draft published), mCDR/OAE (draft pending), and mesopelagic fishery (screening only) — open mesopelagic → **§ Agreement basis** cites Zotero `6K6WPBFQ` as RFMO-gap / Part IV framing. `/abmt` → published *Sargasso Sea Core* stub; open *CCZ … precautionary* for the ISA not-undermine caption. `/capacity` → extra needs/offers and facilitation notes. Say: "list badges separate Interim (DOALOS) mirrors from Demo scenarios so rocket/mCDR/mesopelagic are never read as filed notifications."
 
 2. **MGR receipt** (sign in as `party.nfp`) — `/mgr/new` → **Save draft** → batch page shows `internalId` only → **Submit** → `receiptId` + **B-SBI** appear, still no `publicRecordId`. Say: "the B-SBI is minted at valid receipt, before publication".
 

@@ -17,6 +17,7 @@ import { latestPackRow } from "./outbox";
 import { publishPack } from "./packs";
 import { principalFor } from "./policy";
 import { upsertSubscription } from "./queries";
+import { seedRichPack, type RichSeedIds } from "./seedFromCsv";
 import { findUserByUsername, upsertUser } from "./users";
 
 export const SEED_USERS: User[] = [
@@ -53,6 +54,8 @@ export interface SeedIds {
   cbtmt: { need: string; offer: string; matchId?: string };
   abmt: { published: string };
   nonstate: { userId: string };
+  /** Plausible CSV pack (interim mirrors + demo storylines). */
+  rich: RichSeedIds;
 }
 
 const K = (s: string) => `seed:${s}`;
@@ -206,6 +209,9 @@ export function seedDatabase(db: Db): SeedIds {
   submitAbmtProposal(db, party, abmt.proposal.id, K("abmt-1-submit"));
   publishPack(db, secretariat, { domain: "abmt", recordId: abmt.proposal.id, stage: "proposal_stub", at: "2026-09-05T10:00:00.000Z" });
 
+  // ---- Rich CSV pack (interim DOALOS mirrors + Zotero-grounded demo scenarios). Idempotent `seed:csv:…`.
+  const rich = seedRichPack(db, party, secretariat);
+
   // ---- digests: daily/weekly subscribers were held back by the dispatcher; roll them up once, through the real runner.
   runDigests(db);
 
@@ -216,6 +222,7 @@ export function seedDatabase(db: Db): SeedIds {
     cbtmt: { need: need.record.id, offer: offer.record.id, matchId: match.match.id },
     abmt: { published: abmt.proposal.id },
     nonstate: { userId: SEED_USERS[4].id },
+    rich,
   };
 }
 

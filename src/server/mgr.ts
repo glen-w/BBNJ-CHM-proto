@@ -4,7 +4,7 @@
  * same batch; submitting twice never mints twice.
  */
 import type { Db } from "@/lib/db";
-import type { MgrStage, SourceChannel } from "@/lib/contracts/events";
+import type { ArtifactRef, MgrStage, SourceChannel } from "@/lib/contracts/events";
 import { StoredMgrBatch, type IdempotencyKey } from "@/lib/contracts/extensions";
 import { MgrPreCollectionInput, coerceMgrInput, splitMgrInput, FIELD_DEFS } from "@/lib/mgr-fields";
 import { DomainError } from "./errors";
@@ -126,7 +126,14 @@ function insertBatch(db: Db, actor: Principal, partyCode: string, channel: Sourc
 }
 
 /** Inner receipt step, runs inside the caller's transaction. Mints B-SBI exactly once. */
-function acceptReceipt(db: Db, actor: Principal, batchId: string, key: IdempotencyKey, at: string): PackResult {
+function acceptReceipt(
+  db: Db,
+  actor: Principal,
+  batchId: string,
+  key: IdempotencyKey,
+  at: string,
+  opts: { summary?: string; artifactRefs?: ArtifactRef[] } = {},
+): PackResult {
   const batch = getMgrBatch(db, batchId)!;
   const bSbi = mintBSbi(db, batch.partyCode, yearOf(at));
   const res = db
@@ -138,9 +145,10 @@ function acceptReceipt(db: Db, actor: Principal, batchId: string, key: Idempoten
     recordId: batchId,
     stage: "pre_collection",
     status: "pending",
-    summary: `Pre-collection notification received; B-SBI ${bSbi} issued (Art 12)`,
+    summary: opts.summary ?? `Pre-collection notification received; B-SBI ${bSbi} issued (Art 12)`,
     idempotencyKey: key,
     confidentiality: batch.confidentiality,
+    artifactRefs: opts.artifactRefs,
     extras: { bSbi },
     at,
   });
@@ -213,7 +221,7 @@ export function receivePreCollection(
   raw: Record<string, unknown>,
   sourceChannel: SourceChannel,
   key: IdempotencyKey,
-  opts: { partyCode?: string; at?: string } = {},
+  opts: { partyCode?: string; at?: string; summary?: string; artifactRefs?: ArtifactRef[] } = {},
 ): MgrResult {
   requireCan(actor, "submit", undefined, { domain: "mgr", db });
   const existing = findEventByKey(db, key);
@@ -224,7 +232,7 @@ export function receivePreCollection(
     const at = opts.at ?? nowIso();
     const id = insertBatch(db, actor, partyCode, channelFor(actor, sourceChannel), at);
     writeBatchFields(db, id, input);
-    const res = acceptReceipt(db, actor, id, key, at);
+    const res = acceptReceipt(db, actor, id, key, at, { summary: opts.summary, artifactRefs: opts.artifactRefs });
     return { batch: getMgrBatch(db, id)!, event: res.event, created: true };
   });
   return tx();

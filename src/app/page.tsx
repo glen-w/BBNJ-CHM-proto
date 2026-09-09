@@ -10,6 +10,7 @@ import { getDb } from "@/lib/db";
 import { domainPath, fmtDate, stageLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { railCounts, recentPublished } from "@/server/queries";
+import { SEED_HONESTY } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -28,6 +29,7 @@ export default async function HomePage({ searchParams }: Props) {
         <p className="max-w-3xl text-base leading-relaxed text-muted-foreground">
           Submit, manage, publish and notify across MGR, EIA, capacity-building and (as a stub) area-based management tools — one desk, four journeys.
         </p>
+        <p className="max-w-3xl text-xs text-muted-foreground">{SEED_HONESTY}</p>
         {p.kind === "anonymous" ? (
           <p className="text-sm">
             You are browsing as the public.{" "}

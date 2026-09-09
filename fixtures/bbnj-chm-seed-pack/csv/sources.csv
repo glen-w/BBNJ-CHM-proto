@@ -1,0 +1,11 @@
+source_id,kind,zotero_key,title,url,note
+SRC-UN-MGR-TEMP-001,interim_un,,BBNJ MGR temporary notification BBNJ-MGR-TEMP-2026-001,https://www.un.org/bbnjagreement/en/mgr-notifications/bbnj-mgr-temp-2026-001,DOALOS interim MGR notification page — seed as published MGR pre_collection pack with publicRecordId mirroring TEMP id
+SRC-UN-CBTMT,interim_un,,Information-sharing — CBTMT,https://www.un.org/bbnjagreement/en/Information-sharing/CBTMT,Interim CBTMT information-sharing page — seed related_systems + capacity needs/offers themes
+SRC-UN-FOCAL,interim_un,,Focal points for formal communications,https://www.un.org/bbnjagreement/en/focal-points-formal-communications,Interim focal-point list surface
+SRC-UN-NOTIF-2026-001,interim_un,,Notification 2026-001 — Focal points for formal communications,https://www.un.org/bbnjagreement/en/notification-2026-001,DOALOS Notif 2026-001 (10 Feb 2026); action by 16 Mar 2026; doalos@un.org interim channel
+SRC-ZOT-SPACE,zotero,U7EHXJMV,Assessing before Sinking: The BBNJ Agreement and the Controlled Re-Entry of Space Objects in Marine ABNJ,https://doi.org/10.1163/15718085-20261023,De Lucia & Guo 2026 — rocket/space object re-entry EIA framing
+SRC-ZOT-MCDR,zotero,TU7WCKWE,Marine Carbon Dioxide Removal Governance under the BBNJ Agreement,https://doi.org/10.1163/22116001-04001-009,Burns & Webb 2026 — mCDR under BBNJ
+SRC-ZOT-CDR-VID,zotero,P2UZYA3X,Potential Role of BBNJ Treaty in Ocean-Based CDR,https://www.youtube.com/watch?v=5sVP1ilqDCU,2023 webinar — ocean-based CDR / BBNJ
+SRC-ZOT-MESO,zotero,6K6WPBFQ,Strengthening high seas governance through enhanced environmental assessment processes: mesopelagic fisheries and options for a future BBNJ treaty,https://doi.org/10.48440/IASS.2021.001,"Gjerde, Wright, Durussel 2021 — mesopelagic fisheries EIA / RFMO gaps"
+SRC-ZOT-MPA-HS,zotero,,High Seas Marine Protected Areas MPAs and the BBNJ Treaty | Ocean Nexus Webinar,,From Zotero ABMT/MPAs collection — high seas MPA candidates framing
+SRC-ZOT-SARGASSO,zotero,,Protecting Earth's last conservation frontier (high seas MPAs),,Gjerde et al. — scientific/legal priorities for MPAs beyond national boundaries

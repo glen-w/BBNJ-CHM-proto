@@ -1,0 +1,4 @@
+seed_key,party_code,title,themes,status_path,source_ids,notes
+cbt-need-eia-practice,XSD,EIA practice training for ABNJ activities (SIDS cohort),eia_practice;training,publish,SRC-UN-CBTMT,Tied to interim CBTMT information-sharing page
+cbt-need-meso-assessment,XSD,Support for mesopelagic impact assessment methods,eia_practice;fisheries;mesopelagic,publish,SRC-ZOT-MESO,Pairs with mesopelagic EIA scenario
+cbt-need-mcdr-monitor,XSD,mCDR monitoring & verification capacity,mcdr;monitoring;genomics,publish,SRC-ZOT-MCDR,

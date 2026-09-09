@@ -360,6 +360,29 @@ async function main() {
     assert.deepEqual(counts(), before);
   });
 
+  p0("rich CSV seed pack — interim TEMP MGR, three EIA storylines, published ABMT stub, extended AbnjBox", async () => {
+    const { AbnjBox } = await import("../src/lib/contracts/events");
+    const abmtMod = await import("../src/server/abmt");
+    const interim = mgr.getMgrBatch(db, seedResult.rich.mgr.interimTemp)!;
+    assert.match(interim.title, /BBNJ-MGR-TEMP-2026-001/);
+    assert.ok(interim.bSbi);
+    assert.ok(interim.publicRecordId);
+    assert.notEqual(interim.bSbi, interim.publicRecordId);
+    assert.match(String(interim.details.dataManagementPlan ?? ""), /bbnj-mgr-temp-2026-001/);
+    const rocket = eia.getEiaActivity(db, seedResult.rich.eia.rocket)!;
+    const cdr = eia.getEiaActivity(db, seedResult.rich.eia.marineCdr)!;
+    const meso = eia.getEiaActivity(db, seedResult.rich.eia.mesopelagic)!;
+    assert.match(rocket.title, /splashdown/i);
+    assert.match(cdr.title, /alkalinity|OAE|mCDR/i);
+    assert.match(meso.title, /mesopelagic/i);
+    assert.equal(AbnjBox.safeParse(rocket.abnjBox).success, true);
+    assert.equal(AbnjBox.safeParse("Sargasso Sea Core").success, true);
+    const sargasso = abmtMod.getAbmtProposal(db, seedResult.rich.abmt.sargasso)!;
+    assert.match(sargasso.publicRecordId ?? "", /^BBNJ-ABMT-/);
+    const publishedAbmt = (db.prepare("SELECT COUNT(*) AS n FROM abmt_proposals WHERE public_record_id IS NOT NULL").get() as { n: number }).n;
+    assert.ok(publishedAbmt >= 2, "at least smoke stub + one CSV ABMT published");
+  });
+
   p0("db:seed --if-empty is a no-op on a seeded DB; db:reset refused in production", async () => {
     const before = (db.prepare("SELECT COUNT(*) AS n FROM events").get() as { n: number }).n;
     const r = seed.seedIfEmpty(db);

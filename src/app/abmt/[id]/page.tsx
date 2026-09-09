@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AppShell } from "@/components/app-shell";
-import { ChannelBadge, ConfidentialityBadge, DomainBadge, Identifier, StageChip, TierNote } from "@/components/chips";
+import { ChannelBadge, ConfidentialityBadge, DomainBadge, Identifier, ProvenanceBadge, StageChip, TierNote } from "@/components/chips";
 import { RecordExportLinks } from "@/components/export-links";
 import { flashFrom } from "@/components/flash";
 import { KeyFields, SubmitButton } from "@/components/forms";
@@ -17,6 +17,7 @@ import { submitAbmtAction } from "@/server/actions";
 import { getAbmtProposal } from "@/server/abmt";
 import { can } from "@/server/policy";
 import { packsOf, recordVisible, timelineOf } from "@/server/queries";
+import { isIsaNotUndermineAbmt, provenanceBadgeForTitle } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -35,10 +36,18 @@ export default async function AbmtProposalPage({ params, searchParams }: Props) 
   const here = `/abmt/${id}`;
   const latest = packs.filter((e) => e.stage === "proposal_stub").sort((a, b) => b.seq - a.seq)[0];
   const canSubmit = owner && latest?.status === "draft";
+  const provenance = provenanceBadgeForTitle(proposal.title);
+  const isaCaption = isIsaNotUndermineAbmt(proposal.title);
 
   return (
     <AppShell title={`ABMT proposal stub — ${proposal.title}`} flash={flash}>
       <WithoutPrejudiceBanner />
+      {isaCaption ? (
+        <p className="rounded-md border border-caution-line bg-caution/40 px-3 py-2 text-xs text-caution-foreground">
+          Not-undermine caption (demo): this CCZ network-node stub is illustrative only and does not purport to displace or undermine ISA processes
+          under UNCLOS or the Exploration Regulations.
+        </p>
+      ) : null}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <Link href="/abmt" className="text-sm underline">
@@ -47,6 +56,7 @@ export default async function AbmtProposalPage({ params, searchParams }: Props) 
           <DomainBadge domain="abmt" withIcon />
           <ChannelBadge channel={proposal.sourceChannel} />
           <ConfidentialityBadge tier={proposal.confidentiality} />
+          {provenance ? <ProvenanceBadge badge={provenance} /> : null}
           <span className="font-mono text-xs text-muted-foreground">Party {proposal.partyCode}</span>
           <TreatyCiteDrawer domain="abmt" stages={packs.map((e) => e.stage)} />
         </div>

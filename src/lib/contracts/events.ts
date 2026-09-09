@@ -262,6 +262,11 @@ export const AbnjBox = z.enum([
   "CCZ",
   "Reykjanes Ridge",
   "Clarion-Clipperton South",
+  "Mid-Atlantic Splashdown Corridor",
+  "NE Atlantic Mesopelagic Belt",
+  "North Atlantic OAE Trial Box",
+  "Sargasso Sea Core",
+  "Costa Rica Thermal Dome",
 ]);
 export type AbnjBox = z.infer<typeof AbnjBox>;
 

@@ -8,20 +8,33 @@ import { cn } from "@/lib/utils";
 
 /**
  * Quiet “Agreement basis” / § control — side panel lists only relevant article(s)
- * for the packs on this detail page.
+ * for the packs on this detail page. Optional extras/footnotes for seed storylines
+ * (e.g. Zotero RFMO-gap framing on the mesopelagic EIA).
  */
 export function TreatyCiteDrawer({
   domain,
   stages,
+  extras = [],
+  footnotes = [],
   className,
 }: {
   domain: Domain;
   stages: string[];
+  extras?: TreatyCite[];
+  footnotes?: readonly string[];
   className?: string;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
-  const cites: TreatyCite[] = citesForPacks(domain, stages);
+  const base = citesForPacks(domain, stages);
+  const seen = new Set(base.map((c) => `${c.article}|${c.label}`));
+  const cites: TreatyCite[] = [...base];
+  for (const e of extras) {
+    const key = `${e.article}|${e.label}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    cites.push(e);
+  }
 
   function open() {
     dialogRef.current?.showModal();
@@ -76,6 +89,13 @@ export function TreatyCiteDrawer({
               ))}
             </ul>
           )}
+          {footnotes.length > 0 ? (
+            <ul className="mt-4 space-y-2 border-t border-line pt-4 text-xs text-muted-foreground">
+              {footnotes.map((f) => (
+                <li key={f.slice(0, 48)}>{f}</li>
+              ))}
+            </ul>
+          ) : null}
           <p className="mt-6 text-xs text-muted-foreground">
             Short labels only — open the official BBNJ text via the language control in the header. UI strings stay English.
           </p>

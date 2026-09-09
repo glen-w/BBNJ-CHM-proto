@@ -1,0 +1,4 @@
+seed_key,title,abnj_box,stage,status_path,summary,source_ids,notes
+abmt-sargasso,Sargasso Sea Core — high seas MPA candidate (demo),Sargasso Sea Core,proposal_stub,create+pending+publish,Plausible ABMT/MPA proposal package stub on same receipt→publish rails; without prejudice to COP1 modalities.,SRC-ZOT-SARGASSO,Extend domain abmt journey; cite high-seas MPA literature from Zotero ABMT collection
+abmt-cr-dome,Costa Rica Thermal Dome — ABMT candidate (demo),Costa Rica Thermal Dome,proposal_stub,create+pending,Eastern Tropical Pacific productivity feature — candidate area-based measure stub.,SRC-ZOT-MPA-HS,Leave one pending to show publish gate
+abmt-ccz-precaution,CCZ representative habitats — precautionary ABMT network node (demo),CCZ,proposal_stub,create+pending+publish,Illustrative network node complementary to ISA processes — demo only; not-undermine caption required.,,Use existing CCZ box; UI must caption relationship to ISA carefully
