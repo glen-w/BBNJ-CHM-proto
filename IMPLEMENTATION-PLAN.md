@@ -103,6 +103,8 @@ Tables and the invariant each constraint protects:
 
 ## E. UI inventory
 
+Visual identity follows `VISUAL-CHARTER.md` ("Working Cl-HM desk": cool canvas, one UN-adjacent blue, text-labelled status chips, journeys secondary to shared rails). Charter tokens live in `src/app/globals.css` mapped onto the shadcn theme; the status chip in `src/components/chips.tsx` is the single source for `draft` / `pending` / `published` colour.
+
 shadcn additions: button, card, badge, tabs, sheet, input, select, textarea, checkbox, switch, table, tooltip, dropdown-menu, alert, separator, sonner. Forms are plain server-action forms with Zod flattened errors and a hidden idempotency key; no react-hook-form. Submit and publish buttons disable while pending; the server stays safe regardless.
 
 Shared rails (build first):

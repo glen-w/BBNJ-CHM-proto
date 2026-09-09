@@ -213,7 +213,7 @@ export async function resetSandboxAction(fd: FormData) {
   const back = returnTo(fd, "/audit");
   attempt(back, () => {
     const r = resetSandbox(p);
-    return { to: "/", notice: `Sandbox reset — database recreated and re-seeded (${r.removed.length} file(s) removed). Sign-ins survive; everything else is fresh.` };
+    return { to: "/", notice: `Database reset and re-seeded (${r.removed.length} file(s) removed). Sign-ins survive; everything else is fresh.` };
   });
 }
 

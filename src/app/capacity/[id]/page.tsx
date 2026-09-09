@@ -7,6 +7,7 @@ import { RecordExportLinks } from "@/components/export-links";
 import { flashFrom } from "@/components/flash";
 import { PublishButton } from "@/components/publish-button";
 import { Timeline } from "@/components/timeline";
+import { TreatyCiteDrawer } from "@/components/treaty-cite-drawer";
 import { AmendForm, VersionHistory } from "@/components/version-history";
 import { getDb } from "@/lib/db";
 import { fmtDate } from "@/lib/format";
@@ -48,6 +49,7 @@ export default async function CbtmtRecordPage({ params, searchParams }: Props) {
               {t}
             </span>
           ))}
+          <TreatyCiteDrawer domain="cbtmt" stages={packs.map((e) => e.stage)} />
         </div>
         <RecordExportLinks publicRecordId={record.publicRecordId} />
       </div>

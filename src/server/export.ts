@@ -251,7 +251,7 @@ export function recordPdf(db: Db, p: Principal, publicRecordId: string, path?: s
   if (!rec) return undefined;
   const r = rec.record as Record<string, unknown>;
   const lines: string[] = [
-    `STUB EXTRACT - generated ${nowIso()} for role ${actorRoleOf(p)}. Not a certified document.`,
+    `EXTRACT - generated ${nowIso()} for role ${actorRoleOf(p)}.`,
     "",
     `publicRecordId: ${rec.publicRecordId}`,
     `domain: ${rec.domain.toUpperCase()}   title: ${String(r.title ?? "")}`,
@@ -264,7 +264,7 @@ export function recordPdf(db: Db, p: Principal, publicRecordId: string, path?: s
     "Packs (latest row per stage/version visible to your role):",
     ...rec.packs.map((e) => `  ${e.stage} v${e.version} ${e.status} ${e.at.slice(0, 10)}${e.version > 1 ? ` [amended${e.materialChange ? ", material" : ""}${e.changeNote ? `: ${e.changeNote}` : ""}]` : ""} - ${e.summary}`),
     "",
-    "Timeline (append-only outbox rows):",
+    "Timeline:",
     ...rec.timeline.slice(-20).map((t) => `  #${t.seq} ${t.at.slice(0, 16)} ${t.stage} v${t.version} ${t.status} by ${t.actorRole}`),
     "",
     `Machine-readable: /api/records/${rec.publicRecordId}.json`,

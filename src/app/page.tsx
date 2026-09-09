@@ -1,11 +1,13 @@
 import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
+import { DomainBadge, DOMAIN_RAIL } from "@/components/chips";
+import { DOMAIN_ICON, isAccentDomain, type AccentDomain } from "@/components/domain-icons";
 import { flashFrom } from "@/components/flash";
 import { RailsStrip } from "@/components/rails-strip";
 import { buttonVariants } from "@/components/ui/button";
 import { getDb } from "@/lib/db";
-import { DOMAIN_LABEL, domainPath, fmtDate, stageLabel } from "@/lib/format";
+import { domainPath, fmtDate, stageLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { railCounts, recentPublished } from "@/server/queries";
 import { getSessionUser } from "@/server/session";
@@ -21,17 +23,16 @@ export default async function HomePage({ searchParams }: Props) {
 
   return (
     <AppShell flash={flash}>
-      <section className="space-y-3">
-        <h1 className="text-3xl font-semibold tracking-tight">One shared Cl-HM substrate</h1>
-        <p className="max-w-3xl text-lg text-muted-foreground">
-          Receipt → management → publication/notification → user roles. MGR, EIA and CBTMT are three journeys through the same rails —
-          a transactional contrast to the interim DOALOS static/informational site.
+      <section className="space-y-2">
+        <h1 className="text-2xl font-semibold tracking-tight">Clearing-House Mechanism</h1>
+        <p className="max-w-3xl text-base leading-relaxed text-muted-foreground">
+          Submit, manage, publish and notify across MGR, EIA and capacity-building — one desk, three journeys.
         </p>
         {p.kind === "anonymous" ? (
           <p className="text-sm">
             You are browsing as the public.{" "}
-            <Link href="/login" className="underline">
-              Pick a sandbox login
+            <Link href="/login" className="text-institutional underline underline-offset-2">
+              Sign in
             </Link>{" "}
             to submit, publish or review.
           </p>
@@ -42,16 +43,23 @@ export default async function HomePage({ searchParams }: Props) {
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <JourneyCard
+          domain="mgr"
           title="MGR"
           href="/mgr"
-          text="Pre-collection notification → valid receipt mints the Art 12 B-SBI → Secretariat publish mints the publicRecordId → bell + audit. Offline Excel template for SIDS."
+          text="Pre-collection notification → valid receipt mints the Art 12 B-SBI → Secretariat publish mints the publicRecordId. Offline Excel template available for low-bandwidth Parties."
         />
         <JourneyCard
+          domain="eia"
           title="EIA"
           href="/eia"
           text="Pack-level publish spine: screening, notices, draft EIA, STB comments, decision. Status lives on each pack; a published screening and a draft EIA coexist."
         />
-        <JourneyCard title="CBTMT" href="/capacity" text="Needs and offers as records; a match is a row plus a match_suggested event. Deterministic shared-theme rule, no ML." />
+        <JourneyCard
+          domain="cbtmt"
+          title="CBTMT"
+          href="/capacity"
+          text="Needs and offers as records; a match is a row plus a match_suggested event under a deterministic shared-theme rule."
+        />
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[2fr_1fr]">
@@ -62,10 +70,18 @@ export default async function HomePage({ searchParams }: Props) {
           ) : (
             <ul className="divide-y text-sm">
               {feed.map((f) => (
-                <li key={f.eventId} className="flex flex-wrap items-center justify-between gap-2 py-2">
-                  <Link href={domainPath(f.domain, f.recordId)} className="hover:underline">
-                    <span className="mr-2 rounded bg-muted px-1.5 text-xs">{DOMAIN_LABEL[f.domain]}</span>
-                    {f.title} <span className="text-muted-foreground">· {stageLabel(f.stage)}</span>
+                <li
+                  key={f.eventId}
+                  className={cn(
+                    "flex flex-wrap items-center justify-between gap-2 py-2 pl-2",
+                    isAccentDomain(f.domain) && DOMAIN_RAIL[f.domain],
+                  )}
+                >
+                  <Link href={domainPath(f.domain, f.recordId)} className="inline-flex flex-wrap items-center gap-2 hover:text-institutional hover:underline">
+                    <DomainBadge domain={f.domain} withIcon />
+                    <span>
+                      {f.title} <span className="text-muted-foreground">· {stageLabel(f.stage)}</span>
+                    </span>
                   </Link>
                   <span className="font-mono text-xs text-muted-foreground">
                     {f.publicRecordId} · {fmtDate(f.at)}
@@ -77,8 +93,7 @@ export default async function HomePage({ searchParams }: Props) {
         </div>
         <div className="space-y-4">
           <div className="rounded-lg border border-dashed p-5 text-sm text-muted-foreground">
-            <strong className="text-foreground">ABMT</strong> is reserved in the contract enum and disabled in this build. The same
-            receipt/publish record would carry Art 51.3(a)(ii) ABMT packages later.
+            <strong className="text-foreground">ABMT</strong> — not available. Area-based management tools (Art 51.3(a)(ii)) are reserved for later packages on the same receipt and publish record.
           </div>
           <div className="rounded-lg border p-5 text-sm">
             <div className="mb-2 font-medium">Identifiers, in order</div>
@@ -97,9 +112,6 @@ export default async function HomePage({ searchParams }: Props) {
               </li>
             </ol>
             <div className="mt-3 flex flex-wrap gap-1">
-              <Link href="/compare" className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}>
-                DOALOS contrast
-              </Link>
               <a href="/api/export/mgr.csv" className={cn(buttonVariants({ variant: "outline", size: "sm" }))} title="CSV of the MGR rows visible to your role">
                 Export CSV
               </a>
@@ -114,13 +126,18 @@ export default async function HomePage({ searchParams }: Props) {
   );
 }
 
-function JourneyCard({ title, href, text }: { title: string; href: string; text: string }) {
+/** Journeys are entry points into the shared rails — one quiet panel each, no competing brand (VISUAL-CHARTER.md §1.2). */
+function JourneyCard({ domain, title, href, text }: { domain: AccentDomain; title: string; href: string; text: string }) {
+  const Icon = DOMAIN_ICON[domain];
   return (
-    <div className="rounded-lg border p-5">
-      <h3 className="font-medium">{title}</h3>
-      <p className="mt-2 text-sm text-muted-foreground">{text}</p>
-      <Link href={href} className={cn(buttonVariants({ size: "sm" }), "mt-4")}>
-        Open journey
+    <div className={cn("flex flex-col rounded-lg border bg-card p-5", DOMAIN_RAIL[domain])}>
+      <h3 className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-institutional">
+        <Icon aria-hidden="true" className="size-3.5" />
+        {title}
+      </h3>
+      <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{text}</p>
+      <Link href={href} className={cn(buttonVariants({ variant: "outline", size: "sm" }), "mt-4 self-start")}>
+        Open {title}
       </Link>
     </div>
   );

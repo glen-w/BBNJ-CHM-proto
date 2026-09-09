@@ -37,7 +37,7 @@ export default async function AuditPage({ searchParams }: Props) {
   const showReset = full && sandboxResetEnabled();
 
   return (
-    <AppShell title="Audit — append-only events outbox" flash={flash}>
+    <AppShell title="Audit — events outbox" flash={flash}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <p className="max-w-3xl text-sm text-muted-foreground">
           Every receipt, transition and publication is a row; rows are never updated or deleted. Notifications are fan-out of these rows.{" "}
@@ -58,8 +58,8 @@ export default async function AuditPage({ searchParams }: Props) {
           {showReset ? (
             <form action={resetSandboxAction}>
               <KeyFields returnTo="/audit" />
-              <SubmitButton variant="destructive" size="sm" title="SANDBOX_RESET=1 — deletes the SQLite file, recreates schema v4, re-seeds through the domain functions">
-                Reset sandbox
+              <SubmitButton variant="destructive" size="sm" title="Deletes the database file, recreates schema, and re-seeds">
+                Reset database
               </SubmitButton>
             </form>
           ) : null}
@@ -96,7 +96,7 @@ export default async function AuditPage({ searchParams }: Props) {
           <section className="rounded-lg border" id="refusals">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2">
               <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Refusal log — every authorisation that was denied</h2>
-              <span className="text-xs text-muted-foreground">{refusals.length} shown (newest first) · append-only · Secretariat projection only</span>
+              <span className="text-xs text-muted-foreground">{refusals.length} shown (newest first) · Secretariat projection only</span>
             </div>
             {refusals.length === 0 ? (
               <p className="p-4 text-sm text-muted-foreground">No refusals recorded yet. Try publishing as <code>party.nfp</code> or opening /mgr/import as the public.</p>

@@ -9,6 +9,7 @@ import { Field, KeyFields, SubmitButton, selectClass } from "@/components/forms"
 import { MgrForm } from "@/components/mgr-form";
 import { PublishButton } from "@/components/publish-button";
 import { Timeline } from "@/components/timeline";
+import { TreatyCiteDrawer } from "@/components/treaty-cite-drawer";
 import { Input } from "@/components/ui/input";
 import { AmendForm, VersionHistory } from "@/components/version-history";
 import { getDb } from "@/lib/db";
@@ -59,6 +60,7 @@ export default async function MgrBatchPage({ params, searchParams }: Props) {
             </span>
           ) : null}
           <span className="font-mono text-xs text-muted-foreground">Party {batch.partyCode}</span>
+          <TreatyCiteDrawer domain="mgr" stages={packs.map((e) => e.stage)} />
         </div>
         <RecordExportLinks publicRecordId={batch.publicRecordId} />
       </div>
@@ -76,7 +78,7 @@ export default async function MgrBatchPage({ params, searchParams }: Props) {
         <ol className="flex flex-wrap items-center gap-2 text-sm">
           {STAGES.map((s, i) => (
             <li key={s} className="flex items-center gap-2">
-              <span className={cn("rounded-md border px-3 py-1.5", i <= reached ? "bg-primary text-primary-foreground" : "text-muted-foreground")}>{s.replace(/_/g, " ")}</span>
+              <span className={cn("rounded-md border px-3 py-1.5", i <= reached ? "border-institutional/50 bg-institutional/10 font-medium text-institutional" : "text-muted-foreground")}>{s.replace(/_/g, " ")}</span>
               {i < STAGES.length - 1 ? <span className="text-muted-foreground">→</span> : null}
             </li>
           ))}
@@ -196,7 +198,7 @@ export default async function MgrBatchPage({ params, searchParams }: Props) {
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">Timeline (append-only outbox rows for this record)</h2>
+        <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">Timeline</h2>
         <Timeline rows={timeline} />
       </section>
     </AppShell>

@@ -1,8 +1,8 @@
 import Link from "next/link";
 
-import { StatusChip, ConfidentialityBadge } from "@/components/chips";
+import { DomainBadge, StatusChip, ConfidentialityBadge } from "@/components/chips";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DOMAIN_LABEL, domainPath, fmtDate, stageLabel } from "@/lib/format";
+import { domainPath, fmtDate, stageLabel } from "@/lib/format";
 import type { AuditRow } from "@/server/queries";
 
 export function Timeline({ rows, showRecord = false, highlight }: { rows: AuditRow[]; showRecord?: boolean; highlight?: string }) {
@@ -28,13 +28,14 @@ export function Timeline({ rows, showRecord = false, highlight }: { rows: AuditR
         </TableHeader>
         <TableBody>
           {rows.map((r) => (
-            <TableRow key={r.id} id={r.id} className={highlight === r.id ? "bg-primary/10" : undefined}>
+            <TableRow key={r.id} id={r.id} className={highlight === r.id ? "bg-institutional/10" : undefined}>
               <TableCell className="font-mono text-xs">{r.seq}</TableCell>
               <TableCell className="whitespace-nowrap text-xs">{fmtDate(r.at)}</TableCell>
               {showRecord ? (
                 <TableCell className="text-xs">
-                  <Link href={domainPath(r.domain, r.recordId)} className="underline">
-                    {DOMAIN_LABEL[r.domain]} · {r.publicRecordId ?? r.recordId.slice(0, 8)}
+                  <Link href={domainPath(r.domain, r.recordId)} className="inline-flex items-center gap-1.5 underline">
+                    <DomainBadge domain={r.domain} withIcon />
+                    <span className="font-mono">{r.publicRecordId ?? r.recordId.slice(0, 8)}</span>
                   </Link>
                 </TableCell>
               ) : null}
@@ -45,7 +46,7 @@ export function Timeline({ rows, showRecord = false, highlight }: { rows: AuditR
               </TableCell>
               <TableCell className="text-xs">{r.actorRole}</TableCell>
               <TableCell className="max-w-md text-xs">{r.summary}</TableCell>
-              <TableCell className="font-mono text-[11px] leading-4">
+              <TableCell className="font-mono text-[11px] leading-4 text-foreground">
                 {r.receiptId ? <div title="receiptId — issued when the pack entered pending">{r.receiptId}</div> : null}
                 {r.bSbi ? <div title="B-SBI — Art 12, minted at valid pre-collection receipt">{r.bSbi}</div> : null}
                 {r.publicRecordId ? <div title="publicRecordId — minted at first publish">{r.publicRecordId}</div> : null}

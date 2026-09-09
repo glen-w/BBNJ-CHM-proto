@@ -66,7 +66,7 @@ Status legend: **shipped** (in the sandbox, asserted by `npm run smoke` / `npm r
 | Explicit comparison to DOALOS interim | shipped | `/compare` rewritten by basic function with deep links (`P0‑7`); README table |
 | Hands-on interaction | shipped | four sandbox logins, no passwords; `npm run demo` script; *Reset sandbox* button (`SANDBOX_RESET=1`) so a webinar host can restore state between participants (`P0‑8`) |
 | Open source | shipped | MIT, pinned lockfile, Docker Compose, contract byte-checked against `proposal/schemas/events.ts` |
-| Developing country / SIDS experience | shipped (design) | offline Excel loop with error workbook, low-bandwidth pages, Secretariat-assisted channel (`sourceChannel = assisted|excel`) |
+| Developing country / SIDS experience | shipped (design) | offline Excel loop with error workbook, low-bandwidth pages, Secretariat-assisted channel (`sourceChannel = assisted|excel`); `VISUAL-CHARTER.md` — WCAG AA chips with text labels, visible focus rings, light payload, no maps or hero imagery (team charter, not an EOI mandate) |
 | Prior CHM/portal experience | n/a | a people criterion, not a software one |
 | Without prejudice to COP1 | shipped | demo values labelled (30‑day window, B-SBI shape); no fake ABMT data; contract amendments proposed, not applied |
 

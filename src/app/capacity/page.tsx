@@ -36,7 +36,7 @@ export default async function CapacityPage({ searchParams }: Props) {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <p className="max-w-3xl text-sm text-muted-foreground">
           Needs and offers are records with a pending → published pack. A <strong>match</strong> is a row (need, offer, rule, at) plus a{" "}
-          <code>match_suggested</code> outbox event carrying the <code>matchId</code>. The only rule is deterministic: shared theme. No ML.
+          <code>match_suggested</code> outbox event carrying the <code>matchId</code>. Matching uses a deterministic shared-theme rule.
         </p>
         <ExportLinks domain="cbtmt" />
       </div>
@@ -181,7 +181,7 @@ function PostForm({ kind, p }: { kind: "need" | "offer"; p: Awaited<ReturnType<t
       <Field label="Title" required>
         <Input name="title" required />
       </Field>
-      <Field label="Themes" hint={`Comma-separated. Vocabulary in this build: ${CBTMT_THEMES.join(", ")}.`} required>
+      <Field label="Themes" hint={`Comma-separated. Allowed: ${CBTMT_THEMES.join(", ")}.`} required>
         <Input name="themes" placeholder="taxonomy, genomics" required />
       </Field>
       {kind === "need" && !hasRole(p, "party") ? (

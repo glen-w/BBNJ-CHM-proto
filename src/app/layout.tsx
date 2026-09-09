@@ -17,9 +17,8 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export const metadata: Metadata = {
-  title: "BBNJ Cl-HM prototype",
-  description:
-    "Transactional Clearing-House Mechanism demo — MGR, EIA, CBTMT on one shared substrate.",
+  title: "BBNJ Cl-HM",
+  description: "Clearing-House Mechanism — submit, publish and notify across MGR, EIA and CBTMT.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

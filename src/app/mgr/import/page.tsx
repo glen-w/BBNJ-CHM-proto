@@ -44,14 +44,13 @@ export default async function ImportPage({ searchParams }: Props) {
         with only the failed rows — for correction and re-import.
       </p>
       <p className="max-w-3xl text-xs text-muted-foreground">
-        Bounded and deterministic: .xlsx only, ≤ {IMPORT_MAX_BYTES / 1024 / 1024} MB, template marker and version checked, headers must match the current{" "}
-        <code>FIELD_DEFS</code>, blank rows skipped, ≤ {IMPORT_MAX_ROWS} rows, formula cells rejected, one transaction per row, one durable run record per
-        import.
+        .xlsx only, ≤ {IMPORT_MAX_BYTES / 1024 / 1024} MB, template marker and version checked, headers must match the current template, blank rows
+        skipped, ≤ {IMPORT_MAX_ROWS} rows, formula cells rejected, one transaction per row, one durable run record per import.
       </p>
 
       <form action={importMgrAction} className="grid gap-4 rounded-lg border p-4 md:grid-cols-[1fr_auto_auto] md:items-end">
         <KeyFields returnTo="/mgr/import" />
-        <Field label="Template file (.xlsx)" hint="Leave empty and use the sample to demo without a file.">
+        <Field label="Template file (.xlsx)" hint="Or use Import sample to try without a file.">
           <Input type="file" name="file" accept=".xlsx" />
         </Field>
         <Field label="Party code" hint="On whose behalf">
@@ -64,9 +63,9 @@ export default async function ImportPage({ searchParams }: Props) {
             name="fixture"
             value="1"
             className="rounded-lg border px-3 text-sm hover:bg-muted"
-            title="Bundled sample workbook generated from the same template: two valid rows and one deliberately invalid row"
+            title="Sample workbook from the same template: two valid rows and one invalid row"
           >
-            Import sample fixture (2 valid + 1 invalid)
+            Import sample (2 valid + 1 invalid)
           </button>
         </div>
       </form>

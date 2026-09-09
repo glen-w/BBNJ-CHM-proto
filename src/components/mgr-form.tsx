@@ -15,7 +15,7 @@ export function MgrForm({ batch, needsPartyCode, returnTo }: { batch?: StoredMgr
       <KeyFields returnTo={returnTo} />
       {batch ? <input type="hidden" name="batchId" value={batch.id} /> : null}
       {needsPartyCode ? (
-        <Field label="Party code (submitting on behalf)" hint="2–3 letters. Demo Party XSD." required>
+        <Field label="Party code (submitting on behalf)" hint="2–3 letters. Party XSD is the sample Party." required>
           <Input name="partyCode" defaultValue={batch?.partyCode ?? "XSD"} maxLength={3} />
         </Field>
       ) : null}

@@ -126,7 +126,7 @@ export const FIELD_DEFS: readonly FieldDef[] = [
     required: false,
     kind: "select",
     storage: "column",
-    basis: "implementation — PrepCom3 annex confidentiality categories",
+    basis: "PrepCom3 annex confidentiality categories",
     help: "public (default) · restricted · confidential.",
     excelHeader: "confidentiality",
     options: ConfidentialityTier.options,

@@ -4,6 +4,21 @@
 
 Repository: [github.com/glen-w/BBNJ-CHM-proto](https://github.com/glen-w/BBNJ-CHM-proto)
 
+> A **working Cl-HM desk**: UN-level restraint, product-level clarity — built for Parties to submit, publish, and notify, not to browse a brochure. The look is governed by `VISUAL-CHARTER.md` (a team choice, not an EOI mandate).
+
+## UI disclaimer
+
+The **product UI** is written as a finished working desk. Sandbox and legal caveats are documented here (and in related docs), not in chrome:
+
+- Cookie logins, no passwords; roles are demo identities, **not** BBNJ / COP1 organs.
+- Demo Party code **XSD** (ISO user-assigned range) — no real State; no real submissions.
+- Without prejudice to COP1. MIT licence.
+- ABMT is reserved in the contract and unavailable in the UI; no fake ABMT data.
+- The 30-day EIA comment window is a demo value; the Agreement fixes no day count.
+- PDF export is a plain-text one-page extract (not a certified document).
+- Database reset on `/audit` appears only when `SANDBOX_RESET=1` (never in production).
+- DOALOS contrast lives at [`/compare`](http://localhost:3000/compare) (docs-style page; **not** linked from the shell nav).
+
 ## Quick start
 
 ```bash
@@ -48,7 +63,7 @@ Cookie session, no passwords. A missing, malformed, unknown or inactive cookie i
 | Audit | unclear | every transition is an immutable row; refusals, import runs and digest windows alongside |
 | EIA | documents as files | pack-level publish spine |
 
-Static/informational → transactional workflow across Agreement areas — same rails, multiple journeys. See `/compare` (every row deep-links into the live sandbox).
+Static/informational → transactional workflow across Agreement areas — same rails, multiple journeys. Open `/compare` by URL (every row deep-links into the live app; not in primary nav).
 
 ## The four locks (as built)
 
@@ -66,7 +81,7 @@ Static/informational → transactional workflow across Agreement areas — same 
 5. **Tiers.** Seeds now include a `confidential` MGR batch and a `restricted` EIA activity; CBTMT records take a tier; each record page states who can see it; a tier × role matrix is asserted across lists, packs, audit, feed, resolver, notifications and exports.
 6. **Export.** `/api/export/{mgr|eia|cbtmt|audit}.{csv|json}` and `/api/records/<publicRecordId>.{json|pdf}` reuse the policy-filtered queries. The PDF is a hand-rolled one-page text stub, labelled as such.
 7. **`/compare`** is organised by the Session‑1 basic functions and deep-links into the live journeys.
-8. **Sandbox.** *Reset sandbox* button on `/audit` for the Secretariat when `SANDBOX_RESET=1` (never in production); `npm run demo` runs the 10‑minute journey unattended (add `BASE_URL=` to also check HTTP status codes against a running server).
+8. **Sandbox.** *Reset database* on `/audit` for the Secretariat when `SANDBOX_RESET=1` (never in production); `npm run demo` runs the 10‑minute journey unattended (add `BASE_URL=` to also check HTTP status codes against a running server).
 
 ## Guarantees checked by `npm run smoke`
 
@@ -129,6 +144,8 @@ Environment: `DATABASE_PATH` (default `data/chm.sqlite`); `SANDBOX_RESET=1` show
 | `SHIPPED-VS-DEFERRED.md` | Checklist against Session‑1 basic functions and EOI preferential criteria |
 | `CONTRACT-AMENDMENTS.md` | Proposed folds into the locked contract (C2–C8), none applied |
 | `DEMO-SCRIPT.md` | As-built demo walk-through |
+| `VISUAL-CHARTER.md` | "Working Cl-HM desk" visual identity: tokens, chips, shell, accessibility, voice |
+| `ACCESSIBILITY.md` | UN WCAG 2.1 AA / POUR assessment and remediation backlog |
 | `proposal/PROPOSAL.md` | Product + EOI framing |
 | `proposal/PLANNING-AGENT-PROMPT.md` | Locked build contract |
 | `proposal/schemas/events.ts` | **Authoritative** Zod contract |

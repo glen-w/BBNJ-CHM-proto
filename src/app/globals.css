@@ -7,9 +7,41 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
   --font-heading: var(--font-sans);
+  /* Charter tokens (VISUAL-CHARTER.md §2) exposed as Tailwind colours. */
+  --color-canvas: var(--canvas);
+  --color-ink: var(--ink);
+  --color-line: var(--line);
+  --color-institutional: var(--institutional);
+  --color-institutional-foreground: var(--institutional-foreground);
+  --color-action: var(--action);
+  --color-action-foreground: var(--action-foreground);
+  --color-draft: var(--draft);
+  --color-draft-foreground: var(--draft-foreground);
+  --color-draft-line: var(--draft-line);
+  --color-pending: var(--pending);
+  --color-pending-foreground: var(--pending-foreground);
+  --color-pending-line: var(--pending-line);
+  --color-published: var(--published);
+  --color-published-foreground: var(--published-foreground);
+  --color-published-line: var(--published-line);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-danger-line: var(--danger-line);
+  --color-caution: var(--caution);
+  --color-caution-foreground: var(--caution-foreground);
+  --color-caution-line: var(--caution-line);
+  --color-domain-mgr: var(--domain-mgr);
+  --color-domain-mgr-foreground: var(--domain-mgr-foreground);
+  --color-domain-mgr-line: var(--domain-mgr-line);
+  --color-domain-eia: var(--domain-eia);
+  --color-domain-eia-foreground: var(--domain-eia-foreground);
+  --color-domain-eia-line: var(--domain-eia-line);
+  --color-domain-cbtmt: var(--domain-cbtmt);
+  --color-domain-cbtmt-foreground: var(--domain-cbtmt-foreground);
+  --color-domain-cbtmt-line: var(--domain-cbtmt-line);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,39 +81,77 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* ---- Charter tokens (VISUAL-CHARTER.md §2): "Working Cl-HM desk" ---- */
+  --canvas: oklch(0.985 0.004 250);                 /* cool grey-white, not glare white */
+  --ink: oklch(0.22 0.02 260);                      /* deep navy-grey body text */
+  --line: oklch(0.90 0.01 250);                     /* soft cool grey borders */
+  --institutional: oklch(0.45 0.10 250);            /* one UN-adjacent blue: links, focus */
+  --institutional-foreground: oklch(0.985 0.004 250);
+  --action: oklch(0.40 0.11 252);                   /* primary buttons, used sparingly */
+  --action-foreground: oklch(0.985 0.004 250);
+  --draft: oklch(0.955 0.005 250);                  /* status chip: muted grey */
+  --draft-foreground: oklch(0.40 0.02 255);
+  --draft-line: oklch(0.87 0.01 250);
+  --pending: oklch(0.955 0.05 85);                  /* status chip: amber / attention */
+  --pending-foreground: oklch(0.40 0.09 65);
+  --pending-line: oklch(0.85 0.09 85);
+  --published: oklch(0.945 0.035 185);              /* status chip: institutional teal */
+  --published-foreground: oklch(0.36 0.07 185);
+  --published-line: oklch(0.83 0.06 185);
+  --danger: oklch(0.50 0.17 25);                    /* restrained red: errors, refusals */
+  --danger-foreground: oklch(0.985 0.004 250);
+  --danger-line: oklch(0.86 0.06 25);
+  --caution: oklch(0.955 0.045 60);                 /* restricted tier chip */
+  --caution-foreground: oklch(0.42 0.10 50);
+  --caution-line: oklch(0.86 0.08 60);
+  /* Domain accents: quieter than --institutional / --action; badge tint + 2px left rail only */
+  --domain-mgr: oklch(0.955 0.025 250);             /* soft slate-blue */
+  --domain-mgr-foreground: oklch(0.38 0.05 250);
+  --domain-mgr-line: oklch(0.82 0.04 250);
+  --domain-eia: oklch(0.955 0.03 185);              /* soft sea-teal */
+  --domain-eia-foreground: oklch(0.36 0.05 185);
+  --domain-eia-line: oklch(0.80 0.045 185);
+  --domain-cbtmt: oklch(0.955 0.03 150);            /* soft sage */
+  --domain-cbtmt-foreground: oklch(0.36 0.05 150);
+  --domain-cbtmt-line: oklch(0.80 0.045 150);
+
+  /* ---- shadcn semantics mapped onto the charter ---- */
+  --background: var(--canvas);
+  --foreground: var(--ink);
+  --card: oklch(0.997 0.002 250);
+  --card-foreground: var(--ink);
+  --popover: oklch(0.997 0.002 250);
+  --popover-foreground: var(--ink);
+  --primary: var(--action);
+  --primary-foreground: var(--action-foreground);
+  --secondary: oklch(0.955 0.006 250);
+  --secondary-foreground: oklch(0.30 0.03 255);
+  --muted: oklch(0.955 0.006 250);
+  --muted-foreground: oklch(0.47 0.02 255);        /* mid grey, AA on canvas */
+  --accent: oklch(0.94 0.02 250);
+  --accent-foreground: var(--institutional);
+  --destructive: var(--danger);
+  --border: var(--line);
+  --input: oklch(0.86 0.012 250);
+  --ring: var(--institutional);
+  --chart-1: oklch(0.45 0.10 250);
+  --chart-2: oklch(0.55 0.07 185);
+  --chart-3: oklch(0.60 0.09 85);
+  --chart-4: oklch(0.65 0.05 250);
+  --chart-5: oklch(0.80 0.02 250);
+  --radius: 0.5rem;
+  --sidebar: var(--canvas);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--action);
+  --sidebar-primary-foreground: var(--action-foreground);
+  --sidebar-accent: oklch(0.955 0.006 250);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--institutional);
 }
+
+/* Dark theme is intentionally not activated (charter: light by default). Kept inert so shadcn
+   components keep compiling; no <html class="dark"> is ever set. */
 
 .dark {
   --background: oklch(0.145 0 0);
@@ -109,7 +179,7 @@
   --chart-5: oklch(0.269 0 0);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary: oklch(0.65 0.10 250);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
@@ -126,5 +196,18 @@
   }
   html {
     @apply font-sans;
+  }
+  /* Ids and treaty references read as tabular figures (charter §3). */
+  code, kbd, samp, pre, .font-mono {
+    font-variant-numeric: tabular-nums;
+  }
+  /* Charter §6 / §7: minimal motion, honour reduced-motion. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }

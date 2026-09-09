@@ -28,8 +28,7 @@ export default async function NewMgrPage({ searchParams }: Props) {
   return (
     <AppShell title="MGR — new pre-collection notification (Art 12.2)" flash={flash}>
       <p className="max-w-3xl text-sm text-muted-foreground">
-        Fields are generated from one definition (<code>FIELD_DEFS</code>) shared with the offline Excel template and the import validator. Each
-        field cites the Agreement paragraph it traces to, or is marked implementation.
+        The same field set drives this form, the offline Excel template and import validation. Each field cites the Agreement paragraph it traces to.
       </p>
       <MgrForm needsPartyCode={!hasRole(p, "party")} returnTo="/mgr/new" />
     </AppShell>

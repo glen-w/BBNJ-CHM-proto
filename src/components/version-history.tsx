@@ -42,7 +42,7 @@ export function VersionHistory({ packs }: { packs: StoredEvent[] }) {
                       <span
                         className={cn(
                           "rounded border px-1.5 text-[11px] uppercase",
-                          e.materialChange ? "border-red-200 bg-red-100 text-red-900 dark:bg-red-900/30 dark:text-red-200" : "border-border text-muted-foreground",
+                          e.materialChange ? "border-danger-line bg-danger/10 text-danger" : "border-border text-muted-foreground",
                         )}
                         title={e.materialChange ? "Material change — earlier readers were re-notified when this version was published" : "Editorial change — subscribers only"}
                       >

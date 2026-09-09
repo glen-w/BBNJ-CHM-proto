@@ -104,7 +104,7 @@ function targetsFor(db: Db, event: StoredEvent, meta: RecordMeta): Target[] {
       targets.push({ userId: stbUser.id, kind: "stb_review", summary: `Draft EIA${event.version > 1 ? ` v${event.version}` : ""} published for STB review — ${label} (Arts 34–35)` });
     }
     const closes = new Date(new Date(event.at).getTime() + DEMO_COMMENT_WINDOW_DAYS * 86400000).toISOString().slice(0, 10);
-    const deadlineSummary = `Comment window on draft EIA ${label} closes ${closes} (demo: ${DEMO_COMMENT_WINDOW_DAYS} days — the Agreement fixes no day count here)`;
+    const deadlineSummary = `Comment window on draft EIA ${label} closes ${closes} (${DEMO_COMMENT_WINDOW_DAYS}-day window)`;
     for (const s of subs) targets.push({ userId: s.userId, kind: "deadline", summary: deadlineSummary });
     if (meta.ownerUserId) targets.push({ userId: meta.ownerUserId, kind: "deadline", summary: deadlineSummary });
   }

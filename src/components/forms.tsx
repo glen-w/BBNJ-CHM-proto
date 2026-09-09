@@ -1,3 +1,5 @@
+import { Children, cloneElement, isValidElement, useId, type ReactElement, type ReactNode } from "react";
+
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -33,18 +35,74 @@ export function SubmitButton({
   );
 }
 
-export function Field({ label, hint, basis, children, required }: { label: string; hint?: string; basis?: string; children: React.ReactNode; required?: boolean }) {
+type FieldControlProps = {
+  id?: string;
+  required?: boolean;
+  "aria-required"?: boolean | "true" | "false";
+  "aria-invalid"?: boolean | "true" | "false";
+  "aria-describedby"?: string;
+};
+
+/**
+ * Label + optional hint/basis/error wired for assistive tech.
+ * Clones a single control child to set id, required, aria-*.
+ */
+export function Field({
+  label,
+  hint,
+  basis,
+  children,
+  required,
+  error,
+}: {
+  label: string;
+  hint?: string;
+  basis?: string;
+  children: ReactNode;
+  required?: boolean;
+  error?: string;
+}) {
+  const uid = useId();
+  const controlId = `${uid}-control`;
+  const hintId = `${uid}-hint`;
+  const errorId = `${uid}-error`;
+  const hasHint = Boolean(hint || basis);
+  const describedBy = [hasHint ? hintId : null, error ? errorId : null].filter(Boolean).join(" ") || undefined;
+
+  const child = Children.only(children);
+  const control = isValidElement(child)
+    ? cloneElement(child as ReactElement<FieldControlProps>, {
+        id: (child.props as FieldControlProps).id ?? controlId,
+        required: required || (child.props as FieldControlProps).required,
+        "aria-required": required || undefined,
+        "aria-invalid": error ? true : undefined,
+        "aria-describedby": describedBy,
+      })
+    : children;
+
+  const forId = isValidElement(control) ? ((control.props as FieldControlProps).id ?? controlId) : controlId;
+
   return (
-    <label className="block space-y-1">
+    <label className="block space-y-1" htmlFor={forId}>
       <span className="text-sm font-medium">
         {label}
-        {required ? <span className="text-destructive"> *</span> : null}
+        {required ? (
+          <span className="text-destructive">
+            {" "}
+            *<span className="sr-only"> (required)</span>
+          </span>
+        ) : null}
       </span>
-      {children}
-      {hint || basis ? (
-        <span className="block text-xs text-muted-foreground">
+      {control}
+      {hasHint ? (
+        <span id={hintId} className="block text-xs text-muted-foreground">
           {hint}
           {basis ? <span className="ml-1 italic">({basis})</span> : null}
+        </span>
+      ) : null}
+      {error ? (
+        <span id={errorId} className="block text-xs text-destructive" role="alert">
+          {error}
         </span>
       ) : null}
     </label>

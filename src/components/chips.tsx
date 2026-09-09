@@ -1,13 +1,58 @@
 import { Badge } from "@/components/ui/badge";
+import { DOMAIN_ICON, isAccentDomain, type AccentDomain } from "@/components/domain-icons";
 import type { ConfidentialityTier } from "@/lib/contracts/events";
+import { DOMAIN_LABEL } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { whoCanSee } from "@/lib/tiers";
 
+/**
+ * Pack-status chip colours come from the charter tokens in `globals.css` (`--draft` / `--pending` / `--published`).
+ * The status text is always rendered — colour is never the only carrier (VISUAL-CHARTER.md §1.6).
+ */
 const STATUS_STYLE: Record<string, string> = {
-  draft: "bg-muted text-muted-foreground border-border",
-  pending: "bg-amber-100 text-amber-900 border-amber-200 dark:bg-amber-900/30 dark:text-amber-200",
-  published: "bg-emerald-100 text-emerald-900 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-200",
+  draft: "bg-draft text-draft-foreground border-draft-line",
+  pending: "bg-pending text-pending-foreground border-pending-line",
+  published: "bg-published text-published-foreground border-published-line",
 };
+
+/** Quiet domain accents — softer than --institutional / --action; never louder than status chips. */
+const DOMAIN_STYLE: Record<AccentDomain, string> = {
+  mgr: "bg-domain-mgr text-domain-mgr-foreground border-domain-mgr-line",
+  eia: "bg-domain-eia text-domain-eia-foreground border-domain-eia-line",
+  cbtmt: "bg-domain-cbtmt text-domain-cbtmt-foreground border-domain-cbtmt-line",
+};
+
+export const DOMAIN_RAIL: Record<AccentDomain, string> = {
+  mgr: "border-l-2 border-domain-mgr-line",
+  eia: "border-l-2 border-domain-eia-line",
+  cbtmt: "border-l-2 border-domain-cbtmt-line",
+};
+
+export function DomainBadge({
+  domain,
+  withIcon = false,
+  className,
+}: {
+  domain: string;
+  withIcon?: boolean;
+  className?: string;
+}) {
+  const label = DOMAIN_LABEL[domain] ?? domain;
+  if (!isAccentDomain(domain)) {
+    return (
+      <Badge variant="outline" className={cn("border-line bg-muted text-muted-foreground", className)}>
+        {label}
+      </Badge>
+    );
+  }
+  const Icon = DOMAIN_ICON[domain];
+  return (
+    <Badge variant="outline" className={cn(DOMAIN_STYLE[domain], "gap-1 font-medium", className)} title={`Domain: ${label}`}>
+      {withIcon ? <Icon aria-hidden="true" className="size-3" /> : null}
+      {label}
+    </Badge>
+  );
+}
 
 export function StatusChip({ status, className }: { status: string; className?: string }) {
   return (
@@ -19,8 +64,8 @@ export function StatusChip({ status, className }: { status: string; className?: 
 
 const TIER_STYLE: Record<string, string> = {
   public: "border-border text-muted-foreground",
-  restricted: "bg-orange-100 text-orange-900 border-orange-200 dark:bg-orange-900/30 dark:text-orange-200",
-  confidential: "bg-red-100 text-red-900 border-red-200 dark:bg-red-900/30 dark:text-red-200",
+  restricted: "bg-caution text-caution-foreground border-caution-line",
+  confidential: "bg-danger/10 text-danger border-danger-line",
 };
 
 export function ConfidentialityBadge({ tier }: { tier: string }) {

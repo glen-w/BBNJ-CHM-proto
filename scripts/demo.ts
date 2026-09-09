@@ -167,7 +167,7 @@ async function main() {
   // 12. Reset
   const r = resetMod.resetSandbox(secretariat);
   const fresh = dbMod.getDb();
-  checkpoint("Reset sandbox (SANDBOX_RESET=1) — files removed, schema recreated, re-seeded", [
+  checkpoint("Reset database (SANDBOX_RESET=1) — files removed, schema recreated, re-seeded", [
     `removed ${r.removed.length} file(s); events after reset=${(fresh.prepare("SELECT COUNT(*) AS n FROM events").get() as { n: number }).n}`,
   ]);
   assert.equal((fresh.prepare("SELECT COUNT(*) AS n FROM access_refusals").get() as { n: number }).n, 0);
@@ -195,7 +195,7 @@ async function main() {
     };
     const prid = (serverDb.prepare("SELECT public_record_id FROM mgr_batches WHERE public_record_id IS NOT NULL AND confidentiality = 'public' ORDER BY public_record_id LIMIT 1").get() as { public_record_id: string } | undefined)?.public_record_id;
     const restricted = (serverDb.prepare("SELECT public_record_id FROM mgr_batches WHERE confidentiality = 'restricted' AND public_record_id IS NOT NULL LIMIT 1").get() as { public_record_id: string } | undefined)?.public_record_id;
-    await expect("/", undefined, 200, /One substrate/);
+    await expect("/", undefined, 200, /Clearing-House Mechanism/);
     await expect("/compare", undefined, 200, /Receipt, management and storage/);
     await expect("/compare", "secretariat", 200, /Refusal log/);
     await expect("/audit", "secretariat", 200, /Refusal log/);

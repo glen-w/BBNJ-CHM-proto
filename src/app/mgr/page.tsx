@@ -37,7 +37,7 @@ export default async function MgrPage({ searchParams }: Props) {
               New pre-collection notification
             </Link>
           ) : null}
-          <a href="/api/template/mgr.xlsx" className={cn(buttonVariants({ variant: "outline", size: "sm" }))} title="Offline Excel template generated from FIELD_DEFS (Meta · Data · Field guide)">
+          <a href="/api/template/mgr.xlsx" className={cn(buttonVariants({ variant: "outline", size: "sm" }))} title="Offline Excel template (Meta · Data · Field guide)">
             Download offline template (.xlsx)
           </a>
           {can(p, "import") ? (

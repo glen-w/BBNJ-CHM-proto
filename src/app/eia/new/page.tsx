@@ -35,7 +35,7 @@ export default async function NewEiaPage({ searchParams }: Props) {
         <Field label="Activity title" required>
           <Input name="title" required placeholder="e.g. Sediment sampling, CCZ" />
         </Field>
-        <Field label="ABNJ box" hint="Small fixed vocabulary — no map in this build; neighbourhood = same box." basis="implementation">
+        <Field label="ABNJ box" hint="Neighbourhood is the same box. Fixed vocabulary for this form.">
           <select name="abnjBox" className={selectClass} defaultValue="CCZ">
             {AbnjBox.options.map((b) => (
               <option key={b} value={b}>
@@ -49,7 +49,7 @@ export default async function NewEiaPage({ searchParams }: Props) {
             <Input name="partyCode" defaultValue="XSD" maxLength={3} />
           </Field>
         ) : null}
-        <Field label="Confidentiality tier" basis="implementation — PrepCom3 annex categories">
+        <Field label="Confidentiality tier" basis="PrepCom3 annex categories">
           <select name="confidentiality" className={selectClass} defaultValue="public">
             {ConfidentialityTier.options.map((t) => (
               <option key={t} value={t}>

@@ -154,6 +154,12 @@ export function auditRows(db: Db, p: Principal, f: { domain?: string; status?: s
   );
 }
 
+/** Latest outbox row visible to this principal — audit ribbon. */
+export function latestVisibleEvent(db: Db, p: Principal): AuditRow | null {
+  const rows = auditRows(db, p, { limit: 1 });
+  return rows[0] ?? null;
+}
+
 export interface FeedItem {
   eventId: string;
   domain: Domain;

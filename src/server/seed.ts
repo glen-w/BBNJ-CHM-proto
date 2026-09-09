@@ -18,10 +18,10 @@ import { upsertSubscription } from "./queries";
 import { findUserByUsername, upsertUser } from "./users";
 
 export const SEED_USERS: User[] = [
-  { id: "00000000-0000-4000-8000-000000000001", username: "party.nfp", displayName: "Demo Party (SIDS) — NFP submitter", roles: ["party"], partyCode: "XSD", active: true },
-  { id: "00000000-0000-4000-8000-000000000002", username: "secretariat", displayName: "Secretariat / authorised publishing role (demo)", roles: ["secretariat"], active: true },
+  { id: "00000000-0000-4000-8000-000000000001", username: "party.nfp", displayName: "Party XSD — NFP submitter", roles: ["party"], partyCode: "XSD", active: true },
+  { id: "00000000-0000-4000-8000-000000000002", username: "secretariat", displayName: "Secretariat / authorised publishing role", roles: ["secretariat"], active: true },
   { id: "00000000-0000-4000-8000-000000000003", username: "public", displayName: "Public (view-only)", roles: ["public"], active: true },
-  { id: "00000000-0000-4000-8000-000000000004", username: "stb", displayName: "Scientific and Technical Body reviewer (demo)", roles: ["stb"], active: true },
+  { id: "00000000-0000-4000-8000-000000000004", username: "stb", displayName: "Scientific and Technical Body reviewer", roles: ["stb"], active: true },
 ];
 
 export const CBTMT_THEMES = ["taxonomy", "genomics", "eia_practice"] as const;

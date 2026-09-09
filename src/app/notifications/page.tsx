@@ -74,7 +74,7 @@ export default async function NotificationsPage({ searchParams }: Props) {
           ) : (
             <ul className="divide-y rounded-lg border">
               {items.map((n) => (
-                <li key={n.id} className={cn("flex flex-wrap items-start justify-between gap-2 p-3 text-sm", !n.read && "bg-primary/5")}>
+                <li key={n.id} className={cn("flex flex-wrap items-start justify-between gap-2 p-3 text-sm", !n.read && "bg-institutional/5")}>
                   <div>
                     <span className="mr-2 rounded bg-muted px-1.5 text-xs uppercase">{n.kind.replace("_", " ")}</span>
                     <Link href={`/audit?event=${n.eventId}`} className="hover:underline">

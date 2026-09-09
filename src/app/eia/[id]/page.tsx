@@ -8,11 +8,13 @@ import { flashFrom } from "@/components/flash";
 import { Field, KeyFields, SubmitButton, selectClass } from "@/components/forms";
 import { PublishButton } from "@/components/publish-button";
 import { Timeline } from "@/components/timeline";
+import { TreatyCiteDrawer } from "@/components/treaty-cite-drawer";
 import { Input } from "@/components/ui/input";
 import { AmendForm, VersionHistory } from "@/components/version-history";
 import { EiaPublishableStages } from "@/lib/contracts/events";
 import { getDb } from "@/lib/db";
 import { fmtDate } from "@/lib/format";
+import { citeCaption } from "@/lib/treatyCites";
 import { cn } from "@/lib/utils";
 import { addEiaPackAction } from "@/server/actions";
 import { EIA_STAGE_ORDER, getEiaActivity, packsForActivity } from "@/server/eia";
@@ -21,16 +23,6 @@ import { listEiaActivities, recordVisible, timelineOf } from "@/server/queries";
 import { getSessionUser } from "@/server/session";
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
-
-const ART: Record<string, string> = {
-  screening: "Art 31 — screening (outcome: EIA required / no EIA)",
-  planned_activity_notice: "Art 32 — public notification of planned activity",
-  scoping_notice: "Art 33 — scoping",
-  draft_eia: "Arts 33–34 — draft EIA report for consultation",
-  comments_stb: "Arts 34–35 — STB consolidated comments",
-  decision_conditions: "Arts 34/37 — decision and conditions",
-  monitoring_review: "Arts 38–40 — monitoring, reporting and review",
-};
 
 export default async function EiaActivityPage({ params, searchParams }: Props) {
   const { id } = await params;
@@ -63,6 +55,7 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
           <span className="text-xs text-muted-foreground">
             ABNJ box <strong>{activity.abnjBox}</strong> · Party <span className="font-mono">{activity.partyCode}</span>
           </span>
+          <TreatyCiteDrawer domain="eia" stages={packs.map((e) => e.stage)} />
         </div>
         <RecordExportLinks publicRecordId={activity.publicRecordId} />
       </div>
@@ -79,7 +72,7 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
         <ol className="flex flex-wrap items-center gap-1 text-xs">
           {EIA_STAGE_ORDER.map((s, i) => (
             <li key={s} className="flex items-center gap-1">
-              <span className={cn("rounded-md border px-2 py-1", i <= reached ? "bg-primary text-primary-foreground" : "text-muted-foreground")} title={ART[s]}>
+              <span className={cn("rounded-md border px-2 py-1", i <= reached ? "border-institutional/50 bg-institutional/10 font-medium text-institutional" : "text-muted-foreground")} title={citeCaption("eia", s)}>
                 {s.replace(/_/g, " ")}
               </span>
               {i < EIA_STAGE_ORDER.length - 1 ? <span className="text-muted-foreground">→</span> : null}
@@ -92,7 +85,7 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
           {packs.map((e) => (
             <li key={e.id} className="flex flex-wrap items-center gap-2 text-sm">
               <StageChip stage={e.stage} status={e.status} version={e.version} />
-              <span className="text-xs text-muted-foreground" title={ART[e.stage]}>
+              <span className="text-xs text-muted-foreground" title={citeCaption("eia", e.stage)}>
                 {e.summary}
                 {e.domain === "eia" && e.screeningOutcome ? <> · outcome <strong>{e.screeningOutcome.replace("_", " ")}</strong></> : null} · {fmtDate(e.at)}
               </span>
@@ -112,7 +105,7 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
               <select name="stage" className={selectClass} defaultValue={activity.currentStage === "screening" ? "screening" : "draft_eia"}>
                 {EiaPublishableStages.map((s) => (
                   <option key={s} value={s}>
-                    {s.replace(/_/g, " ")} — {ART[s]}
+                    {s.replace(/_/g, " ")} — {citeCaption("eia", s)}
                   </option>
                 ))}
               </select>
@@ -145,7 +138,7 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
           </div>
         )}
         <div className="rounded-lg border p-4">
-          <h2 className="mb-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">Neighbourhood — same ABNJ box ({activity.abnjBox}), list only</h2>
+          <h2 className="mb-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">Neighbourhood — same ABNJ box ({activity.abnjBox})</h2>
           {neighbours.length === 0 ? (
             <p className="text-sm text-muted-foreground">No other activities visible in this box.</p>
           ) : (

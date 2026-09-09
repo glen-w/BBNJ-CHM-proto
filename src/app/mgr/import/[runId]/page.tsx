@@ -84,7 +84,7 @@ export default async function ImportRunPage({ params, searchParams }: Props) {
           </TableHeader>
           <TableBody>
             {run.rows.map((r) => (
-              <TableRow key={r.row} className={r.ok ? undefined : "bg-red-50 dark:bg-red-900/10"}>
+              <TableRow key={r.row} className={r.ok ? undefined : "bg-danger/5"}>
                 <TableCell className="font-mono text-xs">{r.row}</TableCell>
                 <TableCell className="text-xs">{r.ok ? "accepted → pending" : "rejected"}</TableCell>
                 <TableCell className="text-xs">
@@ -125,7 +125,7 @@ export default async function ImportRunPage({ params, searchParams }: Props) {
                   <TableRow key={r.row}>
                     <TableCell className="font-mono text-xs">{r.row}</TableCell>
                     {FIELD_DEFS.map((f) => (
-                      <TableCell key={f.key} className={cn("max-w-[14rem] truncate text-xs", !r.values?.[f.key] && f.required && "text-red-700 dark:text-red-300")}>
+                      <TableCell key={f.key} className={cn("max-w-[14rem] truncate text-xs", !r.values?.[f.key] && f.required && "text-danger")}>
                         {r.values?.[f.key] || (f.required ? "(required, empty)" : "—")}
                       </TableCell>
                     ))}

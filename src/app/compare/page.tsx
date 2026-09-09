@@ -134,7 +134,7 @@ export default async function ComparePage() {
           area: "Roles",
           interim: "Limited; uploads by Secretariat",
           prototype: "Party / Secretariat (publishing authority) / STB / public; anonymous on any bad cookie; one can() and one SQL visibility clause for every read.",
-          links: [{ href: "/login", label: "Sandbox logins" }],
+          links: [{ href: "/login", label: "Sign in" }],
         },
         {
           area: "Refusal audit",
@@ -152,7 +152,7 @@ export default async function ComparePage() {
           area: "Sandbox lifecycle",
           interim: "—",
           prototype: "Reset in one click (env-gated) or `npm run db:reset`; seeds run through the same domain functions as the UI; `npm run smoke` proves the invariants.",
-          links: [{ href: "/audit", label: "Reset sandbox (SANDBOX_RESET=1)" }, { href: "/api/health", label: "Health", external: true }],
+          links: [{ href: "/audit", label: "Reset database (SANDBOX_RESET=1)" }, { href: "/api/health", label: "Health", external: true }],
         },
       ],
     },
