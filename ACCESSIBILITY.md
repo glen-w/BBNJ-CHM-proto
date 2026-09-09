@@ -4,11 +4,11 @@ Assessment of the BBNJ Cl-HM prototype against the [United Nations Web Accessibi
 
 **Standard:** WCAG **2.1 Level AA**, with enhanced attention to text contrast (UN requirement).  
 **Product shape:** transactional working desk (not a UN marketing homepage). Media/carousel rules are mostly N/A; shell, forms, structure, and downloadables dominate.  
-**Charter:** [`VISUAL-CHARTER.md`](VISUAL-CHARTER.md) §6–7 (team choice; Art 51.5 context in `SHIPPED-VS-DEFERRED.md`).
+**Charter:** [`VISUAL-CHARTER.md`](VISUAL-CHARTER.md) §6–7.
 
 This document is a living gap analysis, not a formal certification.
 
-**Art 51.5 cross-link.** `SHIPPED-VS-DEFERRED.md` marks Art 51.5 accessibility as **Partial — pattern proof**. The evidence is the offline Excel loop (MGR pre-collection and EIA screening templates → Secretariat import → error workbook → re-import) together with server-rendered pages and native forms: a demonstration of low-bandwidth, assisted access for developing States and SIDS. It is a *pattern*, not a WCAG conformance claim; the WCAG 2.1 AA verdicts in this file remain **Partial** and no third-party audit has been done.
+**Art 51.5 pattern proof.** The offline Excel loop (MGR pre-collection and EIA screening templates → Secretariat import → error workbook → re-import) together with server-rendered pages and native forms demonstrates low-bandwidth, assisted access for developing States and SIDS. It is a *pattern*, not a WCAG conformance claim; the WCAG 2.1 AA verdicts in this file remain **Partial** and no third-party audit has been done.
 
 ---
 
@@ -66,7 +66,7 @@ This document is a living gap analysis, not a formal certification.
 
 1. Skip link → `#main-content`
 2. `aria-current="page"` on Rails and Journeys
-3. ABMT journey tab enabled (EOI wave); the earlier “unavailable” accessible name was removed with the thin stub
+3. ABMT journey tab enabled; the earlier “unavailable” accessible name was removed with the thin stub
 4. Bell panel: `role="region"` + labelled heading
 5. `Field`: ids, `aria-describedby`, `aria-invalid`, native `required`
 6. Flash banner focus on mount when notice/error present
@@ -86,7 +86,7 @@ This document is a living gap analysis, not a formal certification.
 
 ## Priority surfaces for manual check
 
-Keyboard + one screen reader pass: home (incl. related-systems footer), login (five logins), MGR new/edit, Excel import (MGR + EIA screening), EIA pack form with artifact references, CBTMT post + facilitation note, ABMT stub, preferences, notifications bell, `/compare`.
+Keyboard + one screen reader pass: home (incl. About this desk / related systems), login (five logins), MGR new/edit, Excel import (MGR + EIA screening), EIA pack form with artifact references, CBTMT post + facilitation note, ABMT stub, preferences, notifications bell, `/compare`.
 
 ---
 

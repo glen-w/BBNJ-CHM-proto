@@ -47,5 +47,12 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# filled Cursor slash commands (local; templates live in cursor_commands)
-.cursor/commands/
+# local agent / IDE notes and internal planning (not part of the product)
+.cursor/
+/internal/
+/context/
+/proposal/
+IMPLEMENTATION-PLAN.md
+SHIPPED-VS-DEFERRED.md
+HARDENING.md
+CONTRACT-AMENDMENTS.md

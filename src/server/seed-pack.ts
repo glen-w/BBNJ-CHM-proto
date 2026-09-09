@@ -7,6 +7,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { AbnjBox, type ArtifactRef } from "@/lib/contracts/events";
+import type { Db } from "@/lib/db";
 import type { TreatyCite } from "@/lib/treatyCites";
 
 import { parseCsv } from "./parseCsv";
@@ -337,10 +338,7 @@ export function SECRETARIAT_NOTICES(): SecretariatNotice[] {
 }
 
 /** Resolve a CSV seed key from the first `seed:csv:…` idempotency key on a record. */
-export function seedKeyForRecord(
-  db: { prepare: (sql: string) => { get: (...params: unknown[]) => unknown } },
-  recordId: string,
-): string | undefined {
+export function seedKeyForRecord(db: Db, recordId: string): string | undefined {
   const row = db
     .prepare(
       `SELECT idempotency_key AS k FROM events
@@ -360,10 +358,7 @@ export function seedKeyForRecord(
 }
 
 /** Provenance badge from the record's seed key — never fuzzy title matching. */
-export function provenanceBadgeForRecord(
-  db: { prepare: (sql: string) => { get: (...params: unknown[]) => unknown } },
-  recordId: string,
-): ProvenanceBadge | undefined {
+export function provenanceBadgeForRecord(db: Db, recordId: string): ProvenanceBadge | undefined {
   const seedKey = seedKeyForRecord(db, recordId);
   if (!seedKey) return undefined;
   return getSeedPack().provenanceBySeedKey.get(seedKey);
@@ -380,10 +375,7 @@ export function provenanceBadgeForTitle(title: string): ProvenanceBadge | undefi
   return undefined;
 }
 
-export function agreementBasisExtrasForRecord(
-  db: { prepare: (sql: string) => { get: (...params: unknown[]) => unknown } },
-  recordId: string,
-): { extras: TreatyCite[]; footnotes: readonly string[] } {
+export function agreementBasisExtrasForRecord(db: Db, recordId: string): { extras: TreatyCite[]; footnotes: readonly string[] } {
   const seedKey = seedKeyForRecord(db, recordId);
   const row = seedKey ? getSeedPack().eia.find((e) => e.seedKey === seedKey) : undefined;
   return { extras: [...(row?.agreementExtras ?? [])], footnotes: row?.agreementFootnotes ?? [] };
@@ -395,10 +387,7 @@ export function agreementBasisExtrasForTitle(title: string): { extras: TreatyCit
   return { extras: [...(row?.agreementExtras ?? [])], footnotes: row?.agreementFootnotes ?? [] };
 }
 
-export function isIsaNotUndermineAbmtRecord(
-  db: { prepare: (sql: string) => { get: (...params: unknown[]) => unknown } },
-  recordId: string,
-): boolean {
+export function isIsaNotUndermineAbmtRecord(db: Db, recordId: string): boolean {
   const seedKey = seedKeyForRecord(db, recordId);
   if (!seedKey) return false;
   return getSeedPack().abmt.some((a) => a.seedKey === seedKey && a.isaCaption);

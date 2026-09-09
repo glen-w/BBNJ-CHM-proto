@@ -42,8 +42,8 @@ export default async function SearchPage({ searchParams }: Props) {
   return (
     <AppShell title="Search" flash={flash}>
       <p className="max-w-2xl text-sm text-muted-foreground">
-        Full-text search across MGR, EIA, CBTMT and ABMT records you are allowed to see. Visibility follows the same
-        confidentiality and role rules as every list page — drafts and restricted rows never leak to public readers.
+        Search all Cl-HM records you are allowed to see. List pages filter the current table; this page is the full-text index. Visibility follows the
+        same confidentiality and role rules as every list — drafts and restricted rows never leak to public readers.
       </p>
 
       <form className="flex flex-wrap items-end gap-2" method="get" role="search">
@@ -91,21 +91,21 @@ export default async function SearchPage({ searchParams }: Props) {
                     {d.toUpperCase()} ({rows.length})
                   </span>
                 </h2>
-                <div className="overflow-x-auto rounded-lg border">
+                <div className="overflow-x-auto rounded-lg border bg-card">
                   <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-muted/40">
                       <TableRow>
                         <TableHead>Title</TableHead>
                         <TableHead>Context</TableHead>
                         <TableHead>Stage</TableHead>
                         <TableHead>Public record id</TableHead>
-                        <TableHead>Updated</TableHead>
+                        <TableHead className="text-right">Updated</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {rows.map((h) => (
                         <TableRow key={`${h.domain}-${h.id}`}>
-                          <TableCell>
+                          <TableCell className="max-w-sm whitespace-normal">
                             <Link href={h.href} className="font-medium hover:underline">
                               {h.title}
                             </Link>
@@ -115,10 +115,10 @@ export default async function SearchPage({ searchParams }: Props) {
                               </div>
                             ) : null}
                           </TableCell>
-                          <TableCell className="text-muted-foreground">{h.subtitle ?? "—"}</TableCell>
+                          <TableCell className="whitespace-normal text-muted-foreground">{h.subtitle ?? "—"}</TableCell>
                           <TableCell>{stageLabel(h.stage)}</TableCell>
                           <TableCell className="font-mono text-xs">{h.publicRecordId ?? "—"}</TableCell>
-                          <TableCell>{fmtDate(h.updatedAt)}</TableCell>
+                          <TableCell className="text-right font-medium tabular-nums text-xs">{fmtDate(h.updatedAt)}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

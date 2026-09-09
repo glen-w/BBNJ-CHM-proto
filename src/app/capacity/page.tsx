@@ -1,10 +1,12 @@
 import Link from "next/link";
 
+import { AboutPanel } from "@/components/about-panel";
 import { AppShell } from "@/components/app-shell";
 import { ConfidentialityBadge, ProvenanceBadge, StatusChip } from "@/components/chips";
 import { ExportLinks } from "@/components/export-links";
 import { flashFrom } from "@/components/flash";
 import { Field, KeyFields, SubmitButton, selectClass } from "@/components/forms";
+import { FilterEmpty, ListFilter } from "@/components/list-filter";
 import { PublishButton } from "@/components/publish-button";
 import { Input } from "@/components/ui/input";
 import type { StoredCbtmtRecord } from "@/lib/contracts/extensions";
@@ -24,11 +26,9 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 
 export default async function CapacityPage({ searchParams }: Props) {
   const flash = await flashFrom(searchParams);
-  const sp = await searchParams;
-  const q = typeof sp.q === "string" ? sp.q : "";
   const p = await getSessionUser();
   const db = getDb();
-  const records = listCbtmtRecords(db, p, undefined, q || undefined);
+  const records = listCbtmtRecords(db, p);
   const needs = records.filter((r) => r.kind === "need");
   const offers = records.filter((r) => r.kind === "offer");
   const matchesSeen = new Set<string>();
@@ -36,28 +36,18 @@ export default async function CapacityPage({ searchParams }: Props) {
   const canMatch = can(p, "suggest_match");
 
   return (
-    <AppShell title="Capacity-building and transfer of marine technology (CBTMT) — Part V" flash={flash}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <p className="max-w-3xl text-sm text-muted-foreground">
-          Needs and offers are records with a pending → published pack. A <strong>match</strong> is a row (need, offer, rule, at) plus a{" "}
-          <code>match_suggested</code> outbox event carrying the <code>matchId</code>. Matching is a <strong>deterministic shared-theme rule</strong>, not
-          brokerage and not ML: the rule only finds the pair. Human matchmaking is the Secretariat&apos;s{" "}
-          <em>facilitation note</em> on the match — theme-join alone is not facilitation.
-        </p>
+    <AppShell title="CBTMT — Part V" flash={flash}>
+      <div className="flex flex-wrap items-center justify-end gap-2">
         <ExportLinks domain="cbtmt" />
       </div>
 
-      <form className="flex gap-2" method="get">
-        <Input name="q" placeholder="Search title, themes, provider, public id…" defaultValue={q} className="max-w-sm" />
-        <SubmitButton size="sm" variant="secondary">
-          Search
-        </SubmitButton>
-      </form>
-
-      <section className="grid gap-4 lg:grid-cols-2">
-        <Board title="Needs (Parties, Art 42)" items={needs} p={p} kind="need" />
-        <Board title="Offers (providers)" items={offers} p={p} kind="offer" />
-      </section>
+      <ListFilter label="Filter CBTMT records" placeholder="Title, themes, provider, public id…">
+        <section className="grid gap-4 lg:grid-cols-2">
+          <Board title="Needs (Parties, Art 42)" items={needs} p={p} kind="need" />
+          <Board title="Offers (providers)" items={offers} p={p} kind="offer" />
+        </section>
+        <FilterEmpty />
+      </ListFilter>
 
       <section className="rounded-lg border p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -160,6 +150,15 @@ export default async function CapacityPage({ searchParams }: Props) {
           .
         </p>
       )}
+
+      <AboutPanel title="About this workflow">
+        <p>
+          Needs and offers are records with a pending → published pack. A <strong className="text-foreground">match</strong> is a row (need, offer, rule,
+          at) plus a <code>match_suggested</code> outbox event carrying the <code>matchId</code>. Matching is a{" "}
+          <strong className="text-foreground">deterministic shared-theme rule</strong>, not brokerage and not ML: the rule only finds the pair. Human
+          matchmaking is the Secretariat&apos;s <em>facilitation note</em> on the match — theme-join alone is not facilitation.
+        </p>
+      </AboutPanel>
     </AppShell>
   );
 }
@@ -175,7 +174,7 @@ function Board({ title, items, p, kind }: { title: string; items: StoredCbtmtRec
           const pack = latestPackRow(db, r.id, kind === "need" ? "need_posted" : "offer_posted");
           const status = pack?.status;
           return (
-            <li key={r.id} className="rounded-md border p-3 text-sm">
+            <li key={r.id} data-filter-row className="rounded-md border p-3 text-sm">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <Link href={`/capacity/${r.id}`} className="font-medium hover:underline">
                   {r.title}

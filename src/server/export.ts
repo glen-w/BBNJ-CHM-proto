@@ -182,7 +182,7 @@ export function toCsv(t: Tabular): string {
 
 export interface JsonEnvelope<T> {
   schemaVersion: number;
-  contract: "proposal/schemas/events.ts";
+  contract: "src/lib/contracts/events.ts";
   generatedAt: string;
   role: string;
   count: number;
@@ -190,7 +190,7 @@ export interface JsonEnvelope<T> {
 }
 
 export function envelope<T extends unknown[]>(p: Principal, rows: T): JsonEnvelope<T> {
-  return { schemaVersion: SCHEMA_VERSION, contract: "proposal/schemas/events.ts", generatedAt: nowIso(), role: actorRoleOf(p), count: rows.length, rows };
+  return { schemaVersion: SCHEMA_VERSION, contract: "src/lib/contracts/events.ts", generatedAt: nowIso(), role: actorRoleOf(p), count: rows.length, rows };
 }
 
 // ------------------------------------------------------------------ single record

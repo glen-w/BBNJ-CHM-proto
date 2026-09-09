@@ -373,7 +373,7 @@ export function auditRows(db: Db, p: Principal, f: { domain?: string; status?: s
   );
 }
 
-/** Latest outbox row visible to this principal — audit ribbon. */
+/** Latest outbox row visible to this principal — labelled Latest transaction. */
 export function latestVisibleEvent(db: Db, p: Principal): AuditRow | null {
   const rows = auditRows(db, p, { limit: 1 });
   return rows[0] ?? null;
@@ -383,17 +383,20 @@ export interface FeedItem {
   eventId: string;
   domain: Domain;
   stage: string;
+  status: "draft" | "pending" | "published";
+  confidentiality: "public" | "restricted" | "confidential";
   recordId: string;
   publicRecordId?: string;
   title: string;
   at: string;
+  provenanceBadge?: ProvenanceBadge;
 }
 
 export function recentPublished(db: Db, p: Principal, limit = 8): FeedItem[] {
   const c = eventClause(p);
   const rows = db
     .prepare(
-      `SELECT e.id, e.domain, e.stage, e.record_id, e.public_record_id, e.at,
+      `SELECT e.id, e.domain, e.stage, e.status, e.confidentiality, e.record_id, e.public_record_id, e.at,
               COALESCE(mb.title, ea.title, cr.title, ap.title) AS title
        FROM events e ${RECORD_JOIN}
        LEFT JOIN mgr_batches mb ON mb.id = e.record_id
@@ -402,8 +405,29 @@ export function recentPublished(db: Db, p: Principal, limit = 8): FeedItem[] {
        LEFT JOIN abmt_proposals ap ON ap.id = e.record_id
        WHERE e.status = 'published' AND ${c.sql} ORDER BY e.seq DESC LIMIT ?`,
     )
-    .all(...c.params, limit) as { id: string; domain: Domain; stage: string; record_id: string; public_record_id: string | null; at: string; title: string }[];
-  return rows.map((r) => ({ eventId: r.id, domain: r.domain, stage: r.stage, recordId: r.record_id, publicRecordId: r.public_record_id ?? undefined, title: r.title ?? "", at: r.at }));
+    .all(...c.params, limit) as {
+    id: string;
+    domain: Domain;
+    stage: string;
+    status: "draft" | "pending" | "published";
+    confidentiality: "public" | "restricted" | "confidential";
+    record_id: string;
+    public_record_id: string | null;
+    at: string;
+    title: string;
+  }[];
+  return rows.map((r) => ({
+    eventId: r.id,
+    domain: r.domain,
+    stage: r.stage,
+    status: r.status,
+    confidentiality: r.confidentiality,
+    recordId: r.record_id,
+    publicRecordId: r.public_record_id ?? undefined,
+    title: r.title ?? "",
+    at: r.at,
+    provenanceBadge: provenanceBadgeForRecord(db, r.record_id),
+  }));
 }
 
 export interface RailCounts {

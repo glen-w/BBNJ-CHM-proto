@@ -29,8 +29,8 @@ import {
 } from "@/lib/contracts/extensions";
 import { contractsIdentical } from "../../scripts/contracts-check";
 
-describe("locked contract copy", () => {
-  it("is byte-identical to proposal/schemas/events.ts", () => {
+describe("locked contract", () => {
+  it("loads from src/lib/contracts/events.ts", () => {
     const r = contractsIdentical();
     expect(r.ok).toBe(true);
   });

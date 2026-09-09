@@ -1,7 +1,7 @@
 /**
  * Treaty-text locale stub — not UI i18n.
  * UI strings stay English; these codes only pick which official BBNJ page to open
- * and what the calm banner shows as “Treaty text: …”.
+ * and what the masthead shows as “Treaty text: …”.
  */
 export const TREATY_LANG_COOKIE = "chm_treaty_lang";
 

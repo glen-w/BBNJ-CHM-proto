@@ -3,7 +3,7 @@
  *
  * Rules: only narrow or extend contract types; never redefine them.
  * Everything here is an implementation field or shape, labelled as such.
- * proposal/schemas/events.ts stays authoritative (see scripts/contracts-check.ts).
+ * src/lib/contracts/events.ts is the locked contract (see scripts/contracts-check.ts).
  */
 import { z } from "zod";
 

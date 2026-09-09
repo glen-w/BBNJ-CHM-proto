@@ -1,10 +1,10 @@
-# Visual charter — BBNJ Cl-HM day prototype
+# Visual charter — BBNJ Cl-HM
 
 **Name for the look:** Working Cl-HM desk  
 **Positioning:** Between [UN BBNJ Agreement](https://www.un.org/bbnjagreement/en) solemnity and [High Seas Alliance](https://highseasalliance.org/) legibility — **neither** campaign brochure **nor** grey PDF warehouse.  
 **Audience tell:** A SIDS NFP can finish a form without squinting; a Party official trusts it enough to publish.
 
-This charter governs the day‑1 / second‑wave UI. It is a **team choice**, not an EOI mandate. Soft cues (Art 51.5 light pages, HSA Designing paper dashboards/filters, ABSCH/BCH institutional desk) inform it.
+This charter governs the Cl-HM desk UI. It is a **team choice** for this prototype. Soft cues (Art 51.5 light pages, HSA Designing paper dashboards/filters, ABSCH/BCH institutional desk) inform it.
 
 ---
 
@@ -15,8 +15,8 @@ This charter governs the day‑1 / second‑wave UI. It is a **team choice**, no
 3. **Institutional trust** — restrained blues, sober type, no advocacy hero imagery.  
 4. **Legible density** — information-dense lists and pack timelines; generous line-height; avoid sparse “marketing” whitespace.  
 5. **Light by default** — no mandatory maps/GIS; offline template affordances visible; progressive enhancement only.  
-6. **Status is visible** — pack chips (`draft` / `pending` / `published`) always carry **text labels** (never colour-only).  
-7. **Without prejudice** — role names (e.g. Secretariat / authorised publisher) must not imply a COP1 organ chart. Legal and sandbox caveats live in the README, not in product chrome.
+6. **Status is visible** — pack chips (`draft` / `pending` / `published`) and the `restricted` tier chip always carry **text labels** (never colour-only). Interim provenance is **outlined**; Demo provenance is **subdued**. Both stay first-class list chips, not buried in About.  
+7. **Without prejudice** — role names (e.g. Secretariat / authorised publisher) must not imply a COP1 organ chart. Scope caveats live in the README, not in product chrome.
 
 ---
 
@@ -58,10 +58,11 @@ This charter governs the day‑1 / second‑wave UI. It is a **team choice**, no
 
 ## 4. Layout & components
 
-- **Shell:** top bar with product mark (**BBNJ Cl-HM** · working desk), rail labels + role switcher + bell; journey tabs secondary. The ABMT tab is **enabled and quiet**: same weight as the other journeys, no “stub” / “not in this build” badge in the tab itself; the stub nature is stated once, in one sentence, on the ABMT page.  
-- **Footer — related systems:** a plain-text row of named links to existing clearing-houses and data systems is allowed (and encouraged) in the footer only: text links, no logos, no partner-wall grid. Caption them as *related systems*, never as “integrations” or “partners”.  
+- **Shell:** three bands — UN masthead (welcome + treaty-text locale); product/account (emblem · **BBNJ Cl-HM** · rails · global “Search all Cl-HM records” · role switcher · bell); contextual (journey tabs · labelled **Latest transaction** from the last visible outbox event, public identifiers only). The long Agreement title does not sit in chrome. The ABMT tab is **enabled and quiet**: same weight as the other journeys, no “stub” / “not in this build” badge in the tab itself; the stub nature is stated once, in one sentence, on the ABMT page.  
+- **About this desk:** related-systems links, identifier order, and `/records/<id>` notes live in a closed technical panel (home `#about-desk` and per-journey “About this workflow”), not in the footer or as stacked essays above tables. Caption related systems as *related systems*, never as “integrations” or “partners”. Footer is product mark + About link.  
 - **Deferred capability caption:** where a proprietary or deferred capability is referenced (e-mail delivery, GIS, federation, tagged PDF), use one quiet muted caption in the relevant panel — e.g. *in-app only in this build* — not a banner, not a roadmap list.  
-- **Record lists:** domain badge (quiet tint + optional Lucide icon with label) · public record id · status chip (**text + colour**, never colour-only) · updated — scannable tables/cards, shadcn `Table` / `Badge` / `Button`.  
+- **Record lists:** domain badge (quiet tint + optional Lucide icon with label) · public record id · status chip (**text + colour**, never colour-only) · **Updated** as a scan column — scannable tables, shadcn `Table` / `Badge` / `Button`. List pages **Filter … records** (live); header search is global FTS. MGR/EIA actions: primary **New** · **Import▾** (template underneath) · **Export▾**.  
+- **Home cards:** operational launchers (count + short rail + Open); essays behind “About this workflow”. Recently published: title / status / id+date on separate rows.  
 - **Domain accent:** soft left rail (`border-l-2`) on journey cards and mixed-domain feed rows only — not page chrome.  
 - **Icons (Lucide):** labelled only — submit / notify / roles / MGR / EIA / capacity. No icon-only status. Manage / Publish / Audit rails stay text-only.  
 - **Pack / EIA rail:** vertical stage rail with **per-pack** chips; published screening may sit beside draft `draft_eia`.  
@@ -108,7 +109,7 @@ UN WCAG 2.1 AA mapping, measured contrast, and remediation status: [`ACCESSIBILI
 
 - Plain English; article cites in help text, not in every button.  
 - Ids and B‑SBI labelled distinctly.  
-- Product chrome reads as a finished working desk — no “prototype”, “substrate”, “sandbox”, “demo” chips, or COP1 disclaimers in the shell. Those caveats live in the README.  
+- Product chrome reads as a finished working desk — no “prototype”, “substrate”, “sandbox”, or COP1 disclaimers in the shell. Scope notes live in the README.  
 - Role labels: “Secretariat / authorised publishing role” — not “Publishing Authority” as a BBNJ organ.  
 - ABMT stub page: one sentence saying it is a thin stub without prejudice, then the working list/form — not roadmap marketing or contract-enum lectures. Never “unavailable” (it is available, thinly).  
 - Deferred / proprietary captions read as facts, not apologies: *Notifications are in-app in this build.* — no “coming soon”.
@@ -124,6 +125,6 @@ UN WCAG 2.1 AA mapping, measured contrast, and remediation status: [`ACCESSIBILI
 
 ---
 
-## 10. One-line pitch (EOI / README)
+## 10. One-line pitch
 
 > A **working Cl-HM desk**: UN-level restraint, product-level clarity — built for Parties to submit, publish, and notify, not to browse a brochure.

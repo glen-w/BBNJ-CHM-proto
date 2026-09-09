@@ -77,6 +77,9 @@ describe("policy-filtered queries", () => {
     const secAudit = auditRows(h.db, h.secretariat(), { domain: "mgr" });
     expect(secAudit.some((r) => r.actorUserId)).toBe(true);
     expect(recentPublished(h.db, h.pub()).some((r) => r.recordId === restricted.batch.id)).toBe(false);
+    const feed = recentPublished(h.db, h.secretariat());
+    expect(feed[0]?.status).toBe("published");
+    expect(feed.some((r) => r.confidentiality === "restricted" && r.recordId === restricted.batch.id)).toBe(true);
 
     const counts = railCounts(h.db, h.pub());
     expect(counts.audit).toBe(publicAudit.length);

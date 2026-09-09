@@ -1,7 +1,7 @@
 /**
- * BBNJ Cl-HM day prototype — locked shared contracts
+ * BBNJ Cl-HM — locked shared contracts
  *
- * Shared substrate: receipt → manage → publish/notify → roles
+ * Shared rails: receipt → manage → publish/notify → roles
  * Use cases: MGR · EIA · CBTMT (abmt reserved)
  *
  * Identifiers:

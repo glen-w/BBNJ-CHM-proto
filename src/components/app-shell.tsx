@@ -6,6 +6,8 @@ import { cookies } from "next/headers";
 import { AuditRibbon } from "@/components/audit-ribbon";
 import { FlashBanner, type Flash } from "@/components/flash";
 import { LanguageControl } from "@/components/language-control";
+import { FocalPointsCaption } from "@/components/related-systems";
+import { JourneysNav, RailsNav } from "@/components/shell-nav";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getDb } from "@/lib/db";
@@ -15,7 +17,6 @@ import { cn } from "@/lib/utils";
 import { logoutAction } from "@/server/actions";
 import { actorRoleOf, can } from "@/server/policy";
 import { latestVisibleEvent, notificationsFor, unreadCount } from "@/server/queries";
-import { RELATED_SYSTEMS_SEED, SECRETARIAT_NOTICES } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
 // Journeys are entry points into the shared rails, not competing brands (VISUAL-CHARTER.md §1.2, §4).
@@ -25,22 +26,6 @@ const journeys: { href: string; label: string; caption: string; enabled: boolean
   { href: "/capacity", label: "CBTMT", caption: "capacity-building & technology transfer", enabled: true },
   { href: "/abmt", label: "ABMT", caption: "area-based management tools (stub, without prejudice)", enabled: true },
 ];
-
-/** Reference links only — no data flows. Seed pack related_systems.csv + BCH/OBIS. */
-function relatedSystemsLinks() {
-  const fromPack = RELATED_SYSTEMS_SEED();
-  const notices = SECRETARIAT_NOTICES().filter((n) => !fromPack.some((r) => r.href === n.url));
-  return [
-    ...fromPack.map((r) => ({ href: r.href, label: r.label })),
-    ...notices.map((n) => ({ href: n.url, label: n.title })),
-    { href: "https://bch.cbd.int/", label: "BCH" },
-    { href: "https://obis.org/", label: "OBIS" },
-  ];
-}
-
-const railLink = "rounded-md px-2 py-1 text-sm text-foreground/80 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
-const journeyTab =
-  "inline-flex items-center gap-1.5 border-b-2 border-transparent px-1 py-2 text-sm font-medium text-foreground/85 hover:border-line hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 
 export async function AppShell({
   title,
@@ -61,60 +46,65 @@ export async function AppShell({
   const store = await cookies();
   const treatyLang = treatyLangOf(store.get(TREATY_LANG_COOKIE)?.value);
 
+  const railItems = [
+    { href: "/audit", label: "Audit" },
+    ...(principal.kind === "user" ? [{ href: "/notifications", label: "Notifications" }] : []),
+    ...(can(principal, "comment_stb") ? [{ href: "/stb", label: "STB queue" }] : []),
+  ];
+
   return (
     <div className="min-h-full flex flex-col bg-background text-foreground">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:border focus:bg-card focus:px-3 focus:py-2 focus:text-sm focus:shadow-md focus:outline-none focus:ring-3 focus:ring-ring/50"
+      >
+        Skip to content
+      </a>
       <header className="border-b bg-card">
-        {/* Utility: official BBNJ language links (treaty text only — UI stays English). */}
+        {/* Band 1 — UN masthead (welcome + treaty-text locale). */}
         <div className="border-b border-institutional/40 bg-muted/40">
-          <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-1 px-6 py-1.5">
+          <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-1 px-6 py-1">
             <p className="text-xs text-muted-foreground">Welcome to the United Nations</p>
-            <LanguageControl active={treatyLang.code} />
+            <div
+              className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground"
+              dir={treatyLang.code === "ar" ? "rtl" : "ltr"}
+            >
+              <FocalPointsCaption />
+              <span aria-hidden="true" className="hidden sm:inline text-line">
+                |
+              </span>
+              <span>UI: English · Treaty text: {treatyLang.label}</span>
+              <LanguageControl active={treatyLang.code} />
+            </div>
           </div>
         </div>
 
-        {/* Brand: emblem · agreement title · Cl-HM desk · rails · role (VISUAL-CHARTER.md §4). */}
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-6 py-3">
-          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2">
-            <Link
-              href="/"
-              className="flex min-w-0 items-center gap-3 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-            >
-              <Image src="/bbnj-emblem.svg" alt="" width={40} height={40} className="shrink-0" unoptimized />
-              <span className="flex min-w-0 flex-col gap-0.5">
-                <span className="hidden text-[13px] font-semibold leading-snug tracking-tight text-foreground md:block sm:text-sm">
-                  Agreement on Marine Biological Diversity of Areas beyond National Jurisdiction
-                </span>
-                <span className="text-[13px] font-semibold leading-snug tracking-tight text-foreground md:hidden">
-                  BBNJ Agreement
-                </span>
-                <span className="flex flex-wrap items-baseline gap-x-2 text-xs text-muted-foreground">
-                  <span className="hidden md:inline">BBNJ Agreement</span>
-                  <span aria-hidden="true" className="hidden text-line md:inline">
-                    ·
-                  </span>
-                  <span className="font-medium text-institutional">BBNJ Cl-HM</span>
-                  <span>working desk</span>
-                </span>
-              </span>
-            </Link>
-            <span aria-hidden="true" className="hidden h-10 w-px bg-line sm:block" />
-            <nav aria-label="Rails" className="flex flex-wrap items-center gap-1">
-              <Link href="/audit" className={railLink}>
-                Audit
-              </Link>
-              {principal.kind === "user" ? (
-                <Link href="/notifications" className={railLink}>
-                  Notifications
-                </Link>
-              ) : null}
-              {can(principal, "comment_stb") ? (
-                <Link href="/stb" className={railLink}>
-                  STB queue
-                </Link>
-              ) : null}
-            </nav>
-          </div>
-          <div className="flex items-center gap-1">
+        {/* Band 2 — product mark · rails · global search · account. */}
+        <div className="mx-auto flex w-full max-w-6xl items-center gap-x-3 px-6 py-2">
+          <Link
+            href="/"
+            className="flex shrink-0 items-center gap-2.5 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            <Image src="/bbnj-emblem.svg" alt="" width={32} height={32} className="shrink-0" unoptimized />
+            <span className="flex items-baseline gap-x-2">
+              <span className="font-semibold tracking-tight text-institutional">BBNJ Cl-HM</span>
+              <span className="hidden text-xs text-muted-foreground lg:inline">working desk</span>
+            </span>
+          </Link>
+          <div className="ms-auto flex min-w-0 items-center gap-1.5">
+            <RailsNav items={railItems} />
+            <form action="/search" method="get" className="flex items-center gap-1.5" role="search">
+              <Input
+                name="q"
+                type="search"
+                placeholder="Search all Cl-HM records"
+                aria-label="Search all Cl-HM records"
+                className="h-8 w-44 sm:w-56"
+              />
+              <button type="submit" className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}>
+                Search
+              </button>
+            </form>
             {principal.kind === "user" ? (
               <details className="relative">
                 <summary
@@ -127,7 +117,7 @@ export async function AppShell({
                     <span className="rounded-full bg-institutional px-1.5 text-[10px] font-medium tabular-nums text-institutional-foreground">{unread}</span>
                   ) : null}
                 </summary>
-                <div className="absolute right-0 z-40 mt-2 w-96 rounded-lg border bg-popover p-3 text-sm shadow-md">
+                <div className="absolute right-0 z-40 mt-2 w-96 rounded-lg border bg-popover p-3 text-sm shadow-md" role="region" aria-label="Notifications">
                   <div className="mb-2 flex items-center justify-between">
                     <span className="font-medium">Notifications</span>
                     <Link href="/notifications" className="text-xs underline">
@@ -167,78 +157,29 @@ export async function AppShell({
             ) : null}
           </div>
         </div>
-
-        {/* Calm locale banner — UI never machine-translated; Arabic RTL on this strip only. */}
-        <div
-          className="border-t border-line/70 bg-canvas px-6 py-1.5 text-xs text-muted-foreground"
-          dir={treatyLang.code === "ar" ? "rtl" : "ltr"}
-        >
-          <div className="mx-auto max-w-6xl">
-            UI strings: English (demo) · Treaty text: {treatyLang.label}
-          </div>
-        </div>
       </header>
 
-      <AuditRibbon event={latest} />
-
-      <div className="border-b bg-card">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-1 px-6">
-          <nav aria-label="Journeys" className="flex flex-wrap items-center gap-5">
-            {journeys.map((j) =>
-              j.enabled ? (
-                <Link key={j.href} href={j.href} className={journeyTab} title={j.caption}>
-                  {j.label}
-                </Link>
-              ) : (
-                <Link
-                  key={j.href}
-                  href={j.href}
-                  className={cn(journeyTab, "text-muted-foreground hover:border-transparent hover:text-muted-foreground")}
-                  title={`${j.label} is not available`}
-                >
-                  {j.label}
-                </Link>
-              ),
-            )}
-          </nav>
-          <div className="flex flex-wrap items-center gap-3 py-2">
-            <form action="/search" method="get" className="flex items-center gap-1.5" role="search">
-              <Input
-                name="q"
-                type="search"
-                placeholder="Search records…"
-                aria-label="Search records"
-                className="h-8 w-40 sm:w-52"
-              />
-              <button type="submit" className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}>
-                Search
-              </button>
-            </form>
-            {title ? <p className="text-sm text-muted-foreground">{title}</p> : null}
+      {/* Band 3 — journeys · last outbox event. */}
+      <div className="sticky top-0 z-30 border-b bg-card">
+        <div className="mx-auto flex w-full max-w-6xl items-center gap-x-4 px-6">
+          <JourneysNav items={journeys} />
+          <div className="ms-auto min-w-0 max-w-md py-1">
+            <AuditRibbon event={latest} />
           </div>
         </div>
       </div>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 space-y-6 px-6 py-8">
+      <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-6xl flex-1 space-y-5 px-6 py-5 outline-none">
+        {title ? <h1 className="sr-only">{title}</h1> : null}
         <FlashBanner flash={flash} />
         {children}
       </main>
       <footer className="border-t">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-6 py-3 text-xs text-muted-foreground">
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-1 px-6 py-2 text-xs text-muted-foreground">
           <span>BBNJ Cl-HM</span>
-          <span className="flex flex-wrap items-center gap-x-2">
-            <span>Related systems (reference — not federation):</span>
-            {relatedSystemsLinks().map((r) => (
-              <a key={r.href} href={r.href} rel="noopener noreferrer" target="_blank" className="underline underline-offset-2 hover:text-institutional">
-                {r.label}
-              </a>
-            ))}
-          </span>
-          <span>
-            <Link href="/records/BBNJ-MGR-2026-00001" className="font-mono underline underline-offset-2 hover:text-institutional">
-              /records/&lt;publicRecordId&gt;
-            </Link>
-          </span>
+          <Link href="/#about-desk" className="underline underline-offset-2 hover:text-institutional">
+            About this desk
+          </Link>
         </div>
       </footer>
     </div>

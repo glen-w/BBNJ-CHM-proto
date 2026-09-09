@@ -5,46 +5,28 @@ import { fmtRelative } from "@/lib/format";
 import type { AuditRow } from "@/server/queries";
 
 /**
- * Sticky one-liner from the latest policy-visible outbox event.
- * Text-labelled chips; no motion beyond sticky positioning.
+ * Latest policy-visible outbox event, inline in the contextual band.
+ * Public identifiers only — never internal user UUIDs.
  */
 export function AuditRibbon({ event }: { event: AuditRow | null }) {
-  if (!event) {
-    return (
-      <div className="sticky top-0 z-30 border-b border-line bg-muted/80 text-xs text-muted-foreground backdrop-blur-sm">
-        <div className="mx-auto max-w-6xl px-6 py-1.5">No events yet.</div>
-      </div>
-    );
-  }
+  if (!event) return null;
 
-  const actor = event.actorUserId ?? event.actorRole;
-  const idBits: string[] = [];
-  if (event.receiptId) idBits.push(`receiptId ${event.receiptId}`);
-  if (event.publicRecordId) idBits.push(`publicRecordId ${event.publicRecordId}`);
-  if (event.bSbi) idBits.push(`bSbi ${event.bSbi}`);
+  const publicId = event.publicRecordId ?? event.receiptId ?? event.bSbi;
 
   return (
-    <div className="sticky top-0 z-30 border-b border-line bg-muted/80 text-xs backdrop-blur-sm">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-2 gap-y-1 px-6 py-1.5">
-        <Link
-          href={`/audit?event=${event.id}`}
-          className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-sm text-foreground hover:text-institutional focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-        >
-          <span className="font-medium">{actor}</span>
-          <span className="rounded border border-line bg-card px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
-            {event.actorRole}
-          </span>
-          <StatusChip status={event.status} className="text-[10px]" />
-          {idBits.length > 0 ? (
-            <span className="font-mono text-[11px] text-muted-foreground">{idBits.join(" · ")}</span>
-          ) : (
-            <span className="text-muted-foreground">{event.stage.replace(/_/g, " ")}</span>
-          )}
-          <span className="text-muted-foreground" title={event.at}>
-            {fmtRelative(event.at)}
-          </span>
-        </Link>
-      </div>
+    <div className="flex items-center justify-end gap-1.5 text-xs text-muted-foreground">
+      <span className="shrink-0 font-medium">Latest transaction</span>
+      <Link
+        href={`/audit?event=${event.id}`}
+        className="flex min-w-0 items-center gap-1.5 text-foreground hover:text-institutional focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        title={event.summary}
+      >
+        <StatusChip status={event.status} className="text-[10px]" />
+        <span className="min-w-0 truncate font-mono">{publicId ?? event.summary}</span>
+        <span className="shrink-0" title={event.at}>
+          {fmtRelative(event.at)}
+        </span>
+      </Link>
     </div>
   );
 }

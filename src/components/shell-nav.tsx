@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { DOMAIN_ICON, isAccentDomain } from "@/components/domain-icons";
 import { cn } from "@/lib/utils";
 
 const railLink =
@@ -16,14 +15,6 @@ const journeyTabCurrent = "border-institutional text-foreground";
 function pathActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(`${href}/`);
-}
-
-function journeyDomain(href: string): string | undefined {
-  if (href.startsWith("/mgr")) return "mgr";
-  if (href.startsWith("/eia")) return "eia";
-  if (href.startsWith("/capacity")) return "cbtmt";
-  if (href.startsWith("/abmt")) return "abmt";
-  return undefined;
 }
 
 export function RailsNav({ items }: { items: { href: string; label: string }[] }) {
@@ -57,8 +48,6 @@ export function JourneysNav({
     <nav aria-label="Journeys" className="flex flex-wrap items-center gap-5">
       {items.map((j) => {
         const current = pathActive(pathname, j.href);
-        const domain = journeyDomain(j.href);
-        const Icon = domain && isAccentDomain(domain) ? DOMAIN_ICON[domain] : null;
         if (!j.enabled) {
           return (
             <span
@@ -79,7 +68,6 @@ export function JourneysNav({
             title={j.caption}
             aria-current={current ? "page" : undefined}
           >
-            {Icon ? <Icon aria-hidden="true" className="size-3.5" /> : null}
             {j.label}
           </Link>
         );

@@ -1,8 +1,8 @@
-# Demo script (10 minutes) — as built, EOI wave (schema v6)
+# Walk-through script (10 minutes)
 
-Companion to `proposal/DEMO-SCRIPT.md` (the acceptance spec). For product framing and the next-wave roadmap, start with root `README.md`. Routes below exist in this build. The same journey runs unattended as `npm run demo` (17 narrated checkpoints), so every claim below is asserted, not hoped for. Where the two diverge, the *Alignment with `npm run demo`* notes say so.
+For product framing and the roadmap, start with `README.md`. Routes below exist in the running desk. The same journey runs unattended as `npm run demo` (17 narrated checkpoints), so every claim below is asserted, not hoped for. Where the two diverge, the *Alignment with `npm run demo`* notes say so.
 
-Honesty rules for the presenter: notifications are **in-app only** (no e-mail); Art 51.5 is shown as an **offline Excel pattern**, not a WCAG certification; ABMT is a **thin stub without prejudice**; MGR+EIA Excel is the Art 51.5 *pattern*, not a certification; `/compare` is soft and cited; there is **no hosted public URL** — participants run the clone or the Docker image (C1 public hosting is out of scope until a public sandbox URL exists).
+Presenter notes: notifications are **in-app only** (no e-mail); Art 51.5 is shown as an **offline Excel pattern**, not a WCAG certification; ABMT is a **thin stub without prejudice**; MGR+EIA Excel is the Art 51.5 *pattern*, not a certification; `/compare` is cited in the docs; there is **no hosted public URL** — participants run the clone or the Docker image locally.
 
 ## Before the demo
 
@@ -32,7 +32,7 @@ Cookie-based, no passwords. Any bad cookie = anonymous public.
 
 ## Journey (≈ 1 minute per step)
 
-1. **Home `/`** as the anonymous public — rails with counts filtered by role: 0 pending packs, no notifications. The *Export CSV* button downloads exactly the rows the public can see. Scroll to the footer: **Related systems** links to existing clearing-houses and data systems — say: "an early interoperability seam: named links, not federation". Say: "counts, lists, exports and notifications all go through one SQL visibility clause". Honesty caption on the home: *Plausible demo data; not real Party filings.*
+1. **Home `/`** as the anonymous public — rails with counts filtered by role: 0 pending packs, no notifications. Open **About this desk**: *Export CSV* downloads exactly the rows the public can see; **Related systems** links to existing clearing-houses and data systems — say: "an early interoperability seam: named links, not federation". Journey cards are launchers (counts + Open), not essays. Recently published stacks title / status / id+date. Say: "counts, lists, exports and notifications all go through one SQL visibility clause". Honesty caption lives in About: *Plausible demo data; not real Party filings.*
 
 1b. **Rich seed beat (optional, ~90 s)** — open `/search?q=TEMP` and confirm **Interim (DOALOS)** on the mirrored MGR hit (same badge on `/mgr`). Open it: DMP / artefact URL points at the live DOALOS TEMP page; B-SBI and `publicRecordId` are real Cl-HM ids (never equal to the TEMP label). Then `/eia` → **Demo scenario** badges on rocket splashdown (draft published), mCDR/OAE (draft pending), and mesopelagic fishery (screening only) — open each and note the **neighbourhood** list (≥2 published activities in that ABNJ box). Open mesopelagic → **§ Agreement basis** cites Zotero `6K6WPBFQ` as RFMO-gap / Part IV framing. `/abmt` → published *Sargasso Sea Core* stub; open *CCZ … precautionary* for the ISA not-undermine caption. `/capacity` → needs/offers carry Demo badges; facilitation notes are human brokerage — say: "shared-theme join finds the pair; the note is what the Secretariat actually did; theme-join alone is not matchmaking." Say: "list and search badges separate Interim (DOALOS) mirrors from Demo scenarios so rocket/mCDR/mesopelagic are never read as filed notifications."
 
@@ -72,9 +72,9 @@ Differences from the live script, on purpose: the unattended run uses the MGR im
 - "ABMT is a stub without prejudice. It proves the rails carry a fourth domain; it does not pretend to know what COP1 will decide."
 - "CBTMT: shared-theme join finds the pair; the facilitation note is the human brokerage — they are not the same thing."
 - "Seeds run through the same domain functions as the UI. `npm run smoke` proves the invariants; `npm run demo` proves this script."
-- "Header languages open the official BBNJ text in a new tab; the UI stays English — no machine translation. The calm banner shows which treaty-text locale you picked (Arabic RTL on that banner only)."
-- "On a pack page, § Agreement basis lists only the articles for that record's domain and stages. The sticky audit ribbon is the latest outbox event your role can see — it moves when you switch role or publish."
-- "Until there is a public sandbox URL, hands-on means clone or `docker compose` plus the five logins — that is the C1 story for this wave."
+- "Header languages open the official BBNJ page in a new tab; the UI stays English — no machine translation. The masthead shows which treaty-text locale you picked (Arabic RTL on that strip only)."
+- "On a pack page, § Agreement basis lists only the articles for that record's domain and stages. **Latest transaction** in the third chrome band is the latest outbox event your role can see — it moves when you switch role or publish."
+- "Hands-on means clone or `docker compose` plus the five logins — there is no hosted public URL in this release."
 
 ## Stretch (built)
 

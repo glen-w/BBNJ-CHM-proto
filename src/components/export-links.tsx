@@ -1,24 +1,19 @@
+import { DeskMenu, DeskMenuItem } from "@/components/desk-menu";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-/** CSV / JSON export buttons for a list; policy-filtered server-side exactly like the page. */
+/** CSV / JSON export menu for a list; policy-filtered server-side exactly like the page. */
 export function ExportLinks({ domain, className }: { domain: "mgr" | "eia" | "cbtmt" | "abmt" | "audit"; className?: string }) {
   return (
-    <span className={cn("inline-flex gap-1", className)}>
-      <a
-        href={`/api/export/${domain}.csv`}
-        className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-        title="RFC 4180 CSV of the rows visible to your role"
-      >
-        Export CSV (.csv)
-      </a>
-      <a
-        href={`/api/export/${domain}.json`}
-        className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-        title="JSON export of the rows visible to your role"
-      >
-        Export JSON (.json)
-      </a>
+    <span className={cn("inline-flex", className)}>
+      <DeskMenu label="Export">
+        <DeskMenuItem href={`/api/export/${domain}.csv`} title="RFC 4180 CSV of the rows visible to your role">
+          CSV (.csv)
+        </DeskMenuItem>
+        <DeskMenuItem href={`/api/export/${domain}.json`} title="JSON export of the rows visible to your role">
+          JSON (.json)
+        </DeskMenuItem>
+      </DeskMenu>
     </span>
   );
 }

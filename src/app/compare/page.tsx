@@ -109,7 +109,7 @@ export default async function ComparePage() {
         {
           area: "Delivery",
           interim: "Not visible on the interim pages",
-          prototype: "In-app bell only (no e-mail or push in this build). Synchronous dispatch after commit; idempotent (UNIQUE user × event × kind); dispatch_log; replay inserts nothing on a consistent DB.",
+          prototype: "In-app bell only (no e-mail or push yet). Synchronous dispatch after commit; idempotent (UNIQUE user × event × kind); dispatch_log; replay inserts nothing on a consistent DB.",
           links: [{ href: "/notifications", label: "Bell / inbox" }, { href: "/audit", label: `Dispatch column${loginHint}` }],
         },
         {
@@ -172,7 +172,7 @@ export default async function ComparePage() {
           The interim Cl-HM pages operated by DOALOS are, as far as their public pages show, informational: documents, meeting pages, contact points.
           The &ldquo;interim&rdquo; column below describes what is visible on those pages, not what may exist behind them. This prototype is
           transactional — structured receipt → validation → storage → publication → alert → audit — organised around the three basic functions the
-          webinar series asks for. Every row links into the live sandbox for your current role.
+          Session 1 basic functions ask for. Every row links into the live desk for your current role.
         </p>
 
         {sections.map((s) => (

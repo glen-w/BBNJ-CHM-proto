@@ -43,4 +43,4 @@ Sargasso Sea Core · Costa Rica Thermal Dome · CCZ precautionary network node �
 
 ## Schema note
 
-`AbnjBox` in `proposal/schemas/events.ts` / `src/lib/contracts/events.ts` includes the pack’s geography boxes (`CCZ`, `Reykjanes Ridge`, `Clarion-Clipperton South`, splashdown corridor, mesopelagic belt, OAE trial, Sargasso, Costa Rica Dome, etc.).
+`AbnjBox` in `src/lib/contracts/events.ts` includes the pack’s geography boxes (`CCZ`, `Reykjanes Ridge`, `Clarion-Clipperton South`, splashdown corridor, mesopelagic belt, OAE trial, Sargasso, Costa Rica Dome, etc.).

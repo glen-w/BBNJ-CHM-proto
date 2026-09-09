@@ -58,15 +58,15 @@ export function DomainBadge({
 
 export function StatusChip({ status, className }: { status: string; className?: string }) {
   return (
-    <Badge variant="outline" className={cn(STATUS_STYLE[status] ?? "", className)} title={`Pack status: ${status} (status lives on the pack, not the record)`}>
+    <Badge variant="outline" className={cn(STATUS_STYLE[status] ?? "", "overflow-visible", className)} title={`Pack status: ${status} (status lives on the pack, not the record)`}>
       {status}
     </Badge>
   );
 }
 
 const TIER_STYLE: Record<string, string> = {
-  public: "border-border text-muted-foreground",
-  restricted: "bg-caution text-caution-foreground border-caution-line",
+  public: "border-border bg-transparent text-muted-foreground",
+  restricted: "border-caution-line bg-transparent text-caution-foreground",
   confidential: "bg-danger/10 text-danger border-danger-line",
 };
 
@@ -115,8 +115,10 @@ export function ProvenanceBadge({ badge }: { badge: "Interim (DOALOS)" | "Demo s
     <Badge
       variant="outline"
       className={cn(
-        "font-normal",
-        interim ? "border-institutional/50 text-institutional" : "border-line text-muted-foreground",
+        "overflow-visible font-normal",
+        interim
+          ? "border-institutional bg-transparent text-institutional"
+          : "border-transparent bg-muted/70 font-normal text-muted-foreground",
       )}
       title={interim ? "Mirrors a live DOALOS interim page — not a Party filing through this desk" : "Plausible demo scenario; not a real Party filing"}
     >

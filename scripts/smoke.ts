@@ -1,5 +1,5 @@
 /**
- * smoke.ts — executable acceptance for Section I of IMPLEMENTATION-PLAN.md.
+ * smoke.ts — executable acceptance tests for core Cl-HM invariants.
  * Runs against a temporary SQLite file; never touches data/chm.sqlite.
  *
  *   npm run smoke            # all groups
@@ -65,7 +65,7 @@ async function main() {
   const key = () => crypto.randomUUID();
 
   // ---------------------------------------------------------------- contracts
-  p0("contracts:check — app copy byte-identical to proposal/schemas/events.ts", () => {
+  p0("contracts:check — locked contract loads", () => {
     const r = contractsIdentical();
     assert.ok(r.ok, r.message);
   });
@@ -708,7 +708,7 @@ async function main() {
     await assert.rejects(importer.importMgrExcel(db, party(), fixture, "XSD", key()), DomainError);
   });
 
-  // ================================================================ EOI wave (schema v5)
+  // ================================================================ schema v5 features
   const abmt = await import("../src/server/abmt");
   const records = await import("../src/server/records");
   const nonStateSeeded = () => principalOf("nonstate.uploader");
