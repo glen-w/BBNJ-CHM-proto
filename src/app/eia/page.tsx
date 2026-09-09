@@ -5,6 +5,7 @@ import { ConfidentialityBadge, StatusChip } from "@/components/chips";
 import { ExportLinks } from "@/components/export-links";
 import { flashFrom } from "@/components/flash";
 import { buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getDb } from "@/lib/db";
 import { fmtDate, stageLabel } from "@/lib/format";
@@ -17,8 +18,10 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 
 export default async function EiaPage({ searchParams }: Props) {
   const flash = await flashFrom(searchParams);
+  const sp = await searchParams;
+  const q = typeof sp.q === "string" ? sp.q : "";
   const p = await getSessionUser();
-  const activities = listEiaActivities(getDb(), p);
+  const activities = listEiaActivities(getDb(), p, q || undefined);
 
   return (
     <AppShell title="Environmental impact assessments (EIA) — Part IV" flash={flash}>
@@ -46,6 +49,12 @@ export default async function EiaPage({ searchParams }: Props) {
           <ExportLinks domain="eia" />
         </div>
       </div>
+      <form className="flex gap-2" method="get">
+        <Input name="q" placeholder="Search title, ABNJ box, public id…" defaultValue={q} className="max-w-sm" />
+        <button type="submit" className={cn(buttonVariants({ variant: "secondary" }))}>
+          Search
+        </button>
+      </form>
       <div className="overflow-x-auto rounded-lg border">
         <Table>
           <TableHeader>

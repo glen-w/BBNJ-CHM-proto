@@ -7,6 +7,7 @@ import { AuditRibbon } from "@/components/audit-ribbon";
 import { FlashBanner, type Flash } from "@/components/flash";
 import { LanguageControl } from "@/components/language-control";
 import { buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { getDb } from "@/lib/db";
 import { fmtDate } from "@/lib/format";
 import { TREATY_LANG_COOKIE, treatyLangOf } from "@/lib/locale";
@@ -191,7 +192,21 @@ export async function AppShell({
               ),
             )}
           </nav>
-          {title ? <p className="py-2 text-sm text-muted-foreground">{title}</p> : null}
+          <div className="flex flex-wrap items-center gap-3 py-2">
+            <form action="/search" method="get" className="flex items-center gap-1.5" role="search">
+              <Input
+                name="q"
+                type="search"
+                placeholder="Search records…"
+                aria-label="Search records"
+                className="h-8 w-40 sm:w-52"
+              />
+              <button type="submit" className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}>
+                Search
+              </button>
+            </form>
+            {title ? <p className="text-sm text-muted-foreground">{title}</p> : null}
+          </div>
         </div>
       </div>
 

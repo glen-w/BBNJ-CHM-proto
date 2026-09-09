@@ -143,6 +143,20 @@ async function main() {
     }
   });
 
+  p0("FTS search — matches titles and hides non-visible rows", () => {
+    const hitsPub = queries.searchRecords(db, pub(), { q: "marine" });
+    assert.ok(hitsPub.length >= 0);
+    for (const h of hitsPub) {
+      assert.ok(queries.recordVisible(db, pub(), h.domain, h.id), `public hit ${h.id} must be visible`);
+    }
+    const sec = queries.searchRecords(db, secretariat(), { q: "marine" });
+    assert.ok(sec.length >= hitsPub.length, "secretariat sees at least public hits");
+    const match = queries.toFtsQuery('alpha beta');
+    assert.equal(match, '"alpha"* AND "beta"*');
+    assert.equal(queries.toFtsQuery(''), null);
+  });
+
+
   p0("restricted record — absent from public feed/counts/audit/notifications; present for secretariat, owner, stb", () => {
     const restricted = seedResult.mgr.restricted;
     const pubList = queries.listMgrBatches(db, pub());

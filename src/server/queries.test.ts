@@ -18,7 +18,9 @@ import {
   recentPublished,
   recordVisible,
   resolvePublicRecord,
+  searchRecords,
   timelineOf,
+  toFtsQuery,
   unreadCount,
   upsertSubscription,
 } from "@/server/queries";
@@ -82,17 +84,46 @@ describe("policy-filtered queries", () => {
     expect(timelineOf(h.db, h.party(), draft.batch.id).length).toBeGreaterThan(0);
   });
 
-  it("applies the LIKE filter and kind filter", () => {
+  it("applies FTS text filter and kind filter", () => {
     h = createHarness();
-    receivePreCollection(h.db, h.party(), { ...VALID_MGR, title: "Alpha Ridge cruise" }, "form", h.key());
-    receivePreCollection(h.db, h.party(), { ...VALID_MGR, title: "CCZ sponge survey", locationHint: "CCZ" }, "form", h.key());
+    receivePreCollection(h.db, h.party(), { ...VALID_MGR, title: "Alpha Ridge cruise", locationHint: "Reykjanes" }, "form", h.key());
+    receivePreCollection(h.db, h.party(), { ...VALID_MGR, title: "Sponge survey", locationHint: "ClarionClipperton" }, "form", h.key());
     expect(listMgrBatches(h.db, h.secretariat(), "Alpha")).toHaveLength(1);
+    expect(listMgrBatches(h.db, h.secretariat(), "ClarionClipperton")).toHaveLength(1);
     createEiaActivity(h.db, h.party(), { title: "Acoustic", abnjBox: "Reykjanes Ridge" }, h.key());
     expect(listEiaActivities(h.db, h.secretariat(), "Acoustic")).toHaveLength(1);
     createCbtmtRecord(h.db, h.party(), { kind: "need", title: "Need", themes: "taxonomy" }, h.key());
     createCbtmtRecord(h.db, h.secretariat(), { kind: "offer", title: "Offer", themes: "taxonomy", provider: "Lab" }, h.key());
     expect(listCbtmtRecords(h.db, h.secretariat(), "need")).toHaveLength(1);
     expect(listCbtmtRecords(h.db, h.secretariat(), "offer")).toHaveLength(1);
+    expect(listCbtmtRecords(h.db, h.secretariat(), undefined, "taxonomy").length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("searchRecords respects FTS matches and role visibility", () => {
+    h = createHarness();
+    const pub = receivePreCollection(h.db, h.party(), { ...VALID_MGR, title: "Public hydrothermal vents" }, "form", h.key());
+    publishPack(h.db, h.secretariat(), { domain: "mgr", recordId: pub.batch.id, stage: "pre_collection" });
+    const draft = saveMgrDraft(h.db, h.party(), { ...VALID_MGR, title: "Secret hydrothermal vents" }, h.key());
+    const restricted = receivePreCollection(
+      h.db,
+      h.party(),
+      { ...VALID_MGR, title: "Restricted hydrothermal vents", confidentiality: "restricted" },
+      "form",
+      h.key(),
+    );
+    publishPack(h.db, h.secretariat(), { domain: "mgr", recordId: restricted.batch.id, stage: "pre_collection" });
+
+    const publicHits = searchRecords(h.db, h.pub(), { q: "hydrothermal" });
+    expect(publicHits.some((h) => h.id === pub.batch.id)).toBe(true);
+    expect(publicHits.some((h) => h.id === draft.batch.id)).toBe(false);
+    expect(publicHits.some((h) => h.id === restricted.batch.id)).toBe(false);
+
+    const partyHits = searchRecords(h.db, h.party(), { q: "hydrothermal" });
+    expect(partyHits.some((h) => h.id === draft.batch.id)).toBe(true);
+    expect(partyHits.some((h) => h.id === restricted.batch.id)).toBe(true);
+
+    expect(toFtsQuery('  alpha "ridge" (x) ')).toBe('"alpha"* AND "ridge"* AND "x"*');
+    expect(toFtsQuery("   ")).toBeNull();
   });
 
   it("resolves publicRecordId for EIA and CBTMT domains", () => {
