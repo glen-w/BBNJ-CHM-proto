@@ -4,6 +4,12 @@
 
 **Not real Party notifications.** Party code `XSD` is the demo SIDS stand-in. Literature links are real; operators/activities are fictional unless marked as interim mirrors.
 
+## Out of the box
+
+These CSVs are the **runtime seed source**. `npm run db:seed`, `db:seed --if-empty` (Docker entrypoint), and `db:reset` load them via `src/server/seed-pack.ts` → `seedFromCsv.ts` → domain APIs (idempotent keys `seed:csv:…`). Edit a CSV, re-seed (or reset) — no separate transpile step.
+
+The image copies `fixtures/` so Compose / production start sees the same pack.
+
 ## Interim UN anchors included
 
 | URL | Role in seed |
@@ -27,13 +33,13 @@ Sargasso Sea Core · Costa Rica Thermal Dome · CCZ precautionary network node �
 
 ## Files
 
-See `csv/`. **Runtime does not parse these CSVs** — they are the authored pack. Seed execution uses typed constants in `src/server/seed-pack.ts` and domain wiring in `src/server/seedFromCsv.ts` (idempotent keys `seed:csv:…`), loaded from `seedDatabase`. When you edit a CSV, update `seed-pack.ts` to match.
-
-| CSV | Runtime role |
+| CSV | Role |
 |---|---|
-| `abnj_boxes.csv` | Source for `AbnjBox` / `SEED_ABNJ_BOXES` (asserted in tests) |
-| `mgr_batches.csv`, `eia_activities.csv`, `eia_packs.csv`, `cbtmt_*.csv`, `abmt_proposals.csv` | Transpiled into seed constants / `seedFromCsv` |
-| `sources.csv`, `interim_links.csv`, `provenance_badges.csv`, `related_systems.csv`, `secretariat_notices.csv` | Narrative / pack documentation; mirrored in `seed-pack.ts` + footer links |
+| `abnj_boxes.csv` | Extends / documents `AbnjBox` (must match Zod enum) |
+| `mgr_batches.csv`, `eia_activities.csv`, `eia_packs.csv`, `cbtmt_*.csv`, `abmt_proposals.csv` | Seeded through domain APIs |
+| `provenance_badges.csv` | Interim (DOALOS) vs Demo scenario list chips |
+| `related_systems.csv`, `secretariat_notices.csv` | Footer related-systems strip |
+| `sources.csv`, `interim_links.csv` | Provenance documentation (labels/URLs also used from activity rows) |
 
 ## Schema note
 

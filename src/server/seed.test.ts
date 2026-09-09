@@ -11,13 +11,13 @@ import { getMgrBatch } from "@/server/mgr";
 import { seedDatabase, seedIfEmpty } from "@/server/seed";
 import {
   agreementBasisExtrasForTitle,
-  EIA_CSV_SEEDS,
+  clearSeedPackCache,
+  getSeedPack,
   isIsaNotUndermineAbmt,
-  SEED_ABNJ_BOXES,
 } from "@/server/seed-pack";
 import { createHarness, type Harness } from "@/test/helpers";
 
-/** Boxes listed in the authored pack CSV — keep `seed-pack.ts` / AbnjBox in sync when this file changes. */
+/** Boxes listed in the authored pack CSV. */
 function abnjBoxesFromFixtureCsv(): string[] {
   const raw = readFileSync(join(process.cwd(), "fixtures/bbnj-chm-seed-pack/csv/abnj_boxes.csv"), "utf8");
   return raw
@@ -30,7 +30,10 @@ function abnjBoxesFromFixtureCsv(): string[] {
 
 describe("seed I/O", () => {
   let h: Harness;
-  afterEach(() => h?.cleanup());
+  afterEach(() => {
+    h?.cleanup();
+    clearSeedPackCache();
+  });
 
   it("seedIfEmpty is a no-op when users already exist", () => {
     h = createHarness();
@@ -54,9 +57,23 @@ describe("seed I/O", () => {
     expect(first.cbtmt.matchId).toBeTruthy();
   });
 
+  it("loads fixtures/bbnj-chm-seed-pack CSVs out of the box", () => {
+    clearSeedPackCache();
+    const pack = getSeedPack();
+    expect(pack.mgr.map((m) => m.seedKey)).toContain("mgr-interim-temp-001");
+    expect(pack.eia.map((e) => e.seedKey)).toEqual(
+      expect.arrayContaining(["eia-rocket-splashdown", "eia-marine-cdr-oae", "eia-mesopelagic-fishery"]),
+    );
+    expect(pack.abmt.length).toBeGreaterThanOrEqual(3);
+    expect(pack.relatedSystems.length).toBeGreaterThanOrEqual(4);
+    expect(pack.abnjBoxes).toEqual(abnjBoxesFromFixtureCsv());
+    expect(pack.abnjBoxes).toEqual([...AbnjBox.options]);
+  });
+
   it("rich CSV pack — interim MGR, three EIA storylines, published ABMT stub, extended AbnjBox", () => {
     h = createHarness();
     const ids = seedDatabase(h.db);
+    const pack = getSeedPack();
 
     const interim = getMgrBatch(h.db, ids.rich.mgr.interimTemp)!;
     expect(interim.title).toMatch(/BBNJ-MGR-TEMP-2026-001/);
@@ -72,7 +89,7 @@ describe("seed I/O", () => {
 
     for (const key of ["rocket", "marineCdr", "mesopelagic"] as const) {
       const act = getEiaActivity(h.db, ids.rich.eia[key])!;
-      const csv = EIA_CSV_SEEDS.find((e) => act.title === e.title);
+      const csv = pack.eia.find((e) => act.title === e.title);
       expect(csv).toBeTruthy();
       expect(AbnjBox.safeParse(act.abnjBox).success).toBe(true);
     }
@@ -84,8 +101,7 @@ describe("seed I/O", () => {
     expect(sargasso.publicRecordId).toMatch(/^BBNJ-ABMT-/);
     expect(getAbmtProposal(h.db, ids.rich.abmt.crDome)!.publicRecordId).toBeUndefined();
 
-    expect([...SEED_ABNJ_BOXES]).toEqual([...AbnjBox.options]);
-    expect([...SEED_ABNJ_BOXES]).toEqual(abnjBoxesFromFixtureCsv());
+    expect(pack.abnjBoxes).toEqual([...AbnjBox.options]);
     expect(AbnjBox.safeParse("Mid-Atlantic Splashdown Corridor").success).toBe(true);
     expect(AbnjBox.safeParse("NE Atlantic Mesopelagic Belt").success).toBe(true);
 

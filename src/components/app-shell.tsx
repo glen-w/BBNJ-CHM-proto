@@ -26,16 +26,17 @@ const journeys: { href: string; label: string; caption: string; enabled: boolean
   { href: "/abmt", label: "ABMT", caption: "area-based management tools (stub, without prejudice)", enabled: true },
 ];
 
-/** Reference links only — no data flows. Seed pack interim anchors + ABSCH/BCH/OBIS. */
-const RELATED_SYSTEMS = [
-  ...RELATED_SYSTEMS_SEED.map((r) => ({ href: r.href, label: r.label })),
-  ...SECRETARIAT_NOTICES.filter((n) => !RELATED_SYSTEMS_SEED.some((r) => r.href === n.url)).map((n) => ({
-    href: n.url,
-    label: n.title,
-  })),
-  { href: "https://bch.cbd.int/", label: "BCH" },
-  { href: "https://obis.org/", label: "OBIS" },
-] as const;
+/** Reference links only — no data flows. Seed pack related_systems.csv + BCH/OBIS. */
+function relatedSystemsLinks() {
+  const fromPack = RELATED_SYSTEMS_SEED();
+  const notices = SECRETARIAT_NOTICES().filter((n) => !fromPack.some((r) => r.href === n.url));
+  return [
+    ...fromPack.map((r) => ({ href: r.href, label: r.label })),
+    ...notices.map((n) => ({ href: n.url, label: n.title })),
+    { href: "https://bch.cbd.int/", label: "BCH" },
+    { href: "https://obis.org/", label: "OBIS" },
+  ];
+}
 
 const railLink = "rounded-md px-2 py-1 text-sm text-foreground/80 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 const journeyTab =
@@ -224,7 +225,7 @@ export async function AppShell({
           <span>BBNJ Cl-HM</span>
           <span className="flex flex-wrap items-center gap-x-2">
             <span>Related systems (reference — not federation):</span>
-            {RELATED_SYSTEMS.map((r) => (
+            {relatedSystemsLinks().map((r) => (
               <a key={r.href} href={r.href} rel="noopener noreferrer" target="_blank" className="underline underline-offset-2 hover:text-institutional">
                 {r.label}
               </a>

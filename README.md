@@ -29,11 +29,11 @@ The **product UI** is written as a finished working desk. Sandbox and legal cave
 ```bash
 nvm use            # Node 22 (.nvmrc); engines allow Node >=22 <27
 npm ci
-npm run db:seed    # idempotent seed via the domain functions
+npm run db:seed    # idempotent seed (smoke fixtures + fixtures/bbnj-chm-seed-pack CSVs)
 npm run dev        # http://localhost:3000
 ```
 
-Docker (seeds on first start, SQLite persists in the `chm-data` volume):
+Docker (seeds on first start from the same CSV pack, SQLite persists in the `chm-data` volume):
 
 ```bash
 docker compose up --build

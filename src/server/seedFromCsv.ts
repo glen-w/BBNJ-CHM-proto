@@ -1,6 +1,6 @@
 /**
  * Rich CSV seed pack — domain APIs only, idempotent keys `seed:csv:…`.
- * Keeps the smoke seeds intact; adds interim mirrors + demo storylines.
+ * Loads fixtures/bbnj-chm-seed-pack at runtime; keeps smoke seeds intact.
  */
 import type { Db } from "@/lib/db";
 import type { ArtifactRef } from "@/lib/contracts/events";
@@ -10,15 +10,7 @@ import { addEiaPack, createEiaActivity } from "./eia";
 import { addMgrPack, receivePreCollection } from "./mgr";
 import { publishPack } from "./packs";
 import type { Principal } from "./policy";
-import {
-  ABMT_CSV_SEEDS,
-  CBTMT_MATCH_CSV,
-  CBTMT_NEED_CSV,
-  CBTMT_OFFER_CSV,
-  EIA_CSV_SEEDS,
-  MGR_CSV_SEEDS,
-  csvKey,
-} from "./seed-pack";
+import { csvKey, getSeedPack } from "./seed-pack";
 
 export interface RichSeedIds {
   mgr: { interimTemp: string; genomicsPacific: string };
@@ -33,9 +25,11 @@ export interface RichSeedIds {
 }
 
 export function seedRichPack(db: Db, party: Principal, secretariat: Principal): RichSeedIds {
+  const pack = getSeedPack();
+
   // ---- MGR (interim TEMP mirror + companion cruise)
   const mgrIds: Record<string, string> = {};
-  for (const row of MGR_CSV_SEEDS) {
+  for (const row of pack.mgr) {
     const r = receivePreCollection(
       db,
       party,
@@ -56,7 +50,7 @@ export function seedRichPack(db: Db, party: Principal, secretariat: Principal): 
       {
         at: row.at,
         summary: row.summary,
-        artifactRefs: row.artifactRefs as ArtifactRef[] | undefined,
+        artifactRefs: row.artifactRefs,
       },
     );
     mgrIds[row.seedKey] = r.batch.id;
@@ -86,25 +80,25 @@ export function seedRichPack(db: Db, party: Principal, secretariat: Principal): 
 
   // ---- EIA storylines
   const eiaIds: Record<string, string> = {};
-  for (const row of EIA_CSV_SEEDS) {
+  for (const row of pack.eia) {
     const act = createEiaActivity(db, party, { title: row.title, abnjBox: row.abnjBox }, csvKey(row.seedKey));
     eiaIds[row.seedKey] = act.activity.id;
-    for (const pack of row.packs) {
+    for (const p of row.packs) {
       const refs: ArtifactRef[] | undefined =
-        pack.stage === "screening" && row.artifact
+        p.stage === "screening" && row.artifact
           ? [row.artifact, { kind: "note", label: "Plausible demo scenario; not a real Party filing" }]
           : undefined;
-      addEiaPack(db, party, act.activity.id, pack.stage, pack.summary, csvKey(`${row.seedKey}-${pack.stage}`), {
-        screeningOutcome: pack.screeningOutcome,
-        status: pack.status === "published" ? "pending" : pack.status,
+      addEiaPack(db, party, act.activity.id, p.stage, p.summary, csvKey(`${row.seedKey}-${p.stage}`), {
+        screeningOutcome: p.screeningOutcome,
+        status: p.status === "published" ? "pending" : p.status,
         artifactRefs: refs,
         at: "2026-09-07T10:00:00.000Z",
       });
-      if (pack.status === "published") {
+      if (p.status === "published") {
         publishPack(db, secretariat, {
           domain: "eia",
           recordId: act.activity.id,
-          stage: pack.stage,
+          stage: p.stage,
           at: "2026-09-07T11:00:00.000Z",
         });
       }
@@ -113,7 +107,7 @@ export function seedRichPack(db: Db, party: Principal, secretariat: Principal): 
 
   // ---- CBTMT needs / offers / matches
   const needIds: Record<string, string> = {};
-  for (const row of CBTMT_NEED_CSV) {
+  for (const row of pack.cbtmtNeeds) {
     const n = createCbtmtRecord(db, party, { kind: "need", title: row.title, themes: [...row.themes] }, csvKey(row.seedKey));
     needIds[row.seedKey] = n.record.id;
     publishPack(db, secretariat, {
@@ -124,7 +118,7 @@ export function seedRichPack(db: Db, party: Principal, secretariat: Principal): 
     });
   }
   const offerIds: Record<string, string> = {};
-  for (const row of CBTMT_OFFER_CSV) {
+  for (const row of pack.cbtmtOffers) {
     const o = createCbtmtRecord(
       db,
       secretariat,
@@ -140,9 +134,10 @@ export function seedRichPack(db: Db, party: Principal, secretariat: Principal): 
     });
   }
   const matchIds: string[] = [];
-  for (const row of CBTMT_MATCH_CSV) {
+  for (const row of pack.cbtmtMatches) {
     const needId = needIds[row.needSeedKey];
     const offerId = offerIds[row.offerSeedKey];
+    if (!needId || !offerId) throw new Error(`Seed pack match references unknown need/offer: ${row.needSeedKey}/${row.offerSeedKey}`);
     const m = suggestMatch(db, secretariat, needId, offerId, row.rule, csvKey(`match-${row.needSeedKey}-${row.offerSeedKey}`));
     matchIds.push(m.match.id);
     setMatchFacilitationNote(db, secretariat, m.match.id, row.facilitationNote);
@@ -150,7 +145,7 @@ export function seedRichPack(db: Db, party: Principal, secretariat: Principal): 
 
   // ---- ABMT stubs
   const abmtIds: Record<string, string> = {};
-  for (const row of ABMT_CSV_SEEDS) {
+  for (const row of pack.abmt) {
     const p = createAbmtProposal(db, party, { title: row.title }, csvKey(row.seedKey));
     abmtIds[row.seedKey] = p.proposal.id;
     submitAbmtProposal(db, party, p.proposal.id, csvKey(`${row.seedKey}-submit`));
