@@ -27,8 +27,8 @@ Sargasso Sea Core · Costa Rica Thermal Dome · CCZ precautionary network node �
 
 ## Files
 
-See `csv/` and `INTEGRATE-SEED-PROMPT.md`.
+See `csv/`. Runtime seeds live in `src/server/seed-pack.ts` (typed constants) and `src/server/seedFromCsv.ts` (domain API wiring), loaded from `seedDatabase`.
 
 ## Schema note
 
-Several `abnj_box` values are **new** relative to today’s enum (`CCZ`, `Reykjanes Ridge`, `Clarion-Clipperton South`). The integrate prompt tells the agent to extend `AbnjBox` first.
+`AbnjBox` in `proposal/schemas/events.ts` / `src/lib/contracts/events.ts` includes the pack’s geography boxes (`CCZ`, `Reykjanes Ridge`, `Clarion-Clipperton South`, splashdown corridor, mesopelagic belt, OAE trial, Sargasso, Costa Rica Dome, etc.).
