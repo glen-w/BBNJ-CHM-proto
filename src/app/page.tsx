@@ -6,6 +6,7 @@ import { DOMAIN_ICON, isAccentDomain, type AccentDomain } from "@/components/dom
 import { flashFrom } from "@/components/flash";
 import { HomeWelcomeBand } from "@/components/home-welcome-band";
 import { RailsStrip } from "@/components/rails-strip";
+import { buttonVariants } from "@/components/ui/button";
 import { getDb } from "@/lib/db";
 import { domainPath, fmtDate, stageLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
