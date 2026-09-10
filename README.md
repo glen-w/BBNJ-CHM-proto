@@ -192,7 +192,7 @@ Technical reference below. Product framing for non-engineers stops above.
 ```bash
 nvm use            # Node 22 (.nvmrc); engines allow Node >=22 <27
 npm ci
-npm run db:seed    # idempotent seed (smoke fixtures + fixtures/bbnj-chm-seed-pack CSVs)
+npm run db:seed    # idempotent seed (smoke fixtures + fixtures/bbnj-chm-seed-pack/csv/*.csv)
 npm run dev        # http://localhost:3000
 ```
 
@@ -326,7 +326,7 @@ npm run contracts:check  # locked Zod contract loads
 npm test                 # Vitest
 ```
 
-Environment: `DATABASE_PATH` (default `data/chm.sqlite`); `SANDBOX_RESET=1` (or `force` in a hosted evaluation image) for Secretariat *Reset database*.
+Environment: `DATABASE_PATH` (default `data/chm.sqlite`); `SANDBOX_RESET=1` (or `force` in a hosted evaluation image) for Secretariat *Reset database*; optional `SEED_PACK_DIR` (default `fixtures/bbnj-chm-seed-pack`) to point the CSV seed loader elsewhere.
 
 **Latency / SIDS:** SSR HTML, native forms (works without client JS), no map tiles; offline Excel is the Art 51.5 pattern proof — not a WCAG certification (`ACCESSIBILITY.md`). **Speed tests** live under Settings → Speed (`/settings?tab=speed`, or `npm run speed`): wire time is *calculated* from nominal bandwidth + RTT, parse time is *measured* with a validate-only pass — mocked, not a field measurement; trials go to `data/speed-runs.jsonl`, not the audit log.
 
@@ -345,7 +345,9 @@ Environment: `DATABASE_PATH` (default `data/chm.sqlite`); `SANDBOX_RESET=1` (or 
 | `src/server/packs.ts` | Version allocation, publish, amend |
 | `src/server/notify.ts` / `digest.ts` | Dispatch, hold, digests |
 | `src/server/{mgr,eia,cbtmt,abmt}.ts` | Domain journeys |
-| `src/app/` | Pages, actions, templates, exports, health |
+| `src/server/seed-pack.ts` / `seedFromCsv.ts` / `parseCsv.ts` | CSV seed pack → domain APIs |
+| `src/server/speed-lab.ts` | Mocked Excel-loop timing (`npm run speed` / Settings → Speed) |
+| `src/app/` | Pages (incl. `/search`, `/institutional`, `/stb`), actions, templates, exports, health |
 | `scripts/` | smoke, demo, seed, digest, replay-outbox, … |
 
 ### Further reading
@@ -355,6 +357,7 @@ Environment: `DATABASE_PATH` (default `data/chm.sqlite`); `SANDBOX_RESET=1` (or 
 | `DEMO-SCRIPT.md` | Presenters / walk-through |
 | `VISUAL-CHARTER.md` | UI identity |
 | `ACCESSIBILITY.md` | WCAG assessment |
+| `fixtures/bbnj-chm-seed-pack/README.md` | Rich CSV seed pack (Interim mirrors + Demo scenarios) |
 
 Internal planning archives (EOI checklists, original `proposal/` pack, hardening ledger) live in `internal/` — **gitignored**. After a fresh clone: `npm run internal:restore`.
 

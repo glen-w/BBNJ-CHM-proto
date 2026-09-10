@@ -58,9 +58,10 @@ This charter governs the Cl-HM desk UI. It is a **team choice** for this prototy
 
 ## 4. Layout & components
 
-- **Shell:** three bands — UN masthead (welcome + treaty-text locale); product/account (emblem · **BBNJ Cl-HM** · rails · global “Search all Cl-HM records” · role switcher · bell); contextual (journey tabs · labelled **Latest transaction** from the last visible outbox event, public identifiers only). The long Agreement title does not sit in chrome. The ABMT tab is **enabled and quiet**: same weight as the other journeys, no “stub” / “not in this build” badge in the tab itself; the stub nature is stated once, in one sentence, on the ABMT page.  
-- **About this desk:** lives at `/about` (footer link + welcome hero jump). Related-systems links, identifier order, comparison highlights, speed-test explanation and `/records/<id>` notes — not stacked above journey tables on home. Per-journey “About this workflow” stays on journey cards. Caption related systems as *related systems*, never as “integrations” or “partners”. Footer is product mark + About link.
-- **Settings (gear):** icon-only in band 2 (after search, before bell). Demo user path, speed tests and desk-config placeholders — not in primary nav.  
+- **Shell:** three bands — UN masthead (welcome + treaty-text locale); product/account (emblem · **Clearing House** with subtitle *Biodiversity Beyond National Jurisdiction* · rails · Settings gear · global “Search all Cl-HM records” · bell · role switcher); contextual (**Institutional** tab · journey tabs · labelled **Latest transaction** from the last visible outbox event, public identifiers only). The long Agreement title does not sit in chrome. The ABMT tab is **enabled and quiet**: same weight as the other journeys, no “stub” / “not in this build” badge in the tab itself; the stub nature is stated once, in one sentence, on the ABMT page. STB users also get **STB queue** in the rails (`/stb`).  
+- **Institutional (`/institutional`):** Secretariat notices + related-systems links (same list as About). Caption related systems as *related systems*, never as “integrations” or “partners”.
+- **About this desk:** lives at `/about` (footer link + welcome hero jump). Identifier order, comparison highlights, speed-test explanation, related-systems repeat and `/records/<id>` notes — not stacked above journey tables on home. Per-journey “About this workflow” stays on journey cards. Footer is product mark (**Clearing House**) + About link.
+- **Settings (gear):** icon-only in band 2 (after rails, before search). Demo user path, speed tests and desk-config placeholders — not in primary nav.  
 - **Deferred capability caption:** where a proprietary or deferred capability is referenced (e-mail delivery, GIS, federation, tagged PDF), use one quiet muted caption in the relevant panel — e.g. *in-app only in this build* — not a banner, not a roadmap list.  
 - **Record lists:** domain badge (quiet tint + optional Lucide icon with label) · public record id · status chip (**text + colour**, never colour-only) · **Updated** as a scan column — scannable tables, shadcn `Table` / `Badge` / `Button`. List pages **Filter … records** (live); header search is global FTS. MGR/EIA actions: primary **New** · **Import▾** (template underneath) · **Export▾**.  
 - **Home cards:** operational launchers (count + short rail + Open); essays behind “About this workflow”. Recently published: title / status / id+date on separate rows.  
@@ -123,7 +124,7 @@ UN WCAG 2.1 AA mapping, measured contrast, and remediation status: [`ACCESSIBILI
 - Encode tokens in CSS variables / shadcn theme — in this repo: `src/app/globals.css` (`--canvas`, `--ink`, `--institutional`, `--action`, `--draft`, `--pending`, `--published`, `--danger`, `--domain-mgr|eia|cbtmt|abmt` are mapped onto the shadcn / Tailwind theme; no second theme system).  
 - Status chip and domain badge are shared across pillars (`src/components/chips.tsx`). Domain icons live in `src/components/domain-icons.tsx`.  
 - Do not fork ABSCH CSS; reimplement the *desk* feel in shadcn.  
-- Screenshot golden paths into `docs/screenshots/` when the shell lands (optional day‑1).
+- Optional: screenshot golden paths into `docs/screenshots/` (directory not checked in yet).
 
 ---
 

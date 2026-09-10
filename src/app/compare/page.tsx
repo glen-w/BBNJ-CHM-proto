@@ -84,7 +84,7 @@ export default async function ComparePage() {
             rails, multiple journeys. Mapping: consolidated draft study (DOALOS, Mar 2026) ¶61 basic functionalities; PrepCom3 informal outcome annex
             parameters (roles, TK, alerts, offline, languages); Art 51.5 (access for developing States / SIDS without undue burden). Demo values are
             labelled as such (30-day comment window, B-SBI shape). Not implemented by design: production authentication, e-mail or push delivery (in-app
-            bell only), federation with ABSCH / BCH / OBIS (reference links only), full-text search, ABS tracing, ML matching, GIS, a proprietary
+            bell only), federation with ABSCH / BCH / OBIS (reference links only), search beyond SQLite FTS, ABS tracing, ML matching, GIS, a proprietary
             confidentiality category. ABMT is a stub. Without prejudice to COP1.
           </p>
         </section>

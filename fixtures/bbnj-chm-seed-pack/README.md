@@ -33,13 +33,17 @@ Sargasso Sea Core · Costa Rica Thermal Dome · CCZ precautionary network node �
 
 ## Files
 
+All under `csv/`:
+
 | CSV | Role |
 |---|---|
-| `abnj_boxes.csv` | Extends / documents `AbnjBox` (must match Zod enum) |
-| `mgr_batches.csv`, `eia_activities.csv`, `eia_packs.csv`, `cbtmt_*.csv`, `abmt_proposals.csv` | Seeded through domain APIs |
-| `provenance_badges.csv` | Interim (DOALOS) vs Demo scenario list chips |
-| `related_systems.csv`, `secretariat_notices.csv` | Footer related-systems strip |
-| `sources.csv`, `interim_links.csv` | Provenance documentation (labels/URLs also used from activity rows) |
+| `csv/abnj_boxes.csv` | Extends / documents `AbnjBox` (must match Zod enum) |
+| `csv/mgr_batches.csv`, `csv/eia_activities.csv`, `csv/eia_packs.csv`, `csv/cbtmt_*.csv`, `csv/abmt_proposals.csv` | Seeded through domain APIs |
+| `csv/provenance_badges.csv` | Interim (DOALOS) vs Demo scenario list chips |
+| `csv/related_systems.csv`, `csv/secretariat_notices.csv` | Related-systems / Institutional notices |
+| `csv/sources.csv`, `csv/interim_links.csv` | Provenance documentation (labels/URLs also used from activity rows) |
+
+Override the pack root with `SEED_PACK_DIR` if needed (default: this directory).
 
 ## Schema note
 
