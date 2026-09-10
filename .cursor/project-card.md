@@ -23,7 +23,7 @@ architecture_rules:
   - Lock 4 CBTMT match is a row + outbox
   - better-sqlite3 only; no Drizzle/Kafka
 release_governance: none
-backup_hub: sibling
+backup_hub: "$HOME/Documents/code backups"
 backup_excludes:
   - data
   - .next

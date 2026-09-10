@@ -40,14 +40,23 @@ export function RailsNav({ items }: { items: { href: string; label: string }[] }
 
 export function InstitutionalNav() {
   const pathname = usePathname();
-  const current = pathActive(pathname, "/institutional");
+  const allCurrent = pathActive(pathname, "/audit");
+  const institutionalCurrent = pathActive(pathname, "/institutional");
   return (
-    <nav aria-label="Institutional" className="shrink-0 border-r border-line pe-4">
+    <nav aria-label="Desk" className="flex shrink-0 items-center gap-5 border-r border-line pe-4">
+      <Link
+        href="/audit"
+        className={cn(journeyTab, allCurrent && journeyTabCurrent)}
+        title="All transactions visible to your role"
+        aria-current={allCurrent ? "page" : undefined}
+      >
+        All
+      </Link>
       <Link
         href="/institutional"
-        className={cn(journeyTab, current && journeyTabCurrent)}
+        className={cn(journeyTab, institutionalCurrent && journeyTabCurrent)}
         title="Focal points, notices and related systems"
-        aria-current={current ? "page" : undefined}
+        aria-current={institutionalCurrent ? "page" : undefined}
       >
         Institutional
       </Link>

@@ -1,9 +1,8 @@
-import { Bell, Settings } from "lucide-react";
+import { Bell, Settings, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { cookies } from "next/headers";
 
-import { AuditRibbon } from "@/components/audit-ribbon";
 import { DomainBadge } from "@/components/chips";
 import { FlashBanner, type Flash } from "@/components/flash";
 import { LanguageControl } from "@/components/language-control";
@@ -16,7 +15,7 @@ import { TREATY_LANG_COOKIE, treatyLangOf } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 import { logoutAction } from "@/server/actions";
 import { actorRoleOf, can } from "@/server/policy";
-import { latestVisibleEvent, notificationsFor, unreadCount } from "@/server/queries";
+import { notificationsFor, unreadCount } from "@/server/queries";
 import { getSessionUser } from "@/server/session";
 
 // Journeys are entry points into the shared rails, not competing brands (VISUAL-CHARTER.md §1.2, §4).
@@ -40,18 +39,12 @@ export async function AppShell({
   const db = getDb();
   const unread = unreadCount(db, principal);
   const recent = notificationsFor(db, principal, 8);
-  const latest = latestVisibleEvent(db, principal);
   const role = actorRoleOf(principal);
   const username = principal.kind === "user" ? principal.user.username : "anonymous";
-  const roleDuplicatesUsername = username.toLowerCase() === role.toLowerCase();
   const store = await cookies();
   const treatyLang = treatyLangOf(store.get(TREATY_LANG_COOKIE)?.value);
 
-  const railItems = [
-    { href: "/audit", label: "Audit" },
-    ...(principal.kind === "user" ? [{ href: "/notifications", label: "Notifications" }] : []),
-    ...(can(principal, "comment_stb") ? [{ href: "/stb", label: "STB queue" }] : []),
-  ];
+  const railItems = [...(can(principal, "comment_stb") ? [{ href: "/stb", label: "STB queue" }] : [])];
 
   return (
     <div className="min-h-full flex flex-col bg-background text-foreground">
@@ -75,7 +68,7 @@ export async function AppShell({
           </div>
         </div>
 
-        {/* Band 2 — product mark · rails · global search · account. */}
+        {/* Band 2 — product mark · rails · account. */}
         <div className="mx-auto flex w-full max-w-6xl items-center gap-x-3 px-6 py-2">
           <Link
             href="/"
@@ -88,7 +81,7 @@ export async function AppShell({
             </span>
           </Link>
           <div className="ms-auto flex shrink-0 flex-nowrap items-center gap-1.5">
-            <RailsNav items={railItems} />
+            {railItems.length > 0 ? <RailsNav items={railItems} /> : null}
             <Link
               href="/settings"
               className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "shrink-0 px-2")}
@@ -97,18 +90,6 @@ export async function AppShell({
             >
               <Settings aria-hidden="true" className="size-4" />
             </Link>
-            <form action="/search" method="get" className="flex min-w-0 items-center gap-1.5" role="search">
-              <Input
-                name="q"
-                type="search"
-                placeholder="Search all Cl-HM records"
-                aria-label="Search all Cl-HM records"
-                className="h-8 w-44 sm:w-56"
-              />
-              <button type="submit" className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}>
-                Search
-              </button>
-            </form>
             {principal.kind === "user" ? (
               <details className="relative">
                 <summary
@@ -161,15 +142,11 @@ export async function AppShell({
             <Link
               href="/login"
               className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "whitespace-nowrap")}
-              title="Switch role"
+              title={principal.kind === "user" ? `Signed in as ${username} — switch role` : "Switch role"}
+              aria-label={principal.kind === "user" ? `Signed in as ${username}, role ${role}. Switch role` : `Role ${role}. Switch role`}
             >
-              {!roleDuplicatesUsername ? <span className="font-mono text-xs">{username}</span> : null}
-              <span
-                className={cn(
-                  "rounded border border-line bg-muted px-1.5 text-[10px] uppercase tracking-wide text-muted-foreground",
-                  !roleDuplicatesUsername && "ms-1",
-                )}
-              >
+              <span className="inline-flex items-center gap-1 rounded border border-line bg-muted px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
+                <User aria-hidden="true" className="size-3 shrink-0" />
                 {role}
               </span>
             </Link>
@@ -184,14 +161,23 @@ export async function AppShell({
         </div>
       </header>
 
-      {/* Band 3 — journeys · last outbox event. */}
+      {/* Band 3 — desk tabs · journeys · search. */}
       <div className="sticky top-0 z-30 border-b bg-card">
         <div className="mx-auto flex w-full max-w-6xl items-center gap-x-4 px-6">
           <InstitutionalNav />
           <JourneysNav items={journeys} />
-          <div className="ms-auto min-w-0 max-w-md py-1">
-            <AuditRibbon event={latest} />
-          </div>
+          <form action="/search" method="get" className="ms-auto flex min-w-0 shrink-0 items-center gap-1.5 py-1.5" role="search">
+            <Input
+              name="q"
+              type="search"
+              placeholder="Search all Cl-HM records"
+              aria-label="Search all Cl-HM records"
+              className="h-8 w-44 sm:w-56"
+            />
+            <button type="submit" className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}>
+              Search
+            </button>
+          </form>
         </div>
       </div>
 
