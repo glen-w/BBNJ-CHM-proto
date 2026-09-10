@@ -9,7 +9,7 @@ import {
 } from "@/lib/home-welcome";
 
 describe("home welcome band preference", () => {
-  it("is on by default", () => {
+  it("is on by default for non-ops visitors", () => {
     expect(HOME_WELCOME_COOKIE).toBe("chm_home_welcome");
     expect(homeWelcomeVisible(undefined)).toBe(true);
     expect(homeWelcomeVisible(null)).toBe(true);
@@ -21,6 +21,19 @@ describe("home welcome band preference", () => {
     expect(homeWelcomeVisible("0")).toBe(false);
     expect(homeWelcomeVisible("off")).toBe(false);
     expect(homeWelcomeVisible("false")).toBe(false);
+  });
+
+  it("default-hides for ops roles when the cookie is absent", () => {
+    expect(homeWelcomeVisible(undefined, { opsRole: true })).toBe(false);
+    expect(homeWelcomeVisible(null, { opsRole: true })).toBe(false);
+    expect(homeWelcomeVisible("", { opsRole: true })).toBe(false);
+  });
+
+  it("lets ops force show or hide via cookie", () => {
+    expect(homeWelcomeVisible("1", { opsRole: true })).toBe(true);
+    expect(homeWelcomeVisible("on", { opsRole: true })).toBe(true);
+    expect(homeWelcomeVisible("0", { opsRole: true })).toBe(false);
+    expect(homeWelcomeVisible("off", { opsRole: true })).toBe(false);
   });
 });
 

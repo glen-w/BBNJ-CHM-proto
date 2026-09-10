@@ -2,11 +2,20 @@
 export const HOME_WELCOME_COOKIE = "chm_home_welcome";
 
 /**
- * Shown when the cookie is missing (first visit / first compose up).
- * Only an explicit off value hides it; that hide is durable.
+ * Cookie + role visibility for the home welcome band.
+ * - Explicit off (`0` / `off` / `false`) always hides.
+ * - Explicit on (`1` / `on` / `true`) always shows.
+ * - Missing cookie: public / anonymous / STB / non-state → on;
+ *   party or secretariat ops → off (Show welcome only).
  */
-export function homeWelcomeVisible(value: string | undefined | null): boolean {
-  return value !== "0" && value !== "off" && value !== "false";
+export function homeWelcomeVisible(
+  value: string | undefined | null,
+  opts?: { opsRole?: boolean },
+): boolean {
+  if (value === "0" || value === "off" || value === "false") return false;
+  if (value === "1" || value === "on" || value === "true") return true;
+  if (opts?.opsRole) return false;
+  return true;
 }
 
 /** In-page jump targets for the welcome hero (CBD CHM-style). No map — charter forbids mandatory GIS. */

@@ -13,7 +13,7 @@ import {
 } from "@/lib/home-welcome";
 import { cn } from "@/lib/utils";
 import { setHomeWelcomeAction } from "@/server/actions";
-import { can } from "@/server/policy";
+import { can, hasRole, isSecretariat } from "@/server/policy";
 import { getSessionUser } from "@/server/session";
 
 const JUMP_ICON: Record<string, typeof Lightbulb> = {
@@ -29,8 +29,9 @@ const CARD_ICON = {
 } as const;
 
 export async function HomeWelcomeBand() {
-  const visible = homeWelcomeVisible((await cookies()).get(HOME_WELCOME_COOKIE)?.value);
   const principal = await getSessionUser();
+  const opsRole = isSecretariat(principal) || hasRole(principal, "party");
+  const visible = homeWelcomeVisible((await cookies()).get(HOME_WELCOME_COOKIE)?.value, { opsRole });
   const mode = homeWelcomeSubmitMode(
     can(principal, "submit"),
     can(principal, "submit", { domain: "cbtmt", recordKind: "offer" }),
@@ -72,11 +73,11 @@ export async function HomeWelcomeBand() {
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 max-w-2xl">
               <h1 id="home-welcome-heading" className="text-xl font-semibold tracking-tight text-institutional-foreground sm:text-2xl">
-                Welcome to the BBNJ Clearing-House Mechanism
+                BBNJ Cl-HM evaluation desk
               </h1>
               <p className="mt-2 text-sm leading-relaxed text-institutional-foreground/90">
-                Your gateway to biodiversity records, collaboration and action — connecting Parties, sharing
-                notifications, and supporting the Agreement. Without prejudice to COP1.
+                A Session&nbsp;1 prototype for walking the Clearing-House rails — submit, manage, publish,
+                notify, audit — with demo data. Not the official Cl-HM. Without prejudice to COP1.
               </p>
             </div>
             <form action={setHomeWelcomeAction} className="shrink-0">
