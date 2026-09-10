@@ -2,7 +2,7 @@
 
 For product framing and the roadmap, start with `README.md`. Routes below exist in the running desk. The same journey runs unattended as `npm run demo` (17 narrated checkpoints), so every claim below is asserted, not hoped for. Where the two diverge, the *Alignment with `npm run demo`* notes say so.
 
-Presenter notes: notifications are **in-app only** (no e-mail); Art 51.5 is shown as an **offline Excel pattern**, not a WCAG certification; ABMT is a **thin stub without prejudice**; MGR+EIA Excel is the Art 51.5 *pattern*, not a certification; `/compare` is cited in the docs; there is **no hosted public URL** — participants run the clone or the Docker image locally.
+Presenter notes: notifications are **in-app only** (no e-mail); Art 51.5 is shown as an **offline Excel pattern**, not a WCAG certification; ABMT is a **thin stub without prejudice**; MGR+EIA Excel is the Art 51.5 *pattern*, not a certification; `/compare` is cited in the docs; there is **no hosted public URL** — participants run the clone or the Docker image locally. Public claim ledger: [`docs/SHIPPED.md`](docs/SHIPPED.md). Optional presenter archive after a fresh clone: `npm run internal:restore` (gitignored `internal/` planning docs — not required to run the desk).
 
 ## Before the demo
 

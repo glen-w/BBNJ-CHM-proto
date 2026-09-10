@@ -159,7 +159,7 @@ UN / DOALOS hosting vs a technical partner is an institutional choice (IdP, SMTP
 
 ### Testing
 
-A claim is **shipped** only when `npm run smoke` or `npm run demo` asserts it (`internal/SHIPPED-VS-DEFERRED.md`). New rails (SMTP, webhooks, admin, i18n, LLM assist) extend that gate — they do not replace it with a screenshot suite.
+A claim is **shipped** only when `npm run smoke` or `npm run demo` asserts it ([`docs/SHIPPED.md`](docs/SHIPPED.md)). New rails (SMTP, webhooks, admin, i18n, LLM assist) extend that gate — they do not replace it with a screenshot suite.
 
 **Now.** Domain invariants on throwaway SQLite (`npm run smoke`, 36 tests: identifiers, role × action, FTS/export/notify never leak restricted/confidential, Excel closed loops, replay/reconcile, seed idempotency). Vitest units (`npm test`) on the same isolated harness. `npm run demo` walks 17 narrated checkpoints; `BASE_URL=…` adds HTTP status/body checks with each demo cookie against a running server (the server DB is not modified). `contracts:check` + `reconcile` + `replay-outbox`. Speed lab is **mocked** wire time, not a field measurement. `ACCESSIBILITY.md` is a living gap analysis, not a WCAG certificate. GitHub Actions runs `contracts:check` + `smoke` on every push and pull request to `main`. There is no browser e2e gate and no axe/pa11y run yet.
 
@@ -354,12 +354,13 @@ Environment: `DATABASE_PATH` (default `data/chm.sqlite`); `SANDBOX_RESET=1` (or 
 
 | File | Purpose |
 |---|---|
+| `docs/SHIPPED.md` | Public honesty ledger (what smoke/demo assert) |
 | `DEMO-SCRIPT.md` | Presenters / walk-through |
 | `VISUAL-CHARTER.md` | UI identity |
 | `ACCESSIBILITY.md` | WCAG assessment |
 | `fixtures/bbnj-chm-seed-pack/README.md` | Rich CSV seed pack (Interim mirrors + Demo scenarios) |
 
-Internal planning archives (EOI checklists, original `proposal/` pack, hardening ledger) live in `internal/` — **gitignored**. After a fresh clone: `npm run internal:restore`.
+Internal planning archives (EOI checklists, original `proposal/` pack, hardening ledger) live in `internal/` — **gitignored**. After a fresh clone: `npm run internal:restore` (restores the long `SHIPPED-VS-DEFERRED` checklist and related planning notes; not required to run the desk).
 
 ### Scope notes (short)
 
