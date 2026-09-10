@@ -45,18 +45,23 @@ export default async function MgrPage({ searchParams }: Props) {
       </div>
 
       <ListFilter label="Filter MGR records" placeholder="Title, party, B-SBI, public id…">
-        <div className="overflow-x-auto rounded-lg border bg-card">
-          <Table>
-            <TableHeader className="bg-muted/40">
+        <div className="max-h-[min(70vh,42rem)] overflow-auto rounded-lg border bg-card">
+          <Table containerClassName="overflow-visible">
+            <TableHeader className="sticky top-0 z-10 bg-card shadow-[inset_0_-1px_0_0_var(--border)]">
               <TableRow>
                 <TableHead>Title</TableHead>
-                <TableHead>Party</TableHead>
+                <TableHead className="min-w-[4.5rem]">Party</TableHead>
                 <TableHead>Stage</TableHead>
                 <TableHead>B-SBI</TableHead>
                 <TableHead>Public record id</TableHead>
                 <TableHead>Channel</TableHead>
                 <TableHead>Tier</TableHead>
-                <TableHead className="text-right">Updated</TableHead>
+                <TableHead className="text-right">
+                  <span className="block">Updated</span>
+                  <span className="block text-[0.65rem] font-normal normal-case tracking-normal text-muted-foreground">
+                    newest first
+                  </span>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -83,7 +88,7 @@ export default async function MgrPage({ searchParams }: Props) {
                       })()}
                       {b.locationHint ? <div className="text-xs text-muted-foreground">{b.locationHint}</div> : null}
                     </TableCell>
-                    <TableCell className="w-16 font-mono text-xs">{b.partyCode}</TableCell>
+                    <TableCell className="min-w-[4.5rem] whitespace-nowrap font-mono text-xs">{b.partyCode}</TableCell>
                     <TableCell className="text-xs">{stageLabel(b.currentStage)}</TableCell>
                     <TableCell className="font-mono text-xs">{b.bSbi ?? <span className="italic text-muted-foreground">not issued</span>}</TableCell>
                     <TableCell className="font-mono text-xs">{b.publicRecordId ?? <span className="italic text-muted-foreground">unpublished</span>}</TableCell>
@@ -93,7 +98,7 @@ export default async function MgrPage({ searchParams }: Props) {
                     <TableCell>
                       <ConfidentialityBadge tier={b.confidentiality} />
                     </TableCell>
-                    <TableCell className="text-right font-medium tabular-nums text-xs">{fmtDate(b.updatedAt)}</TableCell>
+                    <TableCell className="whitespace-nowrap text-right font-medium tabular-nums text-xs">{fmtDate(b.updatedAt)}</TableCell>
                   </TableRow>
                 ))
               )}

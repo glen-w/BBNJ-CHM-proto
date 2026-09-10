@@ -52,18 +52,23 @@ export default async function EiaPage({ searchParams }: Props) {
       </div>
 
       <ListFilter label="Filter EIA records" placeholder="Title, party, ABNJ box, public id…">
-        <div className="overflow-x-auto rounded-lg border bg-card">
-          <Table>
-            <TableHeader className="bg-muted/40">
+        <div className="max-h-[min(70vh,42rem)] overflow-auto rounded-lg border bg-card">
+          <Table containerClassName="overflow-visible">
+            <TableHeader className="sticky top-0 z-10 bg-card shadow-[inset_0_-1px_0_0_var(--border)]">
               <TableRow>
                 <TableHead>Activity</TableHead>
-                <TableHead>Party</TableHead>
+                <TableHead className="min-w-[4.5rem]">Party</TableHead>
                 <TableHead>ABNJ box</TableHead>
                 <TableHead>Latest stage</TableHead>
                 <TableHead>Latest pack</TableHead>
                 <TableHead>Public record id</TableHead>
                 <TableHead>Tier</TableHead>
-                <TableHead className="text-right">Updated</TableHead>
+                <TableHead className="text-right">
+                  <span className="block">Updated</span>
+                  <span className="block text-[0.65rem] font-normal normal-case tracking-normal text-muted-foreground">
+                    newest first
+                  </span>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -76,7 +81,7 @@ export default async function EiaPage({ searchParams }: Props) {
               ) : (
                 activities.map((a) => (
                   <TableRow key={a.id}>
-                    <TableCell className="max-w-sm whitespace-normal">
+                    <TableCell className="min-w-[16rem] max-w-sm whitespace-normal">
                       <Link href={`/eia/${a.id}`} className="font-medium hover:underline">
                         {a.title}
                       </Link>
@@ -89,7 +94,7 @@ export default async function EiaPage({ searchParams }: Props) {
                         ) : null;
                       })()}
                     </TableCell>
-                    <TableCell className="w-16 whitespace-nowrap font-mono text-xs">{a.partyCode}</TableCell>
+                    <TableCell className="min-w-[4.5rem] whitespace-nowrap font-mono text-xs">{a.partyCode}</TableCell>
                     <TableCell className="max-w-[10rem] whitespace-normal text-xs">{a.abnjBox}</TableCell>
                     <TableCell className="whitespace-normal text-xs">{stageLabel(a.currentStage)}</TableCell>
                     <TableCell>{a.latestPackStatus ? <StatusChip status={a.latestPackStatus} /> : "—"}</TableCell>
@@ -97,7 +102,7 @@ export default async function EiaPage({ searchParams }: Props) {
                     <TableCell>
                       <ConfidentialityBadge tier={a.confidentiality} />
                     </TableCell>
-                    <TableCell className="text-right font-medium tabular-nums text-xs">{fmtDate(a.updatedAt)}</TableCell>
+                    <TableCell className="whitespace-nowrap text-right font-medium tabular-nums text-xs">{fmtDate(a.updatedAt)}</TableCell>
                   </TableRow>
                 ))
               )}
