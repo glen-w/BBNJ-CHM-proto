@@ -161,7 +161,7 @@ UN / DOALOS hosting vs a technical partner is an institutional choice (IdP, SMTP
 
 A claim is **shipped** only when `npm run smoke` or `npm run demo` asserts it (`internal/SHIPPED-VS-DEFERRED.md`). New rails (SMTP, webhooks, admin, i18n, LLM assist) extend that gate — they do not replace it with a screenshot suite.
 
-**Now.** Domain invariants on throwaway SQLite (`npm run smoke`, 36 tests: identifiers, role × action, FTS/export/notify never leak restricted/confidential, Excel closed loops, replay/reconcile, seed idempotency). Vitest units (`npm test`) on the same isolated harness. `npm run demo` walks 17 narrated checkpoints; `BASE_URL=…` adds HTTP status/body checks with each demo cookie against a running server (the server DB is not modified). `contracts:check` + `reconcile` + `replay-outbox`. Speed lab is **mocked** wire time, not a field measurement. `ACCESSIBILITY.md` is a living gap analysis, not a WCAG certificate. There is **no CI workflow in this repo**, no browser e2e gate, no axe/pa11y run.
+**Now.** Domain invariants on throwaway SQLite (`npm run smoke`, 36 tests: identifiers, role × action, FTS/export/notify never leak restricted/confidential, Excel closed loops, replay/reconcile, seed idempotency). Vitest units (`npm test`) on the same isolated harness. `npm run demo` walks 17 narrated checkpoints; `BASE_URL=…` adds HTTP status/body checks with each demo cookie against a running server (the server DB is not modified). `contracts:check` + `reconcile` + `replay-outbox`. Speed lab is **mocked** wire time, not a field measurement. `ACCESSIBILITY.md` is a living gap analysis, not a WCAG certificate. GitHub Actions runs `contracts:check` + `smoke` on every push and pull request to `main`. There is no browser e2e gate and no axe/pa11y run yet.
 
 | Layer | Now | Would add |
 |---|---|---|
@@ -179,7 +179,7 @@ A claim is **shipped** only when `npm run smoke` or `npm run demo` asserts it (`
 | **Assist** | None (no model) | Eval harness on **public** fixtures only; prompts and outputs in the audit log; confidential packs never leave the allowed set |
 | **Human** | `DEMO-SCRIPT.md` walk-through | NFP / Secretariat UAT; professional translation review; pen-test before any hosted production |
 
-CI, when it exists, should run `typecheck`, `test`, `smoke`, and `demo` on every change. `BASE_URL` HTTP checks and axe can follow. Hosted-sandbox reset and production IdP stay out of that gate until those pathways exist.
+CI runs `contracts:check` and `smoke` on every change (`.github/workflows/ci.yml`). `typecheck`, `test`, `demo`, `BASE_URL` HTTP checks, and axe can follow. Hosted-sandbox reset and production IdP stay out of that gate until those pathways exist.
 
 ---
 
