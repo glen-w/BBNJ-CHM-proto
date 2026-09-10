@@ -27,10 +27,11 @@ export default async function ComparePage() {
     <AppShell title="DOALOS interim set-up vs this prototype — by Session 1 basic function">
       <div className="space-y-6">
         <p className="max-w-3xl text-muted-foreground">
-          The interim Cl-HM pages operated by DOALOS are, as far as their public pages show, informational: documents, meeting pages, contact points.
-          The &ldquo;interim&rdquo; column below describes what is visible on those pages, not what may exist behind them. This prototype is
-          transactional — structured receipt → validation → storage → publication → alert → audit — organised around the three basic functions the
-          Session 1 basic functions ask for. Every row links into the live desk for your current role.
+          The interim Cl-HM pages operated by DOALOS are, as far as their <strong className="font-medium text-foreground">public</strong> pages
+          show (as of Sep 2026), informational: documents, meeting pages, contact points. The &ldquo;interim&rdquo; column below describes what is
+          visible on those pages — not what may exist behind them — and is dated so it can be revisited. This prototype is transactional —
+          structured receipt → validation → storage → publication → alert → audit — organised around the three Session 1 basic functions. Every row
+          links into the live desk for your current role.
         </p>
 
         {sections.map((s) => (

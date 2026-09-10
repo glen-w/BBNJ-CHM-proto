@@ -46,17 +46,17 @@ No passwords. A bad cookie = anonymous public.
 
 ### Interim set-up vs this desk
 
-| | Interim (as understood from public materials) | This prototype |
+| | Interim (public DOALOS pages, as of Sep 2026) | This prototype |
 |---|---|---|
 | Intake | Documents and contact points | Forms + offline Excel + closed import loop |
-| Identifiers | No Art 12 B-SBI yet (expected) | B-SBI at receipt; public id at publish |
+| Identifiers | No Art 12 B-SBI visible yet (expected) | B-SBI at receipt; public id at publish (never swapped) |
 | Versioning | Documents re-posted | Amend → pending v+1; material change re-notifies |
 | Confidentiality | Not surfaced on public pages | Three tiers in every read path |
 | Roles | Secretariat-published content | Five roles, server-enforced |
-| Notify | None visible | Outbox → subscriptions → in-app digests |
-| Audit | Not surfaced | Append-only transitions + refusal log |
+| Notify | None visible on public pages | Outbox → subscriptions → **in-app** digests (no SMTP) |
+| Audit | Not surfaced on public pages | Append-only transitions + refusal log |
 
-Full table and deep links: `/compare` (docs-style page; not in primary nav).
+Full table and deep links: `/compare` (functions-first; docs-style page; not in primary nav). Talk-track: Excel = Art 51.5 pattern · language stub · ABMT without prejudice · no hosted URL yet — see [`docs/SHIPPED.md`](docs/SHIPPED.md).
 
 ---
 
