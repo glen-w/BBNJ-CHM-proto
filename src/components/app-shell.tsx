@@ -1,4 +1,4 @@
-import { Bell, Settings, User } from "lucide-react";
+import { Bell, Search, Settings, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { cookies } from "next/headers";
@@ -174,8 +174,13 @@ export async function AppShell({
               aria-label="Search all Cl-HM records"
               className="h-8 w-44 sm:w-56"
             />
-            <button type="submit" className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}>
-              Search
+            <button
+              type="submit"
+              className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "px-2")}
+              aria-label="Search"
+              title="Search"
+            >
+              <Search aria-hidden="true" className="size-4" />
             </button>
           </form>
         </div>
