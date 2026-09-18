@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
+import { RESEARCH_NAV_HREF } from "@/lib/research-lane";
 
 const railLink =
   "whitespace-nowrap rounded-md px-2 py-1 text-sm text-foreground/80 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
@@ -66,13 +67,17 @@ export function InstitutionalNav() {
 
 export function JourneysNav({
   items,
+  researchLaneEnabled = true,
 }: {
   items: { href: string; label: string; caption: string; enabled: boolean }[];
+  /** P1 Research tab must pass the same global gate; omitted from `items` in P0. */
+  researchLaneEnabled?: boolean;
 }) {
   const pathname = usePathname();
+  const visible = researchLaneEnabled ? items : items.filter((j) => j.href !== RESEARCH_NAV_HREF);
   return (
     <nav aria-label="Journeys" className="flex flex-wrap items-center gap-5">
-      {items.map((j) => {
+      {visible.map((j) => {
         const current = pathActive(pathname, j.href);
         if (!j.enabled) {
           return (

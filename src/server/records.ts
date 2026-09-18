@@ -65,11 +65,11 @@ export function getRecordMeta(db: Db, domain: Domain, id: string): RecordMeta | 
         : undefined;
     }
     case "abmt": {
-      const r = db.prepare("SELECT id, owner_user_id, public_record_id, confidentiality, party_code, title FROM abmt_proposals WHERE id = ?").get(id) as
-        | { id: string; owner_user_id: string | null; public_record_id: string | null; confidentiality: RecordMeta["confidentiality"]; party_code: string; title: string }
+      const r = db.prepare("SELECT id, owner_user_id, public_record_id, confidentiality, party_code, title, abnj_box FROM abmt_proposals WHERE id = ?").get(id) as
+        | { id: string; owner_user_id: string | null; public_record_id: string | null; confidentiality: RecordMeta["confidentiality"]; party_code: string; title: string; abnj_box: string | null }
         | undefined;
       return r
-        ? { id: r.id, domain, ownerUserId: r.owner_user_id ?? undefined, publicRecordId: r.public_record_id ?? undefined, confidentiality: r.confidentiality, partyCode: r.party_code, title: r.title }
+        ? { id: r.id, domain, ownerUserId: r.owner_user_id ?? undefined, publicRecordId: r.public_record_id ?? undefined, confidentiality: r.confidentiality, partyCode: r.party_code, title: r.title, abnjBox: r.abnj_box ?? undefined }
         : undefined;
     }
   }

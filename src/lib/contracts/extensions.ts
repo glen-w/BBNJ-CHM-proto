@@ -8,6 +8,7 @@
 import { z } from "zod";
 
 import {
+  AbnjBox,
   ActorRole,
   BSbi,
   CbtmtNeed,
@@ -94,6 +95,8 @@ export const StoredAbmtProposal = z.object({
   latestPackStatus: PublishStatus.optional(),
   title: z.string().min(1),
   partyCode: z.string().min(2).max(3),
+  /** Seeded geography; form-created stubs omit it. */
+  abnjBox: AbnjBox.optional(),
   sourceChannel: z.enum(["form", "excel", "assisted"]).default("form"),
   confidentiality: z.enum(["public", "restricted", "confidential"]).default("public"),
   version: z.number().int().positive().default(1),
@@ -101,6 +104,40 @@ export const StoredAbmtProposal = z.object({
   updatedAt: z.string().datetime(),
 });
 export type StoredAbmtProposal = z.infer<typeof StoredAbmtProposal>;
+
+/**
+ * Implementation (v7): published research slice. Not a pack Domain — Zotero
+ * remains the catalog of record; the CHM stores metadata + link-out.
+ * Status is row-level and includes `withdrawn` (unlike outbox PublishStatus).
+ */
+export const ResearchStatus = z.enum(["draft", "pending", "published", "withdrawn"]);
+export type ResearchStatus = z.infer<typeof ResearchStatus>;
+
+/** Demo IFB vocabulary (Art 8/22-style bodies). Not a locked treaty enum. */
+export const ResearchIfb = z.enum(["ISA", "IMO", "RFMO", "Sargasso Sea Commission"]);
+export type ResearchIfb = z.infer<typeof ResearchIfb>;
+
+export const ResearchItem = z.object({
+  id: z.string().uuid(),
+  zoteroKey: z.string().min(1).optional(),
+  doi: z.string().min(1).optional(),
+  title: z.string().min(1),
+  year: z.number().int().min(1000).max(3000).optional(),
+  citation: z.string().min(1).optional(),
+  oaUrl: z.string().url().optional(),
+  /** Licence-gated file pointer; unused in P0 (prefer oa_url). */
+  fileId: z.string().min(1).optional(),
+  licence: z.string().min(1).optional(),
+  status: ResearchStatus,
+  pillars: z.array(Domain).default([]),
+  geographies: z.array(AbnjBox).default([]),
+  ifbs: z.array(ResearchIfb).default([]),
+  summarySnippet: z.string().optional(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+export type ResearchItem = z.infer<typeof ResearchItem>;
+export type StoredResearchItem = ResearchItem;
 
 /** Stored event = contract event + implementation ordering / idempotency metadata. */
 export type StoredEvent = z.infer<typeof Event> & {

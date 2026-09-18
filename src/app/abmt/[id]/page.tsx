@@ -5,6 +5,7 @@ import { AppShell } from "@/components/app-shell";
 import { ChannelBadge, ConfidentialityBadge, DomainBadge, Identifier, ProvenanceBadge, StageChip, TierNote } from "@/components/chips";
 import { MintStepper } from "@/components/mint-stepper";
 import { ProvenanceCaption } from "@/components/provenance-caption";
+import { RelatedResearchPanel } from "@/components/related-research-panel";
 import { RecordExportLinks } from "@/components/export-links";
 import { flashFrom } from "@/components/flash";
 import { KeyFields, SubmitButton } from "@/components/forms";
@@ -19,6 +20,7 @@ import { submitAbmtAction } from "@/server/actions";
 import { getAbmtProposal } from "@/server/abmt";
 import { can } from "@/server/policy";
 import { packsOf, recordVisible, timelineOf } from "@/server/queries";
+import { isResearchLaneEnabled, listRelatedResearchForAbmt } from "@/server/research";
 import { isIsaNotUndermineAbmtRecord, provenanceBadgeForRecord } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
@@ -40,6 +42,8 @@ export default async function AbmtProposalPage({ params, searchParams }: Props) 
   const canSubmit = owner && latest?.status === "draft";
   const provenance = provenanceBadgeForRecord(db, id);
   const isaCaption = isIsaNotUndermineAbmtRecord(db, id);
+  const researchLaneOn = isResearchLaneEnabled(db);
+  const relatedResearch = researchLaneOn ? listRelatedResearchForAbmt(db, proposal) : [];
 
   return (
     <AppShell title={`ABMT proposal stub — ${proposal.title}`} flash={flash}>
@@ -115,6 +119,8 @@ export default async function AbmtProposalPage({ params, searchParams }: Props) 
           </p>
         ) : null}
       </section>
+
+      {researchLaneOn ? <RelatedResearchPanel items={relatedResearch} /> : null}
 
       <section className="rounded-lg border p-4" id="versions">
         <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">Version history</h2>

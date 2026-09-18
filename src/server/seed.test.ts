@@ -9,6 +9,7 @@ import { listMatches, suggestMatches } from "@/server/cbtmt";
 import { getEiaActivity, packsForActivity } from "@/server/eia";
 import { getMgrBatch } from "@/server/mgr";
 import { principalFor } from "@/server/policy";
+import { listRelatedResearchForAbmt } from "@/server/research";
 import { seedDatabase, seedIfEmpty } from "@/server/seed";
 import {
   agreementBasisExtrasForRecord,
@@ -53,6 +54,7 @@ describe("seed I/O", () => {
       events: (h.db.prepare("SELECT COUNT(*) AS n FROM events").get() as { n: number }).n,
       batches: (h.db.prepare("SELECT COUNT(*) AS n FROM mgr_batches").get() as { n: number }).n,
       matches: (h.db.prepare("SELECT COUNT(*) AS n FROM cbtmt_matches").get() as { n: number }).n,
+      research: (h.db.prepare("SELECT COUNT(*) AS n FROM research_items").get() as { n: number }).n,
     });
     const before = counts();
     const second = seedDatabase(h.db);
@@ -83,6 +85,8 @@ describe("seed I/O", () => {
       ]),
     );
     expect(pack.abmt.length).toBeGreaterThanOrEqual(4);
+    expect(pack.research.length).toBeGreaterThanOrEqual(5);
+    expect(pack.research.filter((r) => r.status === "published").length).toBeGreaterThanOrEqual(3);
     expect(pack.relatedSystems.length).toBeGreaterThanOrEqual(7);
     expect(pack.cbtmtMatches.length).toBeGreaterThanOrEqual(4);
     expect(csvStorylineCounts().abnjBoxes).toBe(AbnjBox.options.length);
@@ -187,6 +191,21 @@ describe("seed I/O", () => {
     expect(isIsaNotUndermineAbmtRecord(h.db, ccz.id)).toBe(true);
     expect(isIsaNotUndermineAbmtRecord(h.db, sargasso.id)).toBe(false);
     expect(ccz.publicRecordId).toMatch(/^BBNJ-ABMT-/);
+    expect(sargasso.abnjBox).toBe("Sargasso Sea Core");
+    expect(ccz.abnjBox).toBe("CCZ");
+
+    const publishedResearch = (
+      h.db.prepare(`SELECT COUNT(*) AS n FROM research_items WHERE status = 'published'`).get() as { n: number }
+    ).n;
+    expect(publishedResearch).toBeGreaterThanOrEqual(3);
+    const sargassoResearch = listRelatedResearchForAbmt(h.db, sargasso);
+    expect(sargassoResearch.length).toBeGreaterThanOrEqual(1);
+    expect(sargassoResearch.every((r) => r.geographies.includes("Sargasso Sea Core"))).toBe(true);
+    expect(sargassoResearch.some((r) => r.pillars.includes("eia") && !r.pillars.includes("abmt"))).toBe(false);
+    const crDome = getAbmtProposal(h.db, ids.rich.abmt.crDome)!;
+    expect(listRelatedResearchForAbmt(h.db, crDome)).toEqual([]);
+    const cczResearch = listRelatedResearchForAbmt(h.db, ccz);
+    expect(cczResearch.some((r) => r.ifbs.includes("ISA"))).toBe(true);
 
     // Neighbourhood density: ≥2 published EIA in each storyline AbnjBox
     for (const box of [

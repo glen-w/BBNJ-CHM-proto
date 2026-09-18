@@ -4,7 +4,7 @@
  * Zod is the schema of record; SQL adds keys, uniqueness, checks and foreign keys
  * for every claimed invariant. No migrations: SCHEMA_VERSION mismatch refuses start.
  */
-export const SCHEMA_VERSION = 6;
+export const SCHEMA_VERSION = 7;
 
 export const SCHEMA_SQL = `
 CREATE TABLE IF NOT EXISTS meta (
@@ -203,10 +203,34 @@ CREATE TABLE IF NOT EXISTS abmt_proposals (
   latest_pack_status TEXT CHECK (latest_pack_status IS NULL OR latest_pack_status IN ('draft', 'pending', 'published')),
   title TEXT NOT NULL,
   party_code TEXT NOT NULL,
+  -- Implementation (v7): persist seed geography so related-research can join on facets.
+  abnj_box TEXT,
   source_channel TEXT NOT NULL DEFAULT 'form' CHECK (source_channel IN ('form', 'excel', 'assisted')),
   confidentiality TEXT NOT NULL DEFAULT 'public' CHECK (confidentiality IN ('public', 'restricted', 'confidential')),
   version INTEGER NOT NULL DEFAULT 1 CHECK (version >= 1),
   owner_user_id TEXT REFERENCES users(id),
+  updated_at TEXT NOT NULL
+);
+
+-- Implementation (v7): published research slice (Zotero remains catalog of record).
+-- Not a pack domain — no events, no FTS, no publicRecordId. Status is row-level
+-- (includes withdrawn) and is not the outbox PublishStatus enum.
+CREATE TABLE IF NOT EXISTS research_items (
+  id TEXT PRIMARY KEY,
+  zotero_key TEXT UNIQUE,
+  doi TEXT,
+  title TEXT NOT NULL,
+  year INTEGER,
+  citation TEXT,
+  oa_url TEXT,
+  file_id TEXT,
+  licence TEXT,
+  status TEXT NOT NULL CHECK (status IN ('draft', 'pending', 'published', 'withdrawn')),
+  pillars_json TEXT NOT NULL DEFAULT '[]',
+  geographies_json TEXT NOT NULL DEFAULT '[]',
+  ifbs_json TEXT NOT NULL DEFAULT '[]',
+  summary_snippet TEXT,
+  created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
 
@@ -310,7 +334,7 @@ CREATE TRIGGER IF NOT EXISTS abmt_proposals_fts_ai AFTER INSERT ON abmt_proposal
     'abmt',
     new.id,
     new.title,
-    coalesce(new.party_code, ''),
+    trim(coalesce(new.abnj_box, '') || ' ' || coalesce(new.party_code, '')),
     coalesce(new.public_record_id, '')
   );
 END;
@@ -324,7 +348,7 @@ CREATE TRIGGER IF NOT EXISTS abmt_proposals_fts_au AFTER UPDATE ON abmt_proposal
     'abmt',
     new.id,
     new.title,
-    coalesce(new.party_code, ''),
+    trim(coalesce(new.abnj_box, '') || ' ' || coalesce(new.party_code, '')),
     coalesce(new.public_record_id, '')
   );
 END;

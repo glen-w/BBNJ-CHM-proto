@@ -2,13 +2,17 @@ import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
 import { flashFrom } from "@/components/flash";
+import { KeyFields, SubmitButton } from "@/components/forms";
 import { SpeedLabPanel } from "@/components/speed-lab-panel";
 import { buttonVariants } from "@/components/ui/button";
 import { demoUserBeats } from "@/lib/demo-user-beats";
 import { getDb } from "@/lib/db";
+import { RESEARCH_LANE_META_KEY } from "@/lib/research-lane";
 import { cn } from "@/lib/utils";
+import { setResearchLaneAction } from "@/server/actions";
 import { findEventByKey } from "@/server/outbox";
 import { can } from "@/server/policy";
+import { isResearchLaneEnabled } from "@/server/research";
 import { getSessionUser } from "@/server/session";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -35,6 +39,7 @@ export default async function SettingsPage({ searchParams }: Props) {
   const rec = (key: string) => findEventByKey(db, `seed:${key}`)?.recordId;
   const beats = demoUserBeats({ mgrA: rec("mgr-a"), eia2: rec("eia-2") });
   const canRunSpeed = can(p, "import");
+  const researchLaneOn = isResearchLaneEnabled(db);
 
   return (
     <AppShell title="Settings" flash={flash}>
@@ -116,9 +121,24 @@ export default async function SettingsPage({ searchParams }: Props) {
         <section className="space-y-4">
           <h2 className="text-lg font-semibold">Desk configuration</h2>
           <p className="max-w-3xl text-sm text-muted-foreground">
-            Placeholders for operator settings that would arrive with a production desk. Cookie logins and seeded accounts remain the demo affordance.
+            Operator settings for this evaluation desk. Cookie logins and seeded accounts remain the demo affordance.
           </p>
           <ul className="divide-y rounded-lg border text-sm">
+            <li className="px-4 py-3">
+              <div className="font-medium">Show related research</div>
+              <p className="mt-1 text-muted-foreground">
+                One switch for the whole desk (<code className="font-mono text-xs">{RESEARCH_LANE_META_KEY}</code>). When off, the related-research
+                panel is gone — not an empty state. Future Research browse and nav must honour the same flag. Default is on when the key is missing.
+              </p>
+              <form action={setResearchLaneAction} className="mt-3 flex flex-wrap items-center gap-2">
+                <KeyFields returnTo="/settings?tab=desk" />
+                <input type="hidden" name="enabled" value={researchLaneOn ? "0" : "1"} />
+                <SubmitButton size="sm" variant="outline">
+                  {researchLaneOn ? "Turn off" : "Turn on"}
+                </SubmitButton>
+                <span className="text-xs text-muted-foreground">{researchLaneOn ? "Currently shown." : "Currently hidden."}</span>
+              </form>
+            </li>
             <li className="px-4 py-3">
               <div className="font-medium">UI language</div>
               <p className="mt-1 text-muted-foreground">

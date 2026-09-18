@@ -3,7 +3,7 @@
  * Without prejudice to COP1: sandbox stub only; stage is always proposal_stub.
  */
 import type { Db } from "@/lib/db";
-import type { PublishStatus } from "@/lib/contracts/events";
+import { AbnjBox, type PublishStatus } from "@/lib/contracts/events";
 import { StoredAbmtProposal, type IdempotencyKey } from "@/lib/contracts/extensions";
 import { DomainError } from "./errors";
 import { nowIso } from "./ids";
@@ -19,6 +19,7 @@ type AbmtRow = {
   latest_pack_status: PublishStatus | null;
   title: string;
   party_code: string;
+  abnj_box: string | null;
   source_channel: "form" | "excel" | "assisted";
   confidentiality: "public" | "restricted" | "confidential";
   version: number;
@@ -35,6 +36,7 @@ export function rowToAbmt(row: AbmtRow): StoredAbmtProposal {
     latestPackStatus: row.latest_pack_status ?? undefined,
     title: row.title,
     partyCode: row.party_code,
+    abnjBox: row.abnj_box ? AbnjBox.parse(row.abnj_box) : undefined,
     sourceChannel: row.source_channel,
     confidentiality: row.confidentiality,
     version: row.version,
@@ -56,7 +58,7 @@ export interface AbmtResult extends PackResult {
 export function createAbmtProposal(
   db: Db,
   actor: Principal,
-  input: { title: string; partyCode?: string; confidentiality?: "public" | "restricted" | "confidential" },
+  input: { title: string; partyCode?: string; confidentiality?: "public" | "restricted" | "confidential"; abnjBox?: AbnjBox },
   key: IdempotencyKey,
 ): AbmtResult {
   requireCan(actor, "submit", undefined, { domain: "abmt", db });
@@ -66,13 +68,14 @@ export function createAbmtProposal(
   if (!title) throw new DomainError("validation", "Title is required");
   const partyCode = hasRole(actor, "party") && actor.kind === "user" && actor.user.partyCode ? actor.user.partyCode : input.partyCode?.toUpperCase();
   if (!partyCode || !/^[A-Z]{2,3}$/.test(partyCode)) throw new DomainError("validation", "A Party code (2–3 letters) is required");
+  const abnjBox = input.abnjBox ? AbnjBox.parse(input.abnjBox) : null;
   const tx = db.transaction((): AbmtResult => {
     const id = crypto.randomUUID();
     const at = nowIso();
     db.prepare(
-      `INSERT INTO abmt_proposals (id, current_stage, latest_pack_status, title, party_code, source_channel, confidentiality, version, owner_user_id, updated_at)
-       VALUES (?, 'proposal_stub', NULL, ?, ?, ?, ?, 1, ?, ?)`,
-    ).run(id, title, partyCode, isSecretariat(actor) ? "assisted" : "form", input.confidentiality ?? "public", userId(actor) ?? null, at);
+      `INSERT INTO abmt_proposals (id, current_stage, latest_pack_status, title, party_code, abnj_box, source_channel, confidentiality, version, owner_user_id, updated_at)
+       VALUES (?, 'proposal_stub', NULL, ?, ?, ?, ?, ?, 1, ?, ?)`,
+    ).run(id, title, partyCode, abnjBox, isSecretariat(actor) ? "assisted" : "form", input.confidentiality ?? "public", userId(actor) ?? null, at);
     const res = openPack(db, actor, {
       domain: "abmt",
       recordId: id,

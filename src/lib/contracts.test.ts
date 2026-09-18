@@ -25,6 +25,9 @@ import {
   IdempotencyKey,
   PUBLIC_RECORD_ID_PATTERN,
   RECEIPT_ID_PATTERN,
+  ResearchIfb,
+  ResearchItem,
+  ResearchStatus,
   StoredMgrBatch,
 } from "@/lib/contracts/extensions";
 import { contractsIdentical } from "../../scripts/contracts-check";
@@ -179,6 +182,26 @@ describe("Domain records schemas", () => {
         updatedAt: "2026-09-01T00:00:00.000Z",
       }).success,
     ).toBe(true);
+  });
+});
+
+describe("ResearchItem (implementation catalog, not a pack domain)", () => {
+  it("accepts published items with withdrawn as a status and nullable zotero key", () => {
+    expect(ResearchStatus.options).toEqual(["draft", "pending", "published", "withdrawn"]);
+    expect(ResearchIfb.options).toContain("ISA");
+    const base = {
+      id: "00000000-0000-4000-8000-000000000050",
+      title: "High seas MPA note",
+      status: "published" as const,
+      pillars: ["abmt" as const],
+      geographies: ["Sargasso Sea Core" as const],
+      ifbs: ["Sargasso Sea Commission" as const],
+      createdAt: "2026-09-01T00:00:00.000Z",
+      updatedAt: "2026-09-01T00:00:00.000Z",
+    };
+    expect(ResearchItem.safeParse(base).success).toBe(true);
+    expect(ResearchItem.safeParse({ ...base, status: "withdrawn", zoteroKey: "6K6WPBFQ" }).success).toBe(true);
+    expect(ResearchItem.safeParse({ ...base, pillars: ["not-a-domain"] }).success).toBe(false);
   });
 });
 

@@ -56,7 +56,8 @@ All under `csv/`:
 | CSV | Role |
 |---|---|
 | `csv/abnj_boxes.csv` | Extends / documents `AbnjBox` (must match Zod enum) |
-| `csv/mgr_batches.csv`, `csv/eia_activities.csv`, `csv/eia_packs.csv`, `csv/cbtmt_*.csv`, `csv/abmt_proposals.csv` | Seeded through domain APIs |
+| `csv/abmt_proposals.csv` | Seeded through domain APIs (`abnj_box` is stored on the stub) |
+| `csv/research_items.csv` | Related-research catalog (not a pack domain). Multi-value `pillars` / `geographies` / `ifbs` use **semicolon**. Seed runs regardless of the Settings gate. |
 | `csv/provenance_badges.csv` | Interim (DOALOS) vs Demo scenario list chips |
 | `csv/related_systems.csv`, `csv/secretariat_notices.csv` | Related-systems / Institutional notices |
 | `csv/sources.csv`, `csv/interim_links.csv` | Provenance documentation (labels/URLs also used from activity rows) |

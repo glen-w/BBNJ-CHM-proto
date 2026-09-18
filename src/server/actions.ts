@@ -24,6 +24,7 @@ import { addMgrPack, amendMgrPack, MGR_AMENDABLE_STAGES, saveMgrDraft, submitPre
 import { amendPack, publishPack } from "./packs";
 import { getSubscription, markAllRead, upsertSubscription } from "./queries";
 import { resetSandbox } from "./reset";
+import { setResearchLaneEnabled } from "./research";
 import { getSessionUser, setHomeWelcome, setSessionUser, setTreatyLang } from "./session";
 import { appendSpeedTrials, runSpeedMatrix } from "./speed-lab";
 import { buildEiaScreeningSample, buildMgrSample } from "./template";
@@ -107,6 +108,16 @@ export async function setTreatyLangAction(code: string) {
 export async function setHomeWelcomeAction(formData: FormData) {
   await setHomeWelcome(str(formData, "show") !== "0");
   revalidatePath("/");
+}
+
+/** Global related-research lane. One switch for the whole desk. */
+export async function setResearchLaneAction(fd: FormData) {
+  const enabled = str(fd, "enabled") !== "0";
+  setResearchLaneEnabled(getDb(), enabled);
+  finish({
+    to: returnTo(fd, "/settings?tab=desk"),
+    notice: enabled ? "Related research is shown on the desk." : "Related research is hidden across the desk.",
+  });
 }
 
 export async function logoutAction() {

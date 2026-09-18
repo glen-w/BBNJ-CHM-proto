@@ -366,6 +366,7 @@ async function main() {
       events: (db.prepare("SELECT COUNT(*) AS n FROM events").get() as { n: number }).n,
       batches: (db.prepare("SELECT COUNT(*) AS n FROM mgr_batches").get() as { n: number }).n,
       matches: (db.prepare("SELECT COUNT(*) AS n FROM cbtmt_matches").get() as { n: number }).n,
+      research: (db.prepare("SELECT COUNT(*) AS n FROM research_items").get() as { n: number }).n,
     });
     const before = counts();
     seed.seedDatabase(db);
@@ -403,6 +404,9 @@ async function main() {
     assert.match(sargasso.publicRecordId ?? "", /^BBNJ-ABMT-/);
     const publishedAbmt = (db.prepare("SELECT COUNT(*) AS n FROM abmt_proposals WHERE public_record_id IS NOT NULL").get() as { n: number }).n;
     assert.ok(publishedAbmt >= 2, "at least smoke stub + one CSV ABMT published");
+    const publishedResearch = (db.prepare("SELECT COUNT(*) AS n FROM research_items WHERE status = 'published'").get() as { n: number }).n;
+    assert.ok(publishedResearch >= 3, "fixture seeds at least three published research items");
+    assert.equal(sargasso.abnjBox, "Sargasso Sea Core");
   });
 
   p0("db:seed --if-empty is a no-op on a seeded DB; db:reset refused in production", async () => {

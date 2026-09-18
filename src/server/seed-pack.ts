@@ -6,8 +6,9 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { AbnjBox, ConfidentialityTier, EiaPublishableStages, SourceChannel, type ArtifactRef } from "@/lib/contracts/events";
+import { AbnjBox, ConfidentialityTier, Domain, EiaPublishableStages, SourceChannel, type ArtifactRef } from "@/lib/contracts/events";
 import type { ConfidentialityTier as Confidentiality, SourceChannel as Channel } from "@/lib/contracts/events";
+import { ResearchIfb, ResearchStatus } from "@/lib/contracts/extensions";
 import type { Db } from "@/lib/db";
 import type { TreatyCite } from "@/lib/treatyCites";
 
@@ -79,6 +80,22 @@ export type AbmtCsvSeed = {
   isaCaption: boolean;
 };
 
+export type ResearchCsvSeed = {
+  seedKey: string;
+  zoteroKey?: string;
+  doi?: string;
+  title: string;
+  year?: number;
+  citation?: string;
+  oaUrl?: string;
+  licence?: string;
+  pillars: Domain[];
+  geographies: AbnjBox[];
+  ifbs: ResearchIfb[];
+  summarySnippet?: string;
+  status: ResearchStatus;
+};
+
 export type RelatedSystemLink = { label: string; href: string };
 export type SecretariatNotice = { seedKey: string; title: string; url: string; summary: string };
 
@@ -90,6 +107,7 @@ export type LoadedSeedPack = {
   cbtmtOffers: CbtmtOfferCsv[];
   cbtmtMatches: CbtmtMatchCsv[];
   abmt: AbmtCsvSeed[];
+  research: ResearchCsvSeed[];
   relatedSystems: RelatedSystemLink[];
   secretariatNotices: SecretariatNotice[];
   provenanceBySeedKey: Map<string, ProvenanceBadge>;
@@ -167,16 +185,35 @@ function asBadge(raw: string): ProvenanceBadge {
   throw new Error(`Unknown provenance badge in seed pack: ${raw}`);
 }
 
-function splitThemes(raw: string): string[] {
+function splitSemi(raw: string): string[] {
   return raw
     .split(";")
     .map((t) => t.trim())
     .filter(Boolean);
 }
+const splitThemes = splitSemi;
 
 function asAbnjBox(raw: string): AbnjBox {
   const parsed = AbnjBox.safeParse(raw);
   if (!parsed.success) throw new Error(`Seed pack abnj_box not in AbnjBox enum: ${raw}`);
+  return parsed.data;
+}
+
+function asDomain(raw: string): Domain {
+  const parsed = Domain.safeParse(raw);
+  if (!parsed.success) throw new Error(`Seed pack pillar not in Domain enum: ${raw}`);
+  return parsed.data;
+}
+
+function asIfb(raw: string): ResearchIfb {
+  const parsed = ResearchIfb.safeParse(raw);
+  if (!parsed.success) throw new Error(`Seed pack ifb not in ResearchIfb enum: ${raw}`);
+  return parsed.data;
+}
+
+function asResearchStatus(raw: string): ResearchStatus {
+  const parsed = ResearchStatus.safeParse(raw || "published");
+  if (!parsed.success) throw new Error(`Seed pack research status invalid: ${raw}`);
   return parsed.data;
 }
 
@@ -316,6 +353,32 @@ export function getSeedPack(): LoadedSeedPack {
     };
   });
 
+  const research: ResearchCsvSeed[] = readCsv("research_items.csv").map((row) => {
+    const zoteroKey = row.zotero_key || undefined;
+    const doi = row.doi || undefined;
+    const title = row.title!;
+    const seedKey = zoteroKey ? `research:${zoteroKey}` : doi ? `research:${doi}` : `research:${title}`;
+    titleBySeedKey.set(seedKey, title);
+    const yearRaw = row.year?.trim();
+    const year = yearRaw ? Number(yearRaw) : undefined;
+    if (yearRaw && !Number.isInteger(year)) throw new Error(`Seed pack research year is not an integer: ${row.year}`);
+    return {
+      seedKey,
+      zoteroKey,
+      doi,
+      title,
+      year,
+      citation: row.citation || undefined,
+      oaUrl: row.oa_url || undefined,
+      licence: row.licence || undefined,
+      pillars: splitSemi(row.pillars ?? "").map(asDomain),
+      geographies: splitSemi(row.geographies ?? "").map(asAbnjBox),
+      ifbs: splitSemi(row.ifbs ?? "").map(asIfb),
+      summarySnippet: row.summary_snippet || undefined,
+      status: asResearchStatus(row.status),
+    };
+  });
+
   const relatedSystems: RelatedSystemLink[] = readCsv("related_systems.csv").map((row) => ({
     label: row.label!,
     href: row.url!,
@@ -336,6 +399,7 @@ export function getSeedPack(): LoadedSeedPack {
     cbtmtOffers,
     cbtmtMatches,
     abmt,
+    research,
     relatedSystems,
     secretariatNotices,
     provenanceBySeedKey,
@@ -367,6 +431,9 @@ export function CBTMT_MATCH_CSV(): CbtmtMatchCsv[] {
 }
 export function ABMT_CSV_SEEDS(): AbmtCsvSeed[] {
   return getSeedPack().abmt;
+}
+export function RESEARCH_CSV_SEEDS(): ResearchCsvSeed[] {
+  return getSeedPack().research;
 }
 export function RELATED_SYSTEMS_SEED(): RelatedSystemLink[] {
   return getSeedPack().relatedSystems;
