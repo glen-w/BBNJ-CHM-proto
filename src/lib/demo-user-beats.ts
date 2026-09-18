@@ -43,9 +43,9 @@ export function demoUserBeats(links: {
     {
       n: 5,
       title: "Interim vs this desk",
-      blurb: "Session-1 basic functions side by side — design contrast with the interim DOALOS pages, not a critique.",
+      blurb: "Printable evaluator exhibit, then the Session-1 comparison — design contrast with the interim DOALOS pages, not a critique.",
       login: "public",
-      href: "/compare",
+      href: "/exhibit",
     },
   ];
 }

@@ -10,3 +10,13 @@ eia-marine-cdr-neighbour,screening,published,no_eia,Art 31 — no EIA required (
 eia-mesopelagic-fishery,screening,published,eia_required,Art 31 screening — exploratory mesopelagic fishery requires EIA
 eia-mesopelagic-neighbour,screening,published,no_eia,Art 31 — no EIA required (acoustic biomass survey; neighbourhood density)
 eia-no-eia-buoy,screening,published,no_eia,Art 31 — no EIA required (sufficiently detailed screening pack)
+eia-cable-southern,screening,published,eia_required,Art 31 screening — EIA required for observatory cable
+eia-cable-southern,planned_activity_notice,published,,Art 32 planned activity notice — cable route envelope
+eia-cable-southern,draft_eia,published,,Draft EIA for STB/public consultation — benthic disturbance and recovery
+eia-cable-southern,decision_conditions,published,,Art 34/37 decision with conditions — seasonal window; monitoring stations
+eia-cable-southern,monitoring_review,published,,Arts 37–40 monitoring and review — first annual report (demo)
+eia-cable-southern-neighbour,screening,published,no_eia,Art 31 — no EIA required (moored sediment trap; neighbourhood density)
+eia-vent-indian,screening,published,eia_required,Art 31 screening — vent-field scientific sampling requires EIA
+eia-vent-indian,planned_activity_notice,published,,Art 32 notice — Central Indian Ridge vent cluster
+eia-vent-indian,draft_eia,pending,,Draft EIA pending Secretariat publish — vent endemic fauna and cumulative MSR
+eia-vent-indian-neighbour,screening,published,no_eia,Art 31 — no EIA required (CTD grid; neighbourhood density)

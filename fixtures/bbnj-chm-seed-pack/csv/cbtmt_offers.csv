@@ -2,3 +2,6 @@ seed_key,provider,title,themes,status_path,source_ids,notes
 cbt-offer-eia-course,Demo Regional Training Centre,Short course: BBNJ Part IV EIA workflow & CHM packs,eia_practice;training,publish,SRC-UN-CBTMT,
 cbt-offer-acoustic,Demo Ocean Acoustics Lab,Acoustic & trawl survey design mentoring for mesopelagic trials,fisheries;mesopelagic;eia_practice,publish,SRC-ZOT-MESO,
 cbt-offer-oae-lab,Demo Biogeochemistry Consortium,Lab & shipboard alkalinity measurement protocols (open materials),mcdr;monitoring,publish,SRC-ZOT-MCDR,
+cbt-offer-sequencing-core,Demo Regional Sequencing Core,Illumina / Nanopore run slots for developing-State MGR samples,sequencing,publish,,Pairs with SIDS sequencing need
+cbt-offer-remote-sensing,Demo Earth Observation Desk,Satellite SST / chlorophyll briefing notes for ABNJ screening,remote_sensing,publish,,Unmatched on purpose — no seeded need shares remote_sensing
+cbt-offer-ship-time,Demo Research Vessel Pool,Two-week ship-time bursary for ABNJ marine scientific research,ship_time,publish,,Unmatched on purpose — ship_time only

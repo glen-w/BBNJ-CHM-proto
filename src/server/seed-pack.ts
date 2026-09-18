@@ -6,7 +6,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { AbnjBox, type ArtifactRef } from "@/lib/contracts/events";
+import { AbnjBox, ConfidentialityTier, EiaPublishableStages, SourceChannel, type ArtifactRef } from "@/lib/contracts/events";
+import type { ConfidentialityTier as Confidentiality, SourceChannel as Channel } from "@/lib/contracts/events";
 import type { Db } from "@/lib/db";
 import type { TreatyCite } from "@/lib/treatyCites";
 
@@ -18,7 +19,7 @@ export const SEED_HONESTY =
   "Plausible demo data; not real Party filings. Interim mirrors cite DOALOS pages; operators and Party code XSD are fictional stand-ins.";
 
 export type EiaCsvPack = {
-  stage: "screening" | "planned_activity_notice" | "draft_eia";
+  stage: (typeof EiaPublishableStages)[number];
   status: "published" | "pending";
   screeningOutcome?: "eia_required" | "no_eia";
   summary: string;
@@ -39,7 +40,12 @@ export type MgrCsvSeed = {
   artifactRefs?: ArtifactRef[];
   at: string;
   publishAt: string;
+  publish: boolean;
   postCollection: boolean;
+  utilisation: boolean;
+  sourceChannel: Channel;
+  confidentiality: Confidentiality;
+  tkFpicFlag: boolean;
 };
 
 export type EiaCsvSeed = {
@@ -49,6 +55,7 @@ export type EiaCsvSeed = {
   abnjBox: AbnjBox;
   zoteroKey?: string;
   artifact?: ArtifactRef;
+  confidentiality: Confidentiality;
   packs: EiaCsvPack[];
   agreementExtras?: TreatyCite[];
   agreementFootnotes?: string[];
@@ -100,14 +107,39 @@ const AGREEMENT_OVERLAY: Record<string, { extras: TreatyCite[]; footnotes: strin
       "Zotero 6K6WPBFQ (Gjerde, Wright, Durussel 2021) — Strengthening high seas governance through enhanced environmental assessment processes: mesopelagic fisheries and options for a future BBNJ treaty. Cite as RFMO-gap / Part IV framing, not only as an artefact URL.",
     ],
   },
+  "eia-cable-southern": {
+    extras: [
+      { article: "Art 34", label: "Decision with conditions on the same activity (demo)" },
+      { article: "Arts 38–40", label: "Monitoring, reporting and review pack (demo)" },
+    ],
+    footnotes: [
+      "Demo Part IV spine: screening → notice → draft EIA → decision → monitoring on one record. Not a real Party filing.",
+    ],
+  },
 };
 
-const DEFAULT_AT = {
-  mgrReceive: "2026-09-06T09:00:00.000Z",
-  mgrPublish: "2026-09-06T10:00:00.000Z",
-  mgrReceive2: "2026-09-06T11:00:00.000Z",
-  mgrPublish2: "2026-09-06T12:00:00.000Z",
-};
+const MGR_RECEIVE_BASE = Date.parse("2026-08-12T09:00:00.000Z");
+
+function mgrClock(idx: number, hours: number): string {
+  return new Date(MGR_RECEIVE_BASE + idx * 36 * 3600_000 + hours * 3600_000).toISOString();
+}
+
+function asTier(raw: string | undefined): ConfidentialityTier {
+  const parsed = ConfidentialityTier.safeParse(raw || "public");
+  if (!parsed.success) throw new Error(`Seed pack confidentiality not in enum: ${raw}`);
+  return parsed.data;
+}
+
+function asChannel(raw: string | undefined): SourceChannel {
+  const parsed = SourceChannel.safeParse(raw || "form");
+  if (!parsed.success) throw new Error(`Seed pack source_channel not in enum: ${raw}`);
+  return parsed.data;
+}
+
+function asEiaStage(raw: string): EiaCsvPack["stage"] {
+  if ((EiaPublishableStages as readonly string[]).includes(raw)) return raw as EiaCsvPack["stage"];
+  throw new Error(`Seed pack EIA stage is not publishable in this build: ${raw}`);
+}
 
 let cached: LoadedSeedPack | undefined;
 
@@ -181,7 +213,7 @@ export function getSeedPack(): LoadedSeedPack {
           { kind: "note", label: "Plausible demo mirror; not a real Party filing" },
         ]
       : undefined;
-    const postCollection = (row.status_path ?? "").includes("post");
+    const path = row.status_path ?? "";
     return {
       seedKey,
       badge: provenanceBySeedKey.get(seedKey) ?? "Demo scenario",
@@ -195,9 +227,14 @@ export function getSeedPack(): LoadedSeedPack {
       dataManagementPlan: row.data_management_plan || interimUrl,
       summary,
       artifactRefs: isInterim ? artifactRefs : undefined,
-      at: idx === 0 ? DEFAULT_AT.mgrReceive : DEFAULT_AT.mgrReceive2,
-      publishAt: idx === 0 ? DEFAULT_AT.mgrPublish : DEFAULT_AT.mgrPublish2,
-      postCollection,
+      at: mgrClock(idx, 0),
+      publishAt: mgrClock(idx, 2),
+      publish: path.includes("publish"),
+      postCollection: path.includes("post"),
+      utilisation: path.includes("util"),
+      sourceChannel: asChannel(row.source_channel),
+      confidentiality: asTier(row.confidentiality),
+      tkFpicFlag: /^(1|true|yes)$/i.test(row.tk_fpic ?? ""),
     };
   });
 
@@ -205,7 +242,7 @@ export function getSeedPack(): LoadedSeedPack {
   for (const row of readCsv("eia_packs.csv")) {
     const key = row.activity_seed_key!;
     const list = packsByActivity.get(key) ?? [];
-    const stage = row.stage as EiaCsvPack["stage"];
+    const stage = asEiaStage(row.stage!);
     const status = row.status as EiaCsvPack["status"];
     const screeningOutcome = row.screening_outcome
       ? (row.screening_outcome as "eia_required" | "no_eia")
@@ -235,6 +272,7 @@ export function getSeedPack(): LoadedSeedPack {
       abnjBox: asAbnjBox(row.abnj_box!),
       zoteroKey,
       artifact,
+      confidentiality: asTier(row.confidentiality),
       packs: packsByActivity.get(seedKey) ?? [],
       agreementExtras: overlay?.extras,
       agreementFootnotes: overlay?.footnotes,
@@ -400,4 +438,28 @@ export function isIsaNotUndermineAbmt(title: string): boolean {
 
 export function csvKey(seedKey: string): string {
   return `seed:csv:${seedKey}`;
+}
+
+/** Authored CSV pack counts — what the sandbox contains besides the smoke fixtures. */
+export function csvStorylineCounts(): {
+  mgr: number;
+  eia: number;
+  cbtmtNeeds: number;
+  cbtmtOffers: number;
+  cbtmtMatches: number;
+  abmt: number;
+  relatedSystems: number;
+  abnjBoxes: number;
+} {
+  const pack = getSeedPack();
+  return {
+    mgr: pack.mgr.length,
+    eia: pack.eia.length,
+    cbtmtNeeds: pack.cbtmtNeeds.length,
+    cbtmtOffers: pack.cbtmtOffers.length,
+    cbtmtMatches: pack.cbtmtMatches.length,
+    abmt: pack.abmt.length,
+    relatedSystems: pack.relatedSystems.length,
+    abnjBoxes: pack.abnjBoxes.length,
+  };
 }

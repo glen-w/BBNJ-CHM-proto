@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import type { StoredCbtmtRecord } from "@/lib/contracts/extensions";
 import { getDb } from "@/lib/db";
 import { fmtDate } from "@/lib/format";
+import { cbtmtListCaption } from "@/lib/list-captions";
 import { Textarea } from "@/components/ui/textarea";
 import { createCbtmtAction, setFacilitationNoteAction, suggestMatchAction, suggestMatchesAction } from "@/server/actions";
 import { matchesForRecord } from "@/server/cbtmt";
@@ -42,6 +43,9 @@ export default async function CapacityPage({ searchParams }: Props) {
       </div>
 
       <ListFilter label="Filter CBTMT records" placeholder="Title, themes, provider, public id…">
+        <p className="text-sm text-muted-foreground">
+          {cbtmtListCaption(needs.length, offers.length)}
+        </p>
         <section className="grid gap-4 lg:grid-cols-2">
           <Board title="Needs (Parties, Art 42)" items={needs} p={p} kind="need" />
           <Board title="Offers (providers)" items={offers} p={p} kind="offer" />

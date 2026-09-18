@@ -257,6 +257,7 @@ async function main() {
     await expect("/lab/speed", undefined, [307, 308]);
     await expect("/compare", undefined, 200, /Receipt, management and storage/);
     await expect("/compare", "secretariat", 200, /Refusal log/);
+    await expect("/exhibit", undefined, 200, /Evaluator exhibit/);
     await expect("/audit", "secretariat", 200, /Refusal log/);
     await expect("/audit", undefined, 200, /public projection/);
     await expect("/mgr/import", undefined, 200, /Secretariat function/);

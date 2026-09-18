@@ -97,9 +97,14 @@ export default async function AboutPage({ searchParams }: Props) {
               </tbody>
             </table>
           </div>
-          <Link href="/compare" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
-            Full comparison with live deep links
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/compare" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
+              Full comparison with live deep links
+            </Link>
+            <Link href="/exhibit" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
+              Printable evaluator exhibit
+            </Link>
+          </div>
         </section>
 
         <section className="space-y-3">

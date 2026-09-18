@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { WithoutPrejudiceBanner } from "@/components/without-prejudice";
 import { getDb } from "@/lib/db";
 import { fmtDate, stageLabel } from "@/lib/format";
+import { abmtListCaption, listAudienceFromRoles } from "@/lib/list-captions";
 import { cn } from "@/lib/utils";
 import { can } from "@/server/policy";
 import { listAbmtProposals } from "@/server/queries";
@@ -37,9 +38,12 @@ export default async function AbmtPage({ searchParams }: Props) {
         <ExportLinks domain="abmt" />
       </div>
       <ListFilter label="Filter ABMT records" placeholder="Title, party, public id…">
-        <div className="overflow-x-auto rounded-lg border bg-card">
-          <Table>
-            <TableHeader className="bg-muted/40">
+        <p className="text-sm text-muted-foreground">
+          {abmtListCaption(listAudienceFromRoles(p.kind === "user" ? p.user.roles : undefined), proposals.length)}
+        </p>
+        <div className="max-h-[min(70vh,42rem)] overflow-auto rounded-lg border bg-card">
+          <Table containerClassName="overflow-visible">
+            <TableHeader className="sticky top-0 z-10 bg-card shadow-[inset_0_-1px_0_0_var(--border)]">
               <TableRow>
                 <TableHead>Proposal</TableHead>
                 <TableHead>Party</TableHead>

@@ -11,6 +11,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getDb } from "@/lib/db";
 import { fmtDate, stageLabel } from "@/lib/format";
+import { eiaListCaption, listAudienceFromRoles } from "@/lib/list-captions";
 import { cn } from "@/lib/utils";
 import { can } from "@/server/policy";
 import { listEiaActivities } from "@/server/queries";
@@ -52,6 +53,9 @@ export default async function EiaPage({ searchParams }: Props) {
       </div>
 
       <ListFilter label="Filter EIA records" placeholder="Title, party, ABNJ box, public id…">
+        <p className="text-sm text-muted-foreground">
+          {eiaListCaption(listAudienceFromRoles(p.kind === "user" ? p.user.roles : undefined), activities.length)}
+        </p>
         <div className="max-h-[min(70vh,42rem)] overflow-auto rounded-lg border bg-card">
           <Table containerClassName="overflow-visible">
             <TableHeader className="sticky top-0 z-10 bg-card shadow-[inset_0_-1px_0_0_var(--border)]">

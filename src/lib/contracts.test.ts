@@ -164,6 +164,9 @@ describe("Domain records schemas", () => {
       "North Atlantic OAE Trial Box",
       "Sargasso Sea Core",
       "Costa Rica Thermal Dome",
+      "Central Indian Ridge",
+      "Tonga-Kermadec Arc",
+      "Southern Ocean Polar Front",
     ]);
     expect(
       EiaActivity.safeParse({

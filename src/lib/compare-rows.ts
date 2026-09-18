@@ -83,7 +83,7 @@ export function buildCompareSections(ctx: CompareContext): CompareSection[] {
         {
           area: "EIA spine",
           interim: `Documents as files on public pages (${asOf})`,
-          prototype: "Pack-level publish spine: screening → notice → draft EIA → STB comments → decision. A published screening and a draft draft-EIA coexist on one activity.",
+          prototype: "Pack-level publish spine: screening → notice → draft EIA → STB comments → decision → monitoring. A published screening and a draft draft-EIA coexist on one activity; a Polar Front cable carries a published decision and monitoring pack.",
           links: [...(ctx.eia2 ? [{ href: `/eia/${ctx.eia2}`, label: "Sediment sampling, CCZ" }] : []), ...(ctx.eia3 ? [{ href: `/eia/${ctx.eia3}`, label: "Coexistence (activity 3)" }] : [])],
         },
         {

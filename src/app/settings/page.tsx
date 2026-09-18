@@ -96,7 +96,11 @@ export default async function SettingsPage({ searchParams }: Props) {
             ))}
           </ol>
           <p className="text-xs text-muted-foreground">
-            Full interim comparison: <Link href="/compare" className="underline">/compare</Link> · Narrated script: <code>DEMO-SCRIPT.md</code>
+            Evaluator exhibit: <Link href="/exhibit" className="underline">/exhibit</Link>
+            {" · "}
+            Full interim comparison: <Link href="/compare" className="underline">/compare</Link>
+            {" · "}
+            Narrated script: <code>DEMO-SCRIPT.md</code>
           </p>
         </section>
       ) : null}
