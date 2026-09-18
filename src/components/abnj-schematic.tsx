@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { ABNJ_SCHEMATIC_NODES } from "@/lib/abnj-schematic";
+import { ABNJ_SCHEMATIC_NODES, ABNJ_SCHEMATIC_VIEWBOX } from "@/lib/abnj-schematic";
 import type { AbnjBox } from "@/lib/contracts/events";
 import { cn } from "@/lib/utils";
 
@@ -19,19 +19,24 @@ export function AbnjSchematic({
   neighbours: NeighbourPin[];
   className?: string;
 }) {
-  const inBox = neighbours.filter((n) => true);
+  const inBox = neighbours;
 
   return (
     <figure className={cn("rounded-lg border bg-muted/30 p-3", className)}>
-      <svg viewBox="0 0 100 80" className="mx-auto w-full max-w-md" role="img" aria-label={`Schematic of demo ABNJ boxes; current box ${currentBox}`}>
-        <rect x="0" y="0" width="100" height="80" fill="transparent" />
+      <svg
+        viewBox={`0 0 ${ABNJ_SCHEMATIC_VIEWBOX.width} ${ABNJ_SCHEMATIC_VIEWBOX.height}`}
+        className="mx-auto w-full max-w-md"
+        role="img"
+        aria-label={`Schematic of demo ABNJ boxes; current box ${currentBox}`}
+      >
+        <rect x="0" y="0" width={ABNJ_SCHEMATIC_VIEWBOX.width} height={ABNJ_SCHEMATIC_VIEWBOX.height} fill="transparent" />
         <path
           d="M 8 42 Q 28 18 50 22 Q 72 26 92 38 Q 88 58 72 72 Q 48 78 22 68 Q 8 58 8 42 Z"
           className="fill-none stroke-line stroke-[0.4]"
           strokeDasharray="2 1"
         />
         <text x="50" y="8" textAnchor="middle" className="fill-muted-foreground text-[3px]">
-          North Atlantic (schematic)
+          ABNJ boxes (schematic — not GIS)
         </text>
         {ABNJ_SCHEMATIC_NODES.map((node) => {
           const isCurrent = node.box === currentBox;

@@ -1,12 +1,15 @@
 import { AbnjBox } from "@/lib/contracts/events";
 
-/** Schematic positions on a simple Atlantic-centred diagram — not geographic coordinates. */
+/** Schematic positions on a vocabulary diagram — not geographic coordinates. */
 export type AbnjSchematicNode = {
   box: (typeof AbnjBox.options)[number];
   x: number;
   y: number;
   label: string;
 };
+
+/** SVG viewBox width/height. Every node (plus its label offset) must sit inside. */
+export const ABNJ_SCHEMATIC_VIEWBOX = { width: 100, height: 100 } as const;
 
 /** Every AbnjBox enum value must appear exactly once. */
 export const ABNJ_SCHEMATIC_NODES: readonly AbnjSchematicNode[] = [
@@ -18,9 +21,9 @@ export const ABNJ_SCHEMATIC_NODES: readonly AbnjSchematicNode[] = [
   { box: "North Atlantic OAE Trial Box", x: 38, y: 32, label: "OAE trial" },
   { box: "Sargasso Sea Core", x: 32, y: 52, label: "Sargasso" },
   { box: "Costa Rica Thermal Dome", x: 18, y: 62, label: "CR Dome" },
-  { box: "Central Indian Ridge", x: 78, y: 72, label: "Indian Ridge" },
-  { box: "Tonga-Kermadec Arc", x: 92, y: 78, label: "Tonga–Kermadec" },
-  { box: "Southern Ocean Polar Front", x: 50, y: 90, label: "Polar Front" },
+  { box: "Central Indian Ridge", x: 80, y: 74, label: "Indian Ridge" },
+  { box: "Tonga-Kermadec Arc", x: 90, y: 80, label: "Tonga–Kermadec" },
+  { box: "Southern Ocean Polar Front", x: 50, y: 88, label: "Polar Front" },
 ];
 
 if (ABNJ_SCHEMATIC_NODES.length !== AbnjBox.options.length) {
