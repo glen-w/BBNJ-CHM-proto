@@ -18,6 +18,9 @@ export const ABNJ_SCHEMATIC_NODES: readonly AbnjSchematicNode[] = [
   { box: "North Atlantic OAE Trial Box", x: 38, y: 32, label: "OAE trial" },
   { box: "Sargasso Sea Core", x: 32, y: 52, label: "Sargasso" },
   { box: "Costa Rica Thermal Dome", x: 18, y: 62, label: "CR Dome" },
+  { box: "Central Indian Ridge", x: 78, y: 72, label: "Indian Ridge" },
+  { box: "Tonga-Kermadec Arc", x: 92, y: 78, label: "Tonga–Kermadec" },
+  { box: "Southern Ocean Polar Front", x: 50, y: 90, label: "Polar Front" },
 ];
 
 if (ABNJ_SCHEMATIC_NODES.length !== AbnjBox.options.length) {

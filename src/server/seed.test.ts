@@ -5,17 +5,20 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import { AbnjBox } from "@/lib/contracts/events";
 import { getAbmtProposal } from "@/server/abmt";
-import { listMatches } from "@/server/cbtmt";
-import { getEiaActivity } from "@/server/eia";
+import { listMatches, suggestMatches } from "@/server/cbtmt";
+import { getEiaActivity, packsForActivity } from "@/server/eia";
 import { getMgrBatch } from "@/server/mgr";
+import { principalFor } from "@/server/policy";
 import { seedDatabase, seedIfEmpty } from "@/server/seed";
 import {
   agreementBasisExtrasForRecord,
   clearSeedPackCache,
+  csvStorylineCounts,
   getSeedPack,
   isIsaNotUndermineAbmtRecord,
   provenanceBadgeForRecord,
 } from "@/server/seed-pack";
+import { findUserByUsername } from "@/server/users";
 import { createHarness, type Harness } from "@/test/helpers";
 
 /** Boxes listed in the authored pack CSV. */
@@ -61,12 +64,28 @@ describe("seed I/O", () => {
   it("loads fixtures/bbnj-chm-seed-pack CSVs out of the box", () => {
     clearSeedPackCache();
     const pack = getSeedPack();
-    expect(pack.mgr.map((m) => m.seedKey)).toContain("mgr-interim-temp-001");
-    expect(pack.eia.map((e) => e.seedKey)).toEqual(
-      expect.arrayContaining(["eia-rocket-splashdown", "eia-marine-cdr-oae", "eia-mesopelagic-fishery"]),
+    expect(pack.mgr.map((m) => m.seedKey)).toEqual(
+      expect.arrayContaining([
+        "mgr-interim-temp-001",
+        "mgr-hydrothermal-indian",
+        "mgr-sargasso-pending",
+        "mgr-assisted-sids",
+        "mgr-southern-edna",
+      ]),
     );
-    expect(pack.abmt.length).toBeGreaterThanOrEqual(3);
-    expect(pack.relatedSystems.length).toBeGreaterThanOrEqual(4);
+    expect(pack.eia.map((e) => e.seedKey)).toEqual(
+      expect.arrayContaining([
+        "eia-rocket-splashdown",
+        "eia-marine-cdr-oae",
+        "eia-mesopelagic-fishery",
+        "eia-cable-southern",
+        "eia-vent-indian",
+      ]),
+    );
+    expect(pack.abmt.length).toBeGreaterThanOrEqual(4);
+    expect(pack.relatedSystems.length).toBeGreaterThanOrEqual(7);
+    expect(pack.cbtmtMatches.length).toBeGreaterThanOrEqual(4);
+    expect(csvStorylineCounts().abnjBoxes).toBe(AbnjBox.options.length);
     expect(pack.abnjBoxes).toEqual(abnjBoxesFromFixtureCsv());
     expect(pack.abnjBoxes).toEqual([...AbnjBox.options]);
   });
@@ -105,9 +124,46 @@ describe("seed I/O", () => {
     expect(pack.abnjBoxes).toEqual([...AbnjBox.options]);
     expect(AbnjBox.safeParse("Mid-Atlantic Splashdown Corridor").success).toBe(true);
     expect(AbnjBox.safeParse("NE Atlantic Mesopelagic Belt").success).toBe(true);
+    expect(AbnjBox.safeParse("Central Indian Ridge").success).toBe(true);
+    expect(AbnjBox.safeParse("Tonga-Kermadec Arc").success).toBe(true);
+    expect(AbnjBox.safeParse("Southern Ocean Polar Front").success).toBe(true);
 
-    // CBTMT facilitation notes + Lock 4 match rows
-    expect(ids.rich.cbtmt.matchIds.length).toBeGreaterThanOrEqual(2);
+    const hydrothermal = getMgrBatch(h.db, ids.rich.mgr.hydrothermalIndian)!;
+    expect(hydrothermal.currentStage).toBe("utilisation");
+    expect(hydrothermal.publicRecordId).toMatch(/^BBNJ-MGR-/);
+    expect(hydrothermal.sourceChannel).toBe("form");
+
+    const pending = getMgrBatch(h.db, ids.rich.mgr.sargassoPending)!;
+    expect(pending.bSbi).toBeTruthy();
+    expect(pending.publicRecordId).toBeUndefined();
+    expect(pending.sourceChannel).toBe("form");
+
+    const assisted = getMgrBatch(h.db, ids.rich.mgr.assistedSids)!;
+    expect(assisted.sourceChannel).toBe("assisted");
+    expect(assisted.publicRecordId).toMatch(/^BBNJ-MGR-/);
+
+    const southern = getMgrBatch(h.db, ids.rich.mgr.southernEdna)!;
+    expect(southern.confidentiality).toBe("restricted");
+    expect(southern.locationHint).toBe("Southern Ocean Polar Front");
+
+    const cable = getEiaActivity(h.db, ids.rich.eia.cableSouthern)!;
+    expect(cable.currentStage).toBe("monitoring_review");
+    expect(cable.abnjBox).toBe("Southern Ocean Polar Front");
+    const secretariat = principalFor(findUserByUsername(h.db, "secretariat")!);
+    const cablePacks = packsForActivity(h.db, secretariat, cable.id);
+    expect(cablePacks.some((e) => e.stage === "decision_conditions" && e.status === "published")).toBe(true);
+    expect(cablePacks.some((e) => e.stage === "monitoring_review" && e.status === "published")).toBe(true);
+    const cableBasis = agreementBasisExtrasForRecord(h.db, cable.id);
+    expect(cableBasis.extras.some((c) => /Arts 38–40|Art 34/.test(c.article))).toBe(true);
+
+    const vent = getEiaActivity(h.db, ids.rich.eia.ventIndian)!;
+    expect(vent.abnjBox).toBe("Central Indian Ridge");
+    expect(packsForActivity(h.db, secretariat, vent.id).some((e) => e.stage === "draft_eia" && e.status === "pending")).toBe(true);
+
+    expect(getAbmtProposal(h.db, ids.rich.abmt.indianVents)!.publicRecordId).toBeUndefined();
+
+    // CBTMT facilitation notes + Lock 4 match rows (including mCDR and sequencing pairs)
+    expect(ids.rich.cbtmt.matchIds.length).toBeGreaterThanOrEqual(6);
     const allMatches = listMatches(h.db);
     for (const matchId of ids.rich.cbtmt.matchIds) {
       const m = allMatches.find((x) => x.id === matchId)!;
@@ -115,6 +171,8 @@ describe("seed I/O", () => {
       expect(m.facilitationNote).toBeTruthy();
       expect(m.needId).not.toBe(m.offerId);
     }
+    const ruleAgain = suggestMatches(h.db, secretariat, "seed-test-shared-theme-replay");
+    expect(ruleAgain.filter((m) => m.created)).toHaveLength(0);
 
     // Mesopelagic Agreement-basis extras (Zotero 6K6WPBFQ as RFMO-gap / Part IV)
     const meso = getEiaActivity(h.db, ids.rich.eia.mesopelagic)!;
@@ -131,7 +189,13 @@ describe("seed I/O", () => {
     expect(ccz.publicRecordId).toMatch(/^BBNJ-ABMT-/);
 
     // Neighbourhood density: ≥2 published EIA in each storyline AbnjBox
-    for (const box of [getEiaActivity(h.db, ids.rich.eia.rocket)!.abnjBox, getEiaActivity(h.db, ids.rich.eia.marineCdr)!.abnjBox, meso.abnjBox]) {
+    for (const box of [
+      getEiaActivity(h.db, ids.rich.eia.rocket)!.abnjBox,
+      getEiaActivity(h.db, ids.rich.eia.marineCdr)!.abnjBox,
+      meso.abnjBox,
+      cable.abnjBox,
+      vent.abnjBox,
+    ]) {
       const n = (
         h.db
           .prepare(`SELECT COUNT(*) AS n FROM eia_activities WHERE abnj_box = ? AND public_record_id IS NOT NULL`)

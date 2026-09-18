@@ -246,9 +246,8 @@ export function addMgrPack(
   stage: Extract<MgrStage, "post_collection" | "utilisation">,
   summary: string,
   key: IdempotencyKey,
-  _clientSupplied?: unknown, // ignored on purpose: clients never choose versions
+  opts?: { at?: string },
 ): MgrResult {
-  void _clientSupplied;
   const batch = getMgrBatch(db, batchId);
   if (!batch) throw new DomainError("not_found", "Batch not found");
   if (!batch.bSbi) throw new DomainError("invalid_transition", "Pre-collection receipt must be accepted before later packs");
@@ -261,6 +260,7 @@ export function addMgrPack(
     summary: summary.trim() || `${stage.replace("_", "-")} notification`,
     idempotencyKey: key,
     extras: { bSbi: batch.bSbi },
+    at: opts?.at,
   });
   return { ...res, batch: getMgrBatch(db, batchId)! };
 }

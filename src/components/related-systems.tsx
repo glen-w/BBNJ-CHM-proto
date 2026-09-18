@@ -27,15 +27,13 @@ export function SecretariatNoticesList() {
   );
 }
 
-/** Reference links only — no data flows. Seed pack related_systems.csv + BCH/OBIS. */
+/** Reference links only — no data flows. Seed pack related_systems.csv plus any notices not already listed. */
 export function relatedSystemsLinks() {
   const fromPack = RELATED_SYSTEMS_SEED();
   const notices = SECRETARIAT_NOTICES().filter((n) => !fromPack.some((r) => r.href === n.url));
   return [
     ...fromPack.map((r) => ({ href: r.href, label: r.label })),
     ...notices.map((n) => ({ href: n.url, label: n.title })),
-    { href: "https://bch.cbd.int/", label: "BCH" },
-    { href: "https://obis.org/", label: "OBIS" },
   ];
 }
 

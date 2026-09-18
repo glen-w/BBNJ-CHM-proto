@@ -85,7 +85,7 @@ describe("MGR journey I/O", () => {
       "invalid_transition",
     );
     const rec = receivePreCollection(h.db, h.party(), VALID_MGR, "form", h.key());
-    const pack = addMgrPack(h.db, h.party(), rec.batch.id, "utilisation", "Use of samples", h.key(), { version: 99 });
+    const pack = addMgrPack(h.db, h.party(), rec.batch.id, "utilisation", "Use of samples", h.key());
     expect(pack.event.version).toBe(1);
     expect(pack.event.stage).toBe("utilisation");
     expect(pack.event.bSbi).toBe(rec.batch.bSbi);

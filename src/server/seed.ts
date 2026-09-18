@@ -45,7 +45,20 @@ const EIA_DRAFT_ARTIFACTS: ArtifactRef[] = [
   { kind: "url", label: "Public consultation page (demo URL)", href: "https://example.org/eia/consultation" },
 ];
 
-export const CBTMT_THEMES = ["taxonomy", "genomics", "eia_practice"] as const;
+export const CBTMT_THEMES = [
+  "taxonomy",
+  "genomics",
+  "eia_practice",
+  "training",
+  "fisheries",
+  "mesopelagic",
+  "mcdr",
+  "monitoring",
+  "sequencing",
+  "ship_time",
+  "legal_policy",
+  "remote_sensing",
+] as const;
 
 export interface SeedIds {
   users: Record<string, string>;

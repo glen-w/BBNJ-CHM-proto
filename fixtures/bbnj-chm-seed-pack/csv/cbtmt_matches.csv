@@ -1,3 +1,7 @@
 need_seed_key,offer_seed_key,rule,facilitation_note
 cbt-need-eia-practice,cbt-offer-eia-course,eia_practice,Secretariat facilitation note (demo): cohort scheduling offered Q1 2027.
+cbt-need-eia-practice,cbt-offer-acoustic,eia_practice,Human brokerage (demo): acoustics lab offered a guest lecture on survey design for the SIDS EIA cohort.
 cbt-need-meso-assessment,cbt-offer-acoustic,mesopelagic,Human brokerage (demo): match suggested on shared mesopelagic/eia_practice themes.
+cbt-need-meso-assessment,cbt-offer-eia-course,eia_practice,Secretariat facilitation note (demo): EIA course seats reserved for the mesopelagic assessment cohort.
+cbt-need-mcdr-monitor,cbt-offer-oae-lab,mcdr,Secretariat facilitation note (demo): monitoring protocol shared; Q2 2027 intercomparison offered.
+cbt-need-sids-sequencing,cbt-offer-sequencing-core,sequencing,Human brokerage (demo): sequencing core offered a 24-sample run; Party XSD to send extracted DNA.

@@ -267,6 +267,9 @@ export const AbnjBox = z.enum([
   "North Atlantic OAE Trial Box",
   "Sargasso Sea Core",
   "Costa Rica Thermal Dome",
+  "Central Indian Ridge",
+  "Tonga-Kermadec Arc",
+  "Southern Ocean Polar Front",
 ]);
 export type AbnjBox = z.infer<typeof AbnjBox>;
 
