@@ -50,11 +50,11 @@ export async function AppShell({
     <div className="min-h-full flex flex-col bg-background text-foreground">
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:border focus:bg-card focus:px-3 focus:py-2 focus:text-sm focus:shadow-md focus:outline-none focus:ring-3 focus:ring-ring/50"
+        className="sr-only print:hidden focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:border focus:bg-card focus:px-3 focus:py-2 focus:text-sm focus:shadow-md focus:outline-none focus:ring-3 focus:ring-ring/50"
       >
         Skip to content
       </a>
-      <header className="border-b bg-card">
+      <header className="border-b bg-card print:hidden">
         {/* Band 1 — UN masthead (welcome + treaty-text locale). */}
         <div className="border-b border-institutional/40 bg-muted/40">
           <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-1 px-6 py-1">
@@ -191,7 +191,7 @@ export async function AppShell({
         <FlashBanner flash={flash} />
         {children}
       </main>
-      <footer className="border-t">
+      <footer className="border-t print:hidden">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-1 px-6 py-2 text-xs text-muted-foreground">
           <span>Clearing House</span>
           <Link href="/about" className="underline underline-offset-2 hover:text-institutional">

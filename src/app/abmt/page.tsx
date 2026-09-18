@@ -37,9 +37,13 @@ export default async function AbmtPage({ searchParams }: Props) {
         <ExportLinks domain="abmt" />
       </div>
       <ListFilter label="Filter ABMT records" placeholder="Title, party, public id…">
-        <div className="overflow-x-auto rounded-lg border bg-card">
-          <Table>
-            <TableHeader className="bg-muted/40">
+        <p className="text-sm text-muted-foreground">
+          {proposals.length} stub{proposals.length === 1 ? "" : "s"} visible to your role. Sargasso and CCZ are
+          published; Costa Rica Dome and the Indian Ridge vent field wait on the publish gate.
+        </p>
+        <div className="max-h-[min(70vh,42rem)] overflow-auto rounded-lg border bg-card">
+          <Table containerClassName="overflow-visible">
+            <TableHeader className="sticky top-0 z-10 bg-card shadow-[inset_0_-1px_0_0_var(--border)]">
               <TableRow>
                 <TableHead>Proposal</TableHead>
                 <TableHead>Party</TableHead>

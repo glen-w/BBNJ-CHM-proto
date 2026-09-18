@@ -15,7 +15,7 @@ Repository: [github.com/glen-w/BBNJ-CHM-proto](https://github.com/glen-w/BBNJ-CH
 | **What it is** | A working **desk**, not a brochure site: Parties submit structured records; an authorised publisher releases them; subscribers get alerts; every step is auditable. |
 | **Why it exists** | To show what a *transactional* Cl-HM adds beside the interim DOALOS informational set-up (documents, meetings, contacts) — a **design contrast**, not a critique. |
 | **How to try it** | Clone or Docker — **no hosted public URL yet**. Five passwordless logins for local evaluation. |
-| **What to open first** | `DEMO-SCRIPT.md` (10‑minute walk-through) · [`/compare`](http://localhost:3000/compare) after start |
+| **What to open first** | `DEMO-SCRIPT.md` (10‑minute walk-through) · [`/exhibit`](http://localhost:3000/exhibit) (printable EOI one-pager) · [`/compare`](http://localhost:3000/compare) |
 
 **Hands-on in one line:** `npm ci && npm run db:seed && npm run dev` — or `docker compose up --build` — then sign in at `/login`.
 
@@ -29,6 +29,7 @@ Repository: [github.com/glen-w/BBNJ-CHM-proto](https://github.com/glen-w/BBNJ-CH
 - **Notify semantics** — in-app bell, hold + digest (no e-mail yet); optional digest CSV for the Secretariat  
 - **Search** — policy-aware full-text search so restricted rows never leak to public readers  
 - **Honesty labels** — Interim (DOALOS) vs Demo scenario badges so seed storylines are not read as real filings  
+- **Evaluator exhibit** — printable `/exhibit` maps Session‑1 / EOI criteria to live routes and the sandbox inventory  
 
 Caveats stay in docs (and this README), not in product chrome: illustrative Party **XSD** (no real State), cookie logins, ABMT is a stub, notifications are in-app only, Excel is an Art 51.5 **pattern** not a WCAG certificate, PDF export is a stub.
 
@@ -56,7 +57,7 @@ No passwords. A bad cookie = anonymous public.
 | Notify | None visible on public pages | Outbox → subscriptions → **in-app** digests (no SMTP) |
 | Audit | Not surfaced on public pages | Append-only transitions + refusal log |
 
-Full table and deep links: `/compare` (functions-first; docs-style page; not in primary nav). Talk-track: Excel = Art 51.5 pattern · language stub · ABMT without prejudice · no hosted URL yet — see [`docs/SHIPPED.md`](docs/SHIPPED.md).
+Full table and deep links: `/compare` (functions-first; docs-style page; not in primary nav). Printable one-pager: `/exhibit`. Talk-track: Excel = Art 51.5 pattern · language stub · ABMT without prejudice · no hosted URL yet — see [`docs/SHIPPED.md`](docs/SHIPPED.md).
 
 ---
 
@@ -72,7 +73,7 @@ What this release already proves vs what a production Cl-HM would still need. Wa
 | **Wave C — Trust & language** | Production posture | Institutional IdP / OAuth, TLS, session hardening; **six-language UI by human i18n** (treaty-text links already stubbed); formal WCAG audit |
 | **Wave D — Content & geography** | Deeper records | File/object store for artifacts (today: references only); **tile/GIS neighbourhood** as progressive enhancement (schematic ABNJ diagram ships now); ABMT content beyond `proposal_stub` when COP1 clarifies |
 | **Wave E — Interoperate** | Ecosystem | Versioned **API + webhooks**; federation / node protocol on the outbox; search beyond SQLite FTS; machine-readable exchange with related clearing-houses (today: named links only) |
-| **Cross-cut** | Assist, hosting & proof | Guarded **LLM assist** (never authority) incl. CBTMT match-card UX (rule vs facilitation split); **printable EOI exhibit** one-pager from live DB; pick an **infrastructure pathway**; grow **testing** with each seam without replacing `npm run smoke` |
+| **Cross-cut** | Assist, hosting & proof | Guarded **LLM assist** (never authority) incl. CBTMT match-card UX (rule vs facilitation split); pick an **infrastructure pathway**; grow **testing** with each seam without replacing `npm run smoke` |
 
 ### Translation — need and modalities
 
@@ -347,7 +348,7 @@ Environment: `DATABASE_PATH` (default `data/chm.sqlite`); `SANDBOX_RESET=1` (or 
 | `src/server/{mgr,eia,cbtmt,abmt}.ts` | Domain journeys |
 | `src/server/seed-pack.ts` / `seedFromCsv.ts` / `parseCsv.ts` | CSV seed pack → domain APIs |
 | `src/server/speed-lab.ts` | Mocked Excel-loop timing (`npm run speed` / Settings → Speed) |
-| `src/app/` | Pages (incl. `/search`, `/institutional`, `/stb`), actions, templates, exports, health |
+| `src/app/` | Pages (incl. `/search`, `/exhibit`, `/institutional`, `/stb`), actions, templates, exports, health |
 | `scripts/` | smoke, demo, seed, digest, replay-outbox, … |
 
 ### Further reading
@@ -355,6 +356,7 @@ Environment: `DATABASE_PATH` (default `data/chm.sqlite`); `SANDBOX_RESET=1` (or 
 | File | Purpose |
 |---|---|
 | `docs/SHIPPED.md` | Public honesty ledger (what smoke/demo assert) |
+| `/exhibit` | Printable evaluator / EOI one-pager (live route) |
 | `DEMO-SCRIPT.md` | Presenters / walk-through |
 | `VISUAL-CHARTER.md` | UI identity |
 | `ACCESSIBILITY.md` | WCAG assessment |

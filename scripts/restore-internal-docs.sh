@@ -4,7 +4,14 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-SOURCE_REF="${1:-HEAD}"
+if [[ -n "${1:-}" ]]; then
+  SOURCE_REF="$1"
+else
+  # Files were dropped from HEAD in the public-docs cleanup; restore from the parent of that delete.
+  deleted_at="$(git log -1 --diff-filter=D --pretty=%H -- SHIPPED-VS-DEFERRED.md 2>/dev/null || true)"
+  SOURCE_REF="${deleted_at:+${deleted_at}^}"
+  SOURCE_REF="${SOURCE_REF:-HEAD}"
+fi
 ARCHIVE="internal"
 
 FILES=(

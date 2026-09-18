@@ -86,7 +86,7 @@ This document is a living gap analysis, not a formal certification.
 
 ## Priority surfaces for manual check
 
-Keyboard + one screen reader pass: home (incl. About this desk / related systems), login (five logins), MGR new/edit, Excel import (MGR + EIA screening), EIA pack form with artifact references, CBTMT post + facilitation note, ABMT stub, preferences, notifications bell, `/compare`.
+Keyboard + one screen reader pass: home (incl. About this desk / related systems), login (five logins), MGR new/edit, Excel import (MGR + EIA screening), EIA pack form with artifact references, CBTMT post + facilitation note, ABMT stub, preferences, notifications bell, `/compare`, `/exhibit`, `/search`.
 
 ---
 

@@ -7,6 +7,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Domain } from "@/lib/contracts/events";
+import { SEARCH_SUGGESTIONS } from "@/lib/exhibit";
 import { getDb } from "@/lib/db";
 import { fmtDate, stageLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -71,7 +72,22 @@ export default async function SearchPage({ searchParams }: Props) {
       </form>
 
       {!q.trim() ? (
-        <p className="text-sm text-muted-foreground">Enter a query to search indexed record fields.</p>
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">Enter a query to search indexed record fields. Suggested starting points:</p>
+          <ul className="flex flex-wrap gap-2">
+            {SEARCH_SUGGESTIONS.map((s) => (
+              <li key={s.q}>
+                <Link
+                  href={`/search?q=${encodeURIComponent(s.q)}`}
+                  className={cn(buttonVariants({ variant: "outline", size: "xs" }))}
+                  title={s.why}
+                >
+                  {s.q}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       ) : hits.length === 0 ? (
         <p className="text-sm text-muted-foreground">No visible records match “{q}”.</p>
       ) : (

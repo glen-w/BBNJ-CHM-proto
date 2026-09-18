@@ -73,6 +73,7 @@ export function homeWelcomeGetStarted(mode: HomeWelcomeSubmitMode): HomeWelcomeC
       headerHref: "/about",
       links: [
         { href: "/about", label: "Learn about the Cl-HM" },
+        { href: "/exhibit", label: "Evaluator exhibit" },
         { href: "/settings?tab=demo", label: "Demo user path" },
         { href: "#journeys", label: "The four journeys" },
         { href: "https://www.un.org/bbnjagreement/en", label: "About the Agreement", external: true },
@@ -84,6 +85,7 @@ export function homeWelcomeGetStarted(mode: HomeWelcomeSubmitMode): HomeWelcomeC
       headerHref: "/search",
       links: [
         { href: "/search", label: "Search all records" },
+        { href: "/search?q=TEMP", label: "Try “TEMP” (interim MGR)" },
         { href: "#journeys", label: "Filter a journey list" },
       ],
     },

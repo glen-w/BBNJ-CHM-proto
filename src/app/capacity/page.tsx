@@ -42,6 +42,11 @@ export default async function CapacityPage({ searchParams }: Props) {
       </div>
 
       <ListFilter label="Filter CBTMT records" placeholder="Title, themes, provider, public id…">
+        <p className="text-sm text-muted-foreground">
+          {needs.length} need{needs.length === 1 ? "" : "s"} and {offers.length} offer{offers.length === 1 ? "" : "s"}{" "}
+          visible — including a SIDS sequencing pair with a facilitation note, and unmatched legal-policy / remote-sensing
+          / ship-time rows so the shared-theme rule is not a full join.
+        </p>
         <section className="grid gap-4 lg:grid-cols-2">
           <Board title="Needs (Parties, Art 42)" items={needs} p={p} kind="need" />
           <Board title="Offers (providers)" items={offers} p={p} kind="offer" />

@@ -52,6 +52,11 @@ export default async function EiaPage({ searchParams }: Props) {
       </div>
 
       <ListFilter label="Filter EIA records" placeholder="Title, party, ABNJ box, public id…">
+        <p className="text-sm text-muted-foreground">
+          {activities.length} activit{activities.length === 1 ? "y" : "ies"} visible to your role. Open the Polar Front
+          observatory cable for a published decision and monitoring pack; the Indian Ridge vent field still has a pending
+          draft EIA.
+        </p>
         <div className="max-h-[min(70vh,42rem)] overflow-auto rounded-lg border bg-card">
           <Table containerClassName="overflow-visible">
             <TableHeader className="sticky top-0 z-10 bg-card shadow-[inset_0_-1px_0_0_var(--border)]">

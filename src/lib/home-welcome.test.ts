@@ -61,5 +61,6 @@ describe("home welcome navigation", () => {
 
     const learn = homeWelcomeGetStarted("public").find((c) => c.key === "learn");
     expect(learn?.links.map((l) => l.href)).toContain("/settings?tab=demo");
+    expect(learn?.links.map((l) => l.href)).toContain("/exhibit");
   });
 });

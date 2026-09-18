@@ -216,4 +216,10 @@
       scroll-behavior: auto !important;
     }
   }
+  /* Evaluator exhibit / compare: print the tables, not the chrome. */
+  @media print {
+    a[href]::after {
+      content: none !important;
+    }
+  }
 }

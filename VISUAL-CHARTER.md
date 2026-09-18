@@ -71,7 +71,7 @@ This charter governs the Cl-HM desk UI. It is a **team choice** for this prototy
 - **CBTMT:** two-column needs↔offers; match as chip, not confetti.  
 - **Forms:** clear labels, inline validation, “Download template” as a first-class control on MGR intake.  
 - **Notify:** bell drawer — list, not toast spam.  
-- **Compare (`/compare`):** docs-style contrast page; **not** linked from the shell — open from `/about`, Settings → Demo user, or README / demo script.
+- **Compare (`/compare`) and evaluator exhibit (`/exhibit`):** docs-style pages; **not** linked from the shell — open from `/about`, Settings → Demo user, welcome Learn card, or README / demo script. `/exhibit` is print-friendly (chrome `print:hidden`).
 - **Neighbourhood (EIA):** schematic ABNJ diagram (labelled dots, not GIS tiles) above the same-box list — charter-allowed maps-without-hardcore-GIS.
 
 **Elevation:** flat / one soft shadow max. Prefer borders over shadows.
