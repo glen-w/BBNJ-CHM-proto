@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { WithoutPrejudiceBanner } from "@/components/without-prejudice";
 import { getDb } from "@/lib/db";
 import { fmtDate, stageLabel } from "@/lib/format";
+import { abmtListCaption, listAudienceFromRoles } from "@/lib/list-captions";
 import { cn } from "@/lib/utils";
 import { can } from "@/server/policy";
 import { listAbmtProposals } from "@/server/queries";
@@ -38,8 +39,7 @@ export default async function AbmtPage({ searchParams }: Props) {
       </div>
       <ListFilter label="Filter ABMT records" placeholder="Title, party, public id…">
         <p className="text-sm text-muted-foreground">
-          {proposals.length} stub{proposals.length === 1 ? "" : "s"} visible to your role. Sargasso and CCZ are
-          published; Costa Rica Dome and the Indian Ridge vent field wait on the publish gate.
+          {abmtListCaption(listAudienceFromRoles(p.kind === "user" ? p.user.roles : undefined), proposals.length)}
         </p>
         <div className="max-h-[min(70vh,42rem)] overflow-auto rounded-lg border bg-card">
           <Table containerClassName="overflow-visible">

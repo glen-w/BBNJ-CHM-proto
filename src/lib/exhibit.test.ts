@@ -23,5 +23,7 @@ describe("evaluator exhibit", () => {
     expect(SEARCH_SUGGESTIONS.map((s) => s.q)).toEqual(
       expect.arrayContaining(["TEMP", "utilisation", "mesopelagic", "sequencing", "Sargasso", "Polar Front"]),
     );
+    const polar = SEARCH_SUGGESTIONS.find((s) => s.q === "Polar Front");
+    expect(polar?.why).not.toMatch(/restricted/i);
   });
 });

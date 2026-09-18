@@ -151,6 +151,6 @@ export const SEARCH_SUGGESTIONS: { q: string; why: string }[] = [
   { q: "utilisation", why: "Art 12.8 pack on the Indian Ridge cruise" },
   { q: "mesopelagic", why: "RFMO-gap EIA storyline" },
   { q: "sequencing", why: "SIDS CBTMT need / offer pair" },
-  { q: "Sargasso", why: "Pending MGR + published ABMT stub" },
-  { q: "Polar Front", why: "Restricted eDNA + full EIA spine" },
+  { q: "Sargasso", why: "Published ABMT stub (pending MGR when signed in as owner)" },
+  { q: "Polar Front", why: "Observatory cable with decision + monitoring packs" },
 ];
