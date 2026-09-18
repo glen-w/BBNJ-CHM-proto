@@ -40,4 +40,5 @@ ENV DATABASE_PATH=/app/data/chm.sqlite
 EXPOSE 3000
 
 # Seed only when the database is empty; never deletes existing data.
-CMD ["sh", "-c", "npm run -s db:seed -- --if-empty && npm start"]
+# Bind all interfaces so Fly / Docker health checks can reach the process.
+CMD ["sh", "-c", "npm run -s db:seed -- --if-empty && npx next start --hostname 0.0.0.0 --port ${PORT:-3000}"]

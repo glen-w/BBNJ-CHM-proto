@@ -327,7 +327,7 @@ npm run contracts:check  # locked Zod contract loads
 npm test                 # Vitest
 ```
 
-Environment: `DATABASE_PATH` (default `data/chm.sqlite`); `SANDBOX_RESET=1` (or `force` in a hosted evaluation image) for Secretariat *Reset database*; optional `SEED_PACK_DIR` (default `fixtures/bbnj-chm-seed-pack`) to point the CSV seed loader elsewhere.
+Environment: `DATABASE_PATH` (default `data/chm.sqlite`); `SANDBOX_RESET=1` (or `force` in a hosted evaluation image) for Secretariat *Reset database*; `SANDBOX_BASIC_PASSWORD` (optional; with `SANDBOX_BASIC_USER`, default `bbnj`) for a browser HTTP Basic gate on a public URL — `/api/health` stays open; optional `SEED_PACK_DIR` (default `fixtures/bbnj-chm-seed-pack`) to point the CSV seed loader elsewhere.
 
 **Latency / SIDS:** SSR HTML, native forms (works without client JS), no map tiles; offline Excel is the Art 51.5 pattern proof — not a WCAG certification (`ACCESSIBILITY.md`). **Speed tests** live under Settings → Speed (`/settings?tab=speed`, or `npm run speed`): wire time is *calculated* from nominal bandwidth + RTT, parse time is *measured* with a validate-only pass — mocked, not a field measurement; trials go to `data/speed-runs.jsonl`, not the audit log.
 
