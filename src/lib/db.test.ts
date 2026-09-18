@@ -19,7 +19,7 @@ describe("openDatabase", () => {
     expect(ver.value).toBe(String(SCHEMA_VERSION));
     const tables = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all() as { name: string }[];
     expect(tables.map((t) => t.name)).toEqual(
-      expect.arrayContaining(["users", "events", "mgr_batches", "eia_activities", "cbtmt_records", "access_refusals"]),
+      expect.arrayContaining(["users", "events", "mgr_batches", "eia_activities", "cbtmt_records", "access_refusals", "abmt_proposals", "research_items"]),
     );
     const fk = db.pragma("foreign_keys", { simple: true });
     expect(fk).toBe(1);

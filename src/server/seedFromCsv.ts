@@ -10,6 +10,7 @@ import { addEiaPack, createEiaActivity } from "./eia";
 import { addMgrPack, receivePreCollection } from "./mgr";
 import { publishPack } from "./packs";
 import type { Principal } from "./policy";
+import { upsertResearchItem } from "./research";
 import { csvKey, getSeedPack } from "./seed-pack";
 
 export interface RichSeedIds {
@@ -189,7 +190,7 @@ export function seedRichPack(db: Db, party: Principal, secretariat: Principal): 
   // ---- ABMT stubs
   const abmtIds: Record<string, string> = {};
   for (const row of pack.abmt) {
-    const p = createAbmtProposal(db, party, { title: row.title }, csvKey(row.seedKey));
+    const p = createAbmtProposal(db, party, { title: row.title, abnjBox: row.abnjBox }, csvKey(row.seedKey));
     abmtIds[row.seedKey] = p.proposal.id;
     submitAbmtProposal(db, party, p.proposal.id, csvKey(`${row.seedKey}-submit`));
     if (row.publish) {
@@ -201,6 +202,8 @@ export function seedRichPack(db: Db, party: Principal, secretariat: Principal): 
       });
     }
   }
+
+  seedResearchItems(db);
 
   return {
     mgr: {
@@ -227,4 +230,24 @@ export function seedRichPack(db: Db, party: Principal, secretariat: Principal): 
       indianVents: abmtIds["abmt-indian-vents"]!,
     },
   };
+}
+
+function seedResearchItems(db: Db): void {
+  const pack = getSeedPack();
+  for (const row of pack.research) {
+    upsertResearchItem(db, {
+      zoteroKey: row.zoteroKey,
+      doi: row.doi,
+      title: row.title,
+      year: row.year,
+      citation: row.citation,
+      oaUrl: row.oaUrl,
+      licence: row.licence,
+      status: row.status,
+      pillars: row.pillars,
+      geographies: row.geographies,
+      ifbs: row.ifbs,
+      summarySnippet: row.summarySnippet,
+    });
+  }
 }

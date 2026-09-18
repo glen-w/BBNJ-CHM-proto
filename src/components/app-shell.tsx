@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { logoutAction } from "@/server/actions";
 import { actorRoleOf, can } from "@/server/policy";
 import { notificationsFor, unreadCount } from "@/server/queries";
+import { isResearchLaneEnabled } from "@/server/research";
 import { getSessionUser } from "@/server/session";
 
 // Journeys are entry points into the shared rails, not competing brands (VISUAL-CHARTER.md §1.2, §4).
@@ -45,6 +46,7 @@ export async function AppShell({
   const treatyLang = treatyLangOf(store.get(TREATY_LANG_COOKIE)?.value);
 
   const railItems = [...(can(principal, "comment_stb") ? [{ href: "/stb", label: "STB queue" }] : [])];
+  const researchLaneEnabled = isResearchLaneEnabled(db);
 
   return (
     <div className="min-h-full flex flex-col bg-background text-foreground">
@@ -165,7 +167,7 @@ export async function AppShell({
       <div className="sticky top-0 z-30 border-b bg-card">
         <div className="mx-auto flex w-full max-w-6xl items-center gap-x-4 px-6">
           <InstitutionalNav />
-          <JourneysNav items={journeys} />
+          <JourneysNav items={journeys} researchLaneEnabled={researchLaneEnabled} />
           <form action="/search" method="get" className="ms-auto flex min-w-0 shrink-0 items-center gap-1.5 py-1.5" role="search">
             <Input
               name="q"

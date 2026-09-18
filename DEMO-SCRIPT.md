@@ -7,7 +7,7 @@ Presenter notes: notifications are **in-app only** (no e-mail); Art 51.5 is show
 ## Before the demo
 
 ```bash
-npm run db:reset      # fresh seeded database, schema v6 (dev only)
+npm run db:reset      # fresh seeded database, schema v7 (dev only)
 npm run smoke         # 36 tests expected to pass (two may report `skip` if an optional API is absent)
 SANDBOX_RESET=1 npm run dev     # http://localhost:3000 — the env var shows the Secretariat's Reset database button
 ```
