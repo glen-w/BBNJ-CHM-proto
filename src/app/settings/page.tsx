@@ -128,7 +128,7 @@ export default async function SettingsPage({ searchParams }: Props) {
               <div className="font-medium">Show related research</div>
               <p className="mt-1 text-muted-foreground">
                 One switch for the whole desk (<code className="font-mono text-xs">{RESEARCH_LANE_META_KEY}</code>). Zotero stays the catalog; this
-                desk only shows the seeded snapshot. When off, the Literature tab and related-research panels are gone — not an empty state. Default
+                desk only shows the seeded snapshot. When off, the Library link and related-research panels are gone — not an empty state. Default
                 is on when the key is missing.
               </p>
               <form action={setResearchLaneAction} className="mt-3 flex flex-wrap items-center gap-2">

@@ -1,10 +1,11 @@
 "use client";
 
+import { Library } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { cn } from "@/lib/utils";
 import { RESEARCH_NAV_HREF } from "@/lib/research-lane";
+import { cn } from "@/lib/utils";
 
 const railLink =
   "whitespace-nowrap rounded-md px-2 py-1 text-sm text-foreground/80 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
@@ -39,20 +40,32 @@ export function RailsNav({ items }: { items: { href: string; label: string }[] }
   );
 }
 
-export function InstitutionalNav() {
+export function AllNav() {
   const pathname = usePathname();
-  const allCurrent = pathActive(pathname, "/audit");
-  const institutionalCurrent = pathActive(pathname, "/institutional");
+  const current = pathActive(pathname, "/audit");
   return (
-    <nav aria-label="Desk" className="flex shrink-0 items-center gap-5 border-r border-line pe-4">
+    <nav aria-label="All" className="flex shrink-0 items-center">
       <Link
         href="/audit"
-        className={cn(journeyTab, allCurrent && journeyTabCurrent)}
+        className={cn(journeyTab, current && journeyTabCurrent)}
         title="All transactions visible to your role"
-        aria-current={allCurrent ? "page" : undefined}
+        aria-current={current ? "page" : undefined}
       >
         All
       </Link>
+    </nav>
+  );
+}
+
+export function CoreNav({
+  items,
+}: {
+  items: { href: string; label: string; caption: string; enabled: boolean }[];
+}) {
+  const pathname = usePathname();
+  const institutionalCurrent = pathActive(pathname, "/institutional");
+  return (
+    <nav aria-label="Clearing House" className="flex shrink-0 flex-nowrap items-center gap-5">
       <Link
         href="/institutional"
         className={cn(journeyTab, institutionalCurrent && journeyTabCurrent)}
@@ -61,23 +74,7 @@ export function InstitutionalNav() {
       >
         Institutional
       </Link>
-    </nav>
-  );
-}
-
-export function JourneysNav({
-  items,
-  researchLaneEnabled = true,
-}: {
-  items: { href: string; label: string; caption: string; enabled: boolean }[];
-  /** Literature tab uses the same global gate and is omitted from `items` when the lane is off. */
-  researchLaneEnabled?: boolean;
-}) {
-  const pathname = usePathname();
-  const visible = researchLaneEnabled ? items : items.filter((j) => j.href !== RESEARCH_NAV_HREF);
-  return (
-    <nav aria-label="Journeys" className="flex flex-wrap items-center gap-5">
-      {visible.map((j) => {
+      {items.map((j) => {
         const current = pathActive(pathname, j.href);
         if (!j.enabled) {
           return (
@@ -104,5 +101,25 @@ export function JourneysNav({
         );
       })}
     </nav>
+  );
+}
+
+/** Reference library — not a journey. Sits apart from the desk and journey tabs. */
+export function LibraryNav() {
+  const pathname = usePathname();
+  const current = pathActive(pathname, RESEARCH_NAV_HREF);
+  return (
+    <Link
+      href={RESEARCH_NAV_HREF}
+      className={cn(
+        "inline-flex shrink-0 items-center gap-1.5 py-2 text-sm text-foreground/80 hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+        current && "font-medium text-institutional",
+      )}
+      title="Zotero-backed papers linked to the journeys"
+      aria-current={current ? "page" : undefined}
+    >
+      <Library aria-hidden="true" className="size-3.5 shrink-0" />
+      Library
+    </Link>
   );
 }

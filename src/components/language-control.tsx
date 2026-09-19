@@ -37,7 +37,8 @@ export function LanguageControl({ active }: { active: TreatyLangCode }) {
             onClick={() => choose(lang.code, lang.url)}
             className={cn(
               "rounded-sm hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-              lang.code === active ? "font-semibold text-foreground" : "",
+              lang.code === "en" && "font-bold text-foreground",
+              lang.code === active && lang.code !== "en" && "text-foreground",
             )}
             title={`Open official BBNJ page (${lang.label}) in a new tab`}
           >

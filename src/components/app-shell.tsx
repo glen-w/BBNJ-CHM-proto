@@ -6,13 +6,12 @@ import { cookies } from "next/headers";
 import { DomainBadge, StatusChip } from "@/components/chips";
 import { FlashBanner, type Flash } from "@/components/flash";
 import { LanguageControl } from "@/components/language-control";
-import { InstitutionalNav, JourneysNav, RailsNav } from "@/components/shell-nav";
+import { AllNav, CoreNav, LibraryNav, RailsNav } from "@/components/shell-nav";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getDb } from "@/lib/db";
 import { fmtDate, fmtRelative, kindLabel, roleLabel, stageLabel } from "@/lib/format";
 import { TREATY_LANG_COOKIE, treatyLangOf } from "@/lib/locale";
-import { RESEARCH_NAV_HREF } from "@/lib/research-lane";
 import { cn } from "@/lib/utils";
 import { logoutAction } from "@/server/actions";
 import { actorRoleOf, can } from "@/server/policy";
@@ -22,11 +21,10 @@ import { getSessionUser } from "@/server/session";
 
 // Journeys are entry points into the shared rails, not competing brands (VISUAL-CHARTER.md §1.2, §4).
 const journeys: { href: string; label: string; caption: string; enabled: boolean }[] = [
-  { href: "/mgr", label: "MGR", caption: "marine genetic resources", enabled: true },
-  { href: "/eia", label: "EIA", caption: "environmental impact assessment", enabled: true },
-  { href: "/capacity", label: "CBTMT", caption: "capacity-building & technology transfer", enabled: true },
-  { href: "/abmt", label: "ABMT", caption: "area-based management tools", enabled: true },
-  { href: RESEARCH_NAV_HREF, label: "Literature", caption: "Zotero-backed papers linked to the journeys", enabled: true },
+  { href: "/mgr", label: "MGR", caption: "Marine Genetic Resources", enabled: true },
+  { href: "/eia", label: "EIA", caption: "Environmental Impact Assessment", enabled: true },
+  { href: "/capacity", label: "CBTMT", caption: "Capacity-Building & Technology Transfer", enabled: true },
+  { href: "/abmt", label: "ABMT", caption: "Area-Based Management Tools", enabled: true },
 ];
 
 export async function AppShell({
@@ -169,10 +167,17 @@ export async function AppShell({
 
       {/* Band 3 — desk tabs · journeys · search · latest transaction. */}
       <div className="sticky top-0 z-30 border-b bg-card print:hidden">
-        <div className="mx-auto flex w-full max-w-6xl items-center gap-x-4 px-6">
-          <InstitutionalNav />
-          <JourneysNav items={journeys} researchLaneEnabled={researchLaneEnabled} />
-          <form action="/search" method="get" className="ms-auto flex min-w-0 shrink-0 items-center gap-1.5 py-1.5" role="search">
+        <div className="mx-auto flex w-full max-w-6xl items-center px-6">
+          <AllNav />
+          <span aria-hidden="true" className="mx-4 h-4 w-px shrink-0 bg-line" />
+          <CoreNav items={journeys} />
+          {researchLaneEnabled ? (
+            <>
+              <span aria-hidden="true" className="mx-4 h-4 w-px shrink-0 bg-line" />
+              <LibraryNav />
+            </>
+          ) : null}
+          <form action="/search" method="get" className="ms-auto flex min-w-0 shrink-0 items-center gap-1.5 py-1.5 ps-4" role="search">
             <Input
               name="q"
               type="search"

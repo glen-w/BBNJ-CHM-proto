@@ -31,7 +31,7 @@ export function RelatedResearchPanel({
           Related research
         </h2>
         <Link href={href} className="text-xs underline underline-offset-2 hover:text-institutional">
-          Literature
+          Library
         </Link>
       </div>
       {items.length === 0 ? (

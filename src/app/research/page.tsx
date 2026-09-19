@@ -35,7 +35,7 @@ export default async function LiteraturePage({ searchParams }: Props) {
 
   if (!laneOn) {
     return (
-      <AppShell title="Literature">
+      <AppShell title="Library">
         <p className="max-w-2xl text-sm text-muted-foreground">
           Related research is hidden for this desk.{" "}
           <Link href="/settings?tab=desk" className="underline underline-offset-2 hover:text-institutional">
@@ -54,7 +54,7 @@ export default async function LiteraturePage({ searchParams }: Props) {
   });
 
   return (
-    <AppShell title="Literature">
+    <AppShell title="Library">
       <p className="max-w-3xl text-sm text-muted-foreground">
         Published papers from a Zotero BBNJ library. The Clearing House stores the citation and a link-out — Zotero stays the catalog of record.
       </p>
@@ -164,7 +164,7 @@ export default async function LiteraturePage({ searchParams }: Props) {
           matches on the title and abstract (Sargasso, CCZ, mesopelagic, Southern Ocean, and the other seeded boxes) — a demo aid, not a gazetteer.
         </p>
         <p>
-          Settings → Desk turns the whole lane off: the Literature tab and the panels disappear. The rows stay in the database. There is no live
+          Settings → Desk turns the whole lane off: the Library link and the panels disappear. The rows stay in the database. There is no live
           sync. “Suggest a paper” is not in this build. These are not Party filings.
         </p>
       </AboutPanel>
