@@ -39,7 +39,7 @@ export default async function ImportPage({ searchParams }: Props) {
     <AppShell title="MGR — import offline Excel template (Secretariat)" flash={flash}>
       <p className="max-w-3xl text-sm text-muted-foreground">
         The closed loop for offline submitters: the Party downloads the template, fills it offline, sends it in; the Secretariat imports it here. Every
-        accepted row becomes a received pre-collection notification (<code>sourceChannel = excel</code>) with its own B-SBI, pending publication. Every
+        accepted row becomes a received pre-collection notification (offline Excel channel) with its own B-SBI, pending publication. Every
         rejected row is reported with its field-level errors and can be downloaded as an <strong>error workbook</strong> — the same template, pre-filled
         with only the failed rows — for correction and re-import.
       </p>

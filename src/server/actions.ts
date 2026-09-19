@@ -12,6 +12,7 @@ import { z } from "zod";
 
 import { CONNECTION_PROFILE_IDS, isConnectionProfileId } from "@/lib/connection-profiles";
 import { getDb } from "@/lib/db";
+import { stageLabel } from "@/lib/format";
 import { IdempotencyKey } from "@/lib/contracts/extensions";
 import { FIELD_DEFS } from "@/lib/mgr-fields";
 import { createAbmtProposal, submitAbmtProposal } from "./abmt";
@@ -163,7 +164,7 @@ export async function addMgrPackAction(fd: FormData) {
   attempt(`/mgr/${batchId}`, () => {
     const stage = z.enum(["post_collection", "utilisation"]).parse(str(fd, "stage"));
     addMgrPack(getDb(), p, batchId, stage, str(fd, "summary"), keyOf(fd));
-    return { to: `/mgr/${batchId}`, notice: `${stage.replace("_", "-")} pack submitted (pending Secretariat publication).`, minted: "receipt" };
+    return { to: `/mgr/${batchId}`, notice: `${stageLabel(stage)} pack submitted (pending Secretariat publication).`, minted: "receipt" };
   });
 }
 
@@ -231,7 +232,7 @@ export async function amendAction(fd: FormData) {
     }
     return {
       to: back,
-      notice: `Amendment recorded as ${stage.replace(/_/g, " ")} v${version} (pending). ${materialChange ? "Material change: earlier readers will be re-notified on publication." : "Editorial change: subscribers only."} Identifiers unchanged.`,
+      notice: `Amendment recorded as ${stageLabel(stage)} v${version} (pending). ${materialChange ? "Material change: earlier readers will be re-notified on publication." : "Editorial change: subscribers only."} Identifiers unchanged.`,
     };
   });
 }
@@ -248,7 +249,7 @@ export async function runDigestAction(fd: FormData) {
     return {
       to: back,
       notice: r.inserted
-        ? `Digest run: ${r.inserted} digest${r.inserted === 1 ? "" : "s"} written to the in-app bell (no e-mail in this build) — ${written.join(", ")}.`
+        ? `Digest run: ${r.inserted} digest${r.inserted === 1 ? "" : "s"} written to the in-app bell — ${written.join(", ")}.`
         : "Digest run: nothing new held for any daily/weekly subscriber.",
     };
   });
@@ -275,7 +276,7 @@ export async function publishAction(fd: FormData) {
     const r = publishPack(getDb(), p, { domain, recordId: str(fd, "recordId"), stage, expectedVersion: ev ? Number(ev) : undefined });
     return {
       to: back,
-      notice: r.created ? `Published ${stage.replace(/_/g, " ")} v${r.event.version} — ${r.event.publicRecordId}. Subscribers notified.` : "Already published — nothing changed.",
+      notice: r.created ? `Published ${stageLabel(stage)} v${r.event.version} — ${r.event.publicRecordId}. Subscribers notified.` : "Already published — nothing changed.",
       minted: r.mintedPublicRecordId ? "publicRecordId" : undefined,
     };
   });
@@ -310,7 +311,7 @@ export async function addEiaPackAction(fd: FormData) {
     addEiaPack(getDb(), p, activityId, stage, str(fd, "summary"), keyOf(fd), {
       screeningOutcome: outcome ? z.enum(["eia_required", "no_eia"]).parse(outcome) : undefined,
     });
-    return { to: `/eia/${activityId}`, notice: `${stage.replace(/_/g, " ")} pack submitted (pending).`, minted: "receipt" };
+    return { to: `/eia/${activityId}`, notice: `${stageLabel(stage)} pack submitted (pending).`, minted: "receipt" };
   });
 }
 
@@ -366,7 +367,7 @@ export async function commentStbAction(fd: FormData) {
   attempt("/stb", () => {
     const activityId = str(fd, "activityId");
     commentStb(getDb(), p, activityId, str(fd, "text"), keyOf(fd));
-    return { to: `/stb?cleared=${activityId}`, notice: "Consolidated STB comment recorded as a published comments_stb pack." };
+    return { to: `/stb?cleared=${activityId}`, notice: "Consolidated STB comment recorded as a published STB comments pack." };
   });
 }
 
@@ -397,7 +398,7 @@ export async function suggestMatchAction(fd: FormData) {
   const p = await getSessionUser();
   attempt("/capacity", () => {
     const r = suggestMatch(getDb(), p, str(fd, "needId"), str(fd, "offerId"), str(fd, "rule") || "manual", keyOf(fd));
-    return { to: "/capacity", notice: r.created ? "Match row inserted and match_suggested event published." : "That need/offer pair is already matched." };
+    return { to: "/capacity", notice: r.created ? "Match row inserted and match-suggested event published." : "That need/offer pair is already matched." };
   });
 }
 

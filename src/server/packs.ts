@@ -7,6 +7,7 @@
 import type { Db } from "@/lib/db";
 import type { ArtifactRef, ConfidentialityTier, Domain, Event, PublishStatus } from "@/lib/contracts/events";
 import type { AmendmentMeta, IdempotencyKey, StoredEvent } from "@/lib/contracts/extensions";
+import { stageLabel } from "@/lib/format";
 import { DomainError } from "./errors";
 import { mintPublicRecordId, mintReceiptId, nowIso, yearOf } from "./ids";
 import { dispatch } from "./notify";
@@ -161,7 +162,7 @@ export function amendPack(db: Db, actor: Principal, args: AmendArgs): PackResult
     recordId: args.recordId,
     stage: args.stage,
     status: "pending",
-    summary: args.summary.trim() || `${args.stage.replace(/_/g, " ")} amended (v${latest.version + 1}): ${note}`,
+    summary: args.summary.trim() || `${stageLabel(args.stage)} amended (v${latest.version + 1}): ${note}`,
     idempotencyKey: args.idempotencyKey,
     confidentiality: latest.confidentiality,
     artifactRefs: latest.artifactRefs,

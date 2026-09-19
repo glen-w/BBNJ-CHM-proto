@@ -67,15 +67,15 @@ export default async function HomePage({ searchParams }: Props) {
           href="/capacity"
           count={journeys.cbtmt}
           rail="Need / offer → match"
-          about="Needs and offers as records; a match is a row plus a match_suggested event under a deterministic shared-theme rule."
+          about="Needs and offers as records; a match is a row plus a match-suggested event under a deterministic shared-theme rule."
         />
         <JourneyCard
           domain="abmt"
           title="ABMT"
           href="/abmt"
           count={journeys.abmt}
-          rail="Stub → receipt → publish"
-          about="Proposal stub on the same rails — draft → pending → published, receipt and BBNJ-ABMT id. Without prejudice to COP1; no content model yet."
+          rail="Proposal → receipt → publish"
+          about="Proposal stub on the same rails — draft → pending → published, receipt and BBNJ-ABMT id. Without prejudice to COP1."
         />
       </section>
 

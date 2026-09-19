@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/app-shell";
+import { roleLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { RAIL_ICON } from "@/components/domain-icons";
 import { flashFrom } from "@/components/flash";
@@ -59,7 +60,7 @@ export default async function LoginPage({ searchParams }: Props) {
                   {u.username}
                 </span>
                 <span className="rounded border border-line bg-muted px-1.5 text-[10px] uppercase tracking-wide text-muted-foreground">
-                  {u.roles.join(", ")}
+                  {u.roles.map(roleLabel).join(" · ")}
                 </span>
               </div>
               <div className="mt-1 text-sm">{u.displayName}</div>

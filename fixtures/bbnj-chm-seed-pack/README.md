@@ -49,6 +49,34 @@ Related systems also name ABSCH, BCH, OBIS, ISA DeepData and IOC-UNESCO Ocean In
 | Marine CDR / OAE pilot | `TU7WCKWE` (Burns & Webb 2026); `P2UZYA3X` | `eia-marine-cdr-oae` |
 | Mesopelagic fisheries (RFMO-gap framing) | `6K6WPBFQ` (Gjerde, Wright, Durussel 2021) | `eia-mesopelagic-fishery` |
 
+## Literature snapshot
+
+Zotero remains the catalog of record. `research_items.csv` is a **published metadata slice** the desk can show beside a record. It is not a pack domain: no events, no FTS, no `publicRecordId`, and the Settings switch does not stop the seed from loading the rows.
+
+**The join.** A paper appears on an MGR, EIA, or ABMT record only when both are true: it is tagged with that journey (`pillars`), and its `geographies` include that record’s ABNJ box. Geography is a keyword match on title and abstract against the seeded boxes (Sargasso, CCZ vs Clarion-Clipperton South, splashdown / re-entry, mesopelagic only when the text also says Atlantic / BBNJ / high seas / RFMO, OAE / alkalinity / mCDR, Costa Rica Thermal Dome, Central Indian Ridge, Tonga / Kermadec, Polar Front / Southern Ocean, Reykjanes). A general “Southern Ocean” paper can therefore attach to the Polar Front demo box. That is a demo aid, not a gazetteer. No recognised box, or no shared box, means no panel hit.
+
+**Collections kept** (Zotero keys in `scripts/export-zotero-literature.ts`):
+
+| Collection | Journey | Also tagged |
+|---|---|---|
+| EIA / SEA | EIA | |
+| ABMT / MPAs | ABMT | |
+| MGR / ABS / DSI | MGR | |
+| CBTMT / equity, finance | CBTMT | |
+| Fisheries / RFMOs | EIA | RFMO |
+| Seabed / ISA, not-undermine | ABMT | ISA |
+| Institutions, clearing-house | *(catalog only — no journey)* | |
+
+Inbox and unsorted context stay out. Item types kept: journal article, report, document, book, book section, conference paper, preprint, thesis, manuscript, recording. The **OA** badge means the licence looks like CC-BY or “open access”, not merely that a URL exists.
+
+One demo row is kept even though it is not in Zotero: *CCZ representative habitats…* (ISA, no key). A refresh merges previous facets by Zotero key or title prefix and does not duplicate that note.
+
+```bash
+ZOTERO_SQLITE="/path/to/zotero.sqlite" npx tsx scripts/export-zotero-literature.ts
+```
+
+Then `npm run db:reset` in development so the desk picks up the new CSV. The script refuses to run without `ZOTERO_SQLITE`.
+
 ## Files
 
 All under `csv/`:
@@ -57,7 +85,7 @@ All under `csv/`:
 |---|---|
 | `csv/abnj_boxes.csv` | Extends / documents `AbnjBox` (must match Zod enum) |
 | `csv/abmt_proposals.csv` | Seeded through domain APIs (`abnj_box` is stored on the stub) |
-| `csv/research_items.csv` | Related-research catalog (not a pack domain). Multi-value `pillars` / `geographies` / `ifbs` use **semicolon**. Seed runs regardless of the Settings gate. |
+| `csv/research_items.csv` | Literature catalog (not a pack domain). Snapshot of Zotero BBNJ collections plus one demo note. Multi-value `pillars` / `geographies` / `ifbs` use **semicolon**. Seed runs regardless of the Settings gate. Refresh with `ZOTERO_SQLITE=… npx tsx scripts/export-zotero-literature.ts`. |
 | `csv/provenance_badges.csv` | Interim (DOALOS) vs Demo scenario list chips |
 | `csv/related_systems.csv`, `csv/secretariat_notices.csv` | Related-systems / Institutional notices |
 | `csv/sources.csv`, `csv/interim_links.csv` | Provenance documentation (labels/URLs also used from activity rows) |

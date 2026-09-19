@@ -24,12 +24,12 @@ export default async function ComparePage() {
   });
 
   return (
-    <AppShell title="DOALOS interim set-up vs this prototype — by Session 1 basic function">
+    <AppShell title="DOALOS interim set-up vs this desk — by Session 1 basic function">
       <div className="space-y-6">
         <p className="max-w-3xl text-muted-foreground">
           The interim Cl-HM pages operated by DOALOS are, as far as their <strong className="font-medium text-foreground">public</strong> pages
           show (as of Sep 2026), informational: documents, meeting pages, contact points. The &ldquo;interim&rdquo; column below describes what is
-          visible on those pages — not what may exist behind them — and is dated so it can be revisited. This prototype is transactional —
+          visible on those pages — not what may exist behind them — and is dated so it can be revisited. This desk is transactional —
           structured receipt → validation → storage → publication → alert → audit — organised around the three Session 1 basic functions. Every row
           links into the live desk for your current role.
         </p>
@@ -46,7 +46,7 @@ export default async function ComparePage() {
                   <tr>
                     <th className="px-4 py-2 font-medium">Area</th>
                     <th className="px-4 py-2 font-medium">Interim DOALOS</th>
-                    <th className="px-4 py-2 font-medium">This prototype</th>
+                    <th className="px-4 py-2 font-medium">This desk</th>
                     <th className="px-4 py-2 font-medium">See it live</th>
                   </tr>
                 </thead>

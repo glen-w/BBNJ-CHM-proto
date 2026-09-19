@@ -30,8 +30,9 @@ Repository: [github.com/glen-w/BBNJ-CHM-proto](https://github.com/glen-w/BBNJ-CH
 - **Search** — policy-aware full-text search so restricted rows never leak to public readers  
 - **Honesty labels** — Interim (DOALOS) vs Demo scenario badges so seed storylines are not read as real filings  
 - **Evaluator exhibit** — printable `/exhibit` maps Session‑1 / EOI criteria to live routes and the sandbox inventory  
+- **Literature** — a Zotero snapshot beside the four journeys: link-out only, and a paper shows on a record only when journey and place match  
 
-Caveats stay in docs (and this README), not in product chrome: illustrative Party **XSD** (no real State), cookie logins, ABMT is a stub, notifications are in-app only, Excel is an Art 51.5 **pattern** not a WCAG certificate, PDF export is a stub.
+Caveats stay in docs (and this README), not in product chrome: illustrative Party **XSD** (no real State), cookie logins, ABMT is a stub, notifications are in-app only, Excel is an Art 51.5 **pattern** not a WCAG certificate, PDF export is a stub, literature is a snapshot not a live library.
 
 ### Evaluation logins (`/login`)
 
@@ -57,7 +58,30 @@ No passwords. A bad cookie = anonymous public.
 | Notify | None visible on public pages | Outbox → subscriptions → **in-app** digests (no SMTP) |
 | Audit | Not surfaced on public pages | Append-only transitions + refusal log |
 
-Full table and deep links: `/compare` (functions-first; docs-style page; not in primary nav). Printable one-pager: `/exhibit`. Talk-track: Excel = Art 51.5 pattern · language stub · ABMT without prejudice · no hosted URL yet — see [`docs/SHIPPED.md`](docs/SHIPPED.md).
+Full table and deep links: `/compare` (functions-first; docs-style page; not in primary nav). Printable one-pager: `/exhibit`. Talk-track: Excel = Art 51.5 pattern · language stub · ABMT without prejudice · literature is a Zotero snapshot · no hosted URL yet — see [`docs/SHIPPED.md`](docs/SHIPPED.md).
+
+### Literature — Zotero stays the library
+
+The Clearing House is not a second bibliography. Papers stay in Zotero. The desk keeps a **published slice**: citation, year, a link (DOI, publisher page, or recording), which journey the paper speaks to, and which seeded ABNJ box the title or abstract mentions. **Open** always leaves the desk.
+
+A reviewer on a splashdown EIA, a Sargasso ABMT stub, or a Polar Front MGR notice should see the papers that discuss *that* place and *that* part of the Agreement. The whole library must not land on every record.
+
+| Surface | What it does |
+|---|---|
+| **Literature** (`/research`) | Browse the snapshot. Filter by journey (MGR, EIA, CBTMT, ABMT). A record’s “Literature” link also narrows by place. |
+| **Related research** | On an MGR, EIA, or ABMT record: published papers tagged with that journey **and** that record’s ABNJ box. No shared place → “No linked research”, not a blank library. |
+| **Settings → Desk** | One switch (`research_lane_enabled`, default on). Off removes the tab and the panels. It does not delete rows. |
+
+**Not this build.** No live Zotero sync. No PDF or file store. Not a pack — no receipt, no B-SBI, no public record id, and not in `/search` (search stays policy-aware over Cl-HM records). “Suggest a paper” is labelled and disabled. Place tags are keyword matches, so a paper that says “Southern Ocean” can attach to the Polar Front demo box. That join is a demo aid, not a gazetteer. CBTMT records have no ABNJ box, so they do not get a related-research panel; their papers are on the Literature desk under CBTMT.
+
+Maintainers refresh the snapshot from a local Zotero database (not at runtime):
+
+```bash
+ZOTERO_SQLITE="/path/to/zotero.sqlite" npx tsx scripts/export-zotero-literature.ts
+npm run db:reset   # dev only — picks up the new CSV
+```
+
+Collection mapping, which item types are kept, and the place-name rules: [`fixtures/bbnj-chm-seed-pack/README.md`](fixtures/bbnj-chm-seed-pack/README.md).
 
 ---
 
@@ -67,7 +91,7 @@ What this release already proves vs what a production Cl-HM would still need. Wa
 
 | Wave | Focus | Would add |
 |---|---|---|
-| **Now (this repo)** | Working prototype | Shared rails, five roles, Excel pattern, in-app notify, FTS search, ABMT stub, clone/Docker hands-on |
+| **Now (this repo)** | Working prototype | Shared rails, five roles, Excel pattern, in-app notify, FTS search, ABMT stub, Zotero literature snapshot, clone/Docker hands-on |
 | **Wave A — Operate the desk** | Day-to-day Secretariat use | **Admin / user-management backend**; vocabularies; scheduled digests; import monitoring; richer audit filters; hosted **public URL** if required |
 | **Wave B — Reach people** | Alerts beyond the browser | **SMTP** (optional SMS later) on the same outbox; **mailing lists / circulars** vs transactional notify; preference centre with real channels and unsubscribe |
 | **Wave C — Trust & language** | Production posture | Institutional IdP / OAuth, TLS, session hardening; **six-language UI by human i18n** (treaty-text links already stubbed); formal WCAG audit |
@@ -346,7 +370,9 @@ Environment: `DATABASE_PATH` (default `data/chm.sqlite`); `SANDBOX_RESET=1` (or 
 | `src/server/packs.ts` | Version allocation, publish, amend |
 | `src/server/notify.ts` / `digest.ts` | Dispatch, hold, digests |
 | `src/server/{mgr,eia,cbtmt,abmt}.ts` | Domain journeys |
+| `src/server/research.ts` / `src/app/research/` | Literature snapshot + related-research join (not a pack domain) |
 | `src/server/seed-pack.ts` / `seedFromCsv.ts` / `parseCsv.ts` | CSV seed pack → domain APIs |
+| `scripts/export-zotero-literature.ts` | One-shot Zotero → `research_items.csv` (needs `ZOTERO_SQLITE`) |
 | `src/server/speed-lab.ts` | Mocked Excel-loop timing (`npm run speed` / Settings → Speed) |
 | `src/app/` | Pages (incl. `/search`, `/exhibit`, `/institutional`, `/stb`), actions, templates, exports, health |
 | `scripts/` | smoke, demo, seed, digest, replay-outbox, … |

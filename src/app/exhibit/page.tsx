@@ -72,7 +72,7 @@ export default async function ExhibitPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-lg font-semibold">What is in this sandbox</h2>
+          <h2 className="text-lg font-semibold">What is in this desk</h2>
           <p className="text-sm text-muted-foreground">
             Visible to <span className="font-mono text-foreground">{p.kind === "user" ? p.user.username : "anonymous public"}</span>
             : {live.mgr} MGR · {live.eia} EIA · {live.cbtmt} CBTMT · {live.abmt} ABMT. CSV storylines (plus smoke

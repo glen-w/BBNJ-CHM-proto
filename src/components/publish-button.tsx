@@ -1,4 +1,5 @@
 import { KeyFields, SubmitButton } from "@/components/forms";
+import { stageLabel } from "@/lib/format";
 import { publishAction } from "@/server/actions";
 
 export function PublishButton({
@@ -24,7 +25,7 @@ export function PublishButton({
       <input type="hidden" name="stage" value={stage} />
       <input type="hidden" name="expectedVersion" value={version} />
       <SubmitButton size="sm" title="Secretariat / authorised publishing role. Publishing mints the publicRecordId on the record's first publish and fans out notifications.">
-        {label ?? `Publish ${stage.replace(/_/g, " ")} v${version}`}
+        {label ?? `Publish ${stageLabel(stage)} v${version}`}
       </SubmitButton>
     </form>
   );

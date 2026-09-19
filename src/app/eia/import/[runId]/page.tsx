@@ -7,7 +7,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getDb } from "@/lib/db";
 import { EIA_SCREENING_FIELDS } from "@/lib/eia-fields";
-import { fmtDate } from "@/lib/format";
+import { fmtDate, stageLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { DomainError } from "@/server/errors";
 import { getImportRun, importRunPath } from "@/server/import";
@@ -97,7 +97,7 @@ export default async function EiaImportRunPage({ params, searchParams }: Props) 
                     r.values?.title || "—"
                   )}
                 </TableCell>
-                <TableCell className="text-xs">{r.screeningOutcome ? r.screeningOutcome.replace("_", " ") : "—"}</TableCell>
+                <TableCell className="text-xs">{r.screeningOutcome ? stageLabel(r.screeningOutcome) : "—"}</TableCell>
                 <TableCell className="font-mono text-xs">{r.receiptId ?? "—"}</TableCell>
                 <TableCell className="max-w-md text-xs text-muted-foreground">{r.error ?? "publish from the activity page"}</TableCell>
               </TableRow>

@@ -17,6 +17,8 @@ describe("evaluator exhibit", () => {
     ]);
     expect(EXHIBIT_LIMITS.some((l) => /hosted public URL/i.test(l))).toBe(true);
     expect(EXHIBIT_LIMITS.some((l) => /SMTP/i.test(l))).toBe(true);
+    expect(EXHIBIT_LIMITS.some((l) => /Zotero snapshot/i.test(l))).toBe(true);
+    expect(EXHIBIT_SECTIONS.flatMap((s) => s.rows).some((r) => r.href === "/research")).toBe(true);
   });
 
   it("points search suggestions at the varied seed storylines", () => {

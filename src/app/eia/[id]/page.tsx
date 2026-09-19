@@ -10,13 +10,15 @@ import { RecordExportLinks } from "@/components/export-links";
 import { flashFrom } from "@/components/flash";
 import { Field, KeyFields, SubmitButton, selectClass } from "@/components/forms";
 import { PublishButton } from "@/components/publish-button";
+import { RelatedResearchPanel } from "@/components/related-research-panel";
 import { Timeline } from "@/components/timeline";
 import { TreatyCiteDrawer } from "@/components/treaty-cite-drawer";
 import { Input } from "@/components/ui/input";
 import { AmendForm, VersionHistory } from "@/components/version-history";
 import { EiaPublishableStages } from "@/lib/contracts/events";
 import { getDb } from "@/lib/db";
-import { fmtDate } from "@/lib/format";
+import { fmtDate, stageLabel } from "@/lib/format";
+import { literatureBrowseHref } from "@/lib/research-lane";
 import { citeCaption } from "@/lib/treatyCites";
 import { cn } from "@/lib/utils";
 import { addEiaPackAction, setEiaDueAtAction } from "@/server/actions";
@@ -24,6 +26,7 @@ import { EIA_STAGE_ORDER, getEiaActivity, packsForActivity } from "@/server/eia"
 import { DEMO_COMMENT_WINDOW_DAYS } from "@/lib/contracts/extensions";
 import { can } from "@/server/policy";
 import { listEiaActivities, recordVisible, timelineOf } from "@/server/queries";
+import { isResearchLaneEnabled, listRelatedResearchForPillar } from "@/server/research";
 import { agreementBasisExtrasForRecord, provenanceBadgeForRecord } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
@@ -50,6 +53,8 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
     .map((e) => ({ stage: e.stage, version: e.version }));
   const basis = agreementBasisExtrasForRecord(db, id);
   const provenance = provenanceBadgeForRecord(db, id);
+  const researchLaneOn = isResearchLaneEnabled(db);
+  const relatedResearch = researchLaneOn ? listRelatedResearchForPillar(db, "eia", activity.abnjBox) : [];
 
   return (
     <AppShell title={`EIA activity — ${activity.title}`} flash={flash}>
@@ -86,7 +91,7 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
         <Identifier label="receiptId (first pack)" value={packs.find((e) => e.receiptId)?.receiptId} caption="Issued when a pack entered pending" />
         <Identifier label="publicRecordId" value={activity.publicRecordId} caption="Minted at the first pack publish on this activity" />
         <Identifier
-          label="dueAt (comment window)"
+          label="Comment window due"
           value={activity.dueAt ? fmtDate(activity.dueAt) : undefined}
           mono={false}
           caption={activity.dueAt ? "Explicit due date set on the activity (demo value; the Agreement fixes no day count)" : `Not set — deadline rows default to ${DEMO_COMMENT_WINDOW_DAYS} days after a draft EIA is published (demo value)`}
@@ -99,7 +104,7 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
           {EIA_STAGE_ORDER.map((s, i) => (
             <li key={s} className="flex items-center gap-1">
               <span className={cn("rounded-md border px-2 py-1", i <= reached ? "border-institutional/50 bg-institutional/10 font-medium text-institutional" : "text-muted-foreground")} title={citeCaption("eia", s)}>
-                {s.replace(/_/g, " ")}
+                {stageLabel(s)}
               </span>
               {i < EIA_STAGE_ORDER.length - 1 ? <span className="text-muted-foreground">→</span> : null}
             </li>
@@ -114,7 +119,7 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
                 <StageChip stage={e.stage} status={e.status} version={e.version} />
                 <span className="text-xs text-muted-foreground" title={citeCaption("eia", e.stage)}>
                   {e.summary}
-                  {e.domain === "eia" && e.screeningOutcome ? <> · outcome <strong>{e.screeningOutcome.replace("_", " ")}</strong></> : null} · {fmtDate(e.at)}
+                  {e.domain === "eia" && e.screeningOutcome ? <> · outcome <strong>{stageLabel(e.screeningOutcome)}</strong></> : null} · {fmtDate(e.at)}
                 </span>
                 {e.status === "pending" && can(p, "publish") ? <PublishButton domain="eia" recordId={id} stage={e.stage} version={e.version} returnTo={here} /> : null}
               </div>
@@ -150,7 +155,7 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
               <select name="stage" className={selectClass} defaultValue={activity.currentStage === "screening" ? "screening" : "draft_eia"}>
                 {EiaPublishableStages.map((s) => (
                   <option key={s} value={s}>
-                    {s.replace(/_/g, " ")} — {citeCaption("eia", s)}
+                    {stageLabel(s)} — {citeCaption("eia", s)}
                   </option>
                 ))}
               </select>
@@ -185,9 +190,9 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
         <div className="space-y-4">
           {owner ? (
             <form action={setEiaDueAtAction} className="space-y-3 rounded-lg border p-4">
-              <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Comment-window due date (P1)</h2>
+              <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Comment-window due date</h2>
               <p className="text-xs text-muted-foreground">
-                Explicit <code>dueAt</code> on the activity; deadline notifications and digests read it. Leave empty and save to clear. Demo value — the
+                Explicit due date on the activity; deadline notifications and digests read it. Leave empty and save to clear. Demo value — the
                 Agreement fixes no day count.
               </p>
               <KeyFields returnTo={here} />
@@ -221,7 +226,7 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
                       {n.title}
                     </Link>
                     <span className="text-xs text-muted-foreground">
-                      {n.currentStage.replace(/_/g, " ")} · <span className="font-mono">{n.publicRecordId ?? "unpublished"}</span>
+                      {stageLabel(n.currentStage)} · <span className="font-mono">{n.publicRecordId ?? "unpublished"}</span>
                     </span>
                   </li>
                 ))}
@@ -238,6 +243,10 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
         </div>
         {owner ? <AmendForm domain="eia" recordId={id} stages={amendable} returnTo={here} /> : null}
       </section>
+
+      {researchLaneOn ? (
+        <RelatedResearchPanel items={relatedResearch} browseHref={literatureBrowseHref("eia", activity.abnjBox)} />
+      ) : null}
 
       <section>
         <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">Timeline</h2>

@@ -40,8 +40,8 @@ export default async function EiaImportPage({ searchParams }: Props) {
     <AppShell title="EIA — import offline screening template (Secretariat)" flash={flash}>
       <p className="max-w-3xl text-sm text-muted-foreground">
         The same offline loop as MGR, applied to Art 31 screening (Art 51.5: access without undue burden). The Party downloads the template, fills one
-        row per planned activity offline, sends it in; the Secretariat imports it here. Every accepted row becomes an <strong>activity</strong> (
-        <code>sourceChannel = excel</code>) whose screening pack is <em>pending</em> with its outcome already recorded — so publication can never fail
+        row per planned activity offline, sends it in; the Secretariat imports it here. Every accepted row becomes an <strong>activity</strong> (offline
+        Excel channel) whose screening pack is <em>pending</em> with its outcome already recorded — so publication can never fail
         on a missing Art 31 outcome. Rejected rows come back as an <strong>error workbook</strong> for correction and re-import.
       </p>
       <p className="max-w-3xl text-xs text-muted-foreground">

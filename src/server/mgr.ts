@@ -7,6 +7,7 @@ import type { Db } from "@/lib/db";
 import type { ArtifactRef, MgrStage, SourceChannel } from "@/lib/contracts/events";
 import { StoredMgrBatch, type IdempotencyKey } from "@/lib/contracts/extensions";
 import { MgrPreCollectionInput, coerceMgrInput, splitMgrInput, FIELD_DEFS } from "@/lib/mgr-fields";
+import { stageLabel } from "@/lib/format";
 import { DomainError } from "./errors";
 import { mintBSbi, nowIso, yearOf } from "./ids";
 import { findEventByKey, latestPackRow } from "./outbox";
@@ -257,7 +258,7 @@ export function addMgrPack(
     recordId: batchId,
     stage,
     status: "pending",
-    summary: summary.trim() || `${stage.replace("_", "-")} notification`,
+    summary: summary.trim() || `${stageLabel(stage)} notification`,
     idempotencyKey: key,
     extras: { bSbi: batch.bSbi },
     at: opts?.at,
@@ -290,7 +291,7 @@ export function amendMgrPack(
   requireCan(actor, "amend", { ownerUserId: batch.ownerUserId ?? null }, { domain: "mgr", recordId: batch.id, db });
   const latest = latestPackRow(db, batchId, stage);
   if (!latest || latest.status !== "published") {
-    throw new DomainError("invalid_transition", `Only a published ${stage.replace("_", "-")} pack can be amended`);
+    throw new DomainError("invalid_transition", `Only a published ${stageLabel(stage)} pack can be amended`);
   }
   const tx = db.transaction((): MgrResult => {
     let summary = input.summary?.trim() || "";

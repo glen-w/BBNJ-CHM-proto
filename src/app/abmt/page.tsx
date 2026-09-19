@@ -51,7 +51,12 @@ export default async function AbmtPage({ searchParams }: Props) {
                 <TableHead>Latest pack</TableHead>
                 <TableHead>Public record id</TableHead>
                 <TableHead>Tier</TableHead>
-                <TableHead className="text-right">Updated</TableHead>
+                <TableHead className="text-right">
+                  <span className="block">Updated</span>
+                  <span className="block text-[0.65rem] font-normal normal-case tracking-normal text-muted-foreground">
+                    newest first
+                  </span>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -96,9 +101,9 @@ export default async function AbmtPage({ searchParams }: Props) {
       </ListFilter>
       <AboutPanel title="About this workflow">
         <p>
-          Proposals under Art 51.3(a)(ii) ride the same rails as every other journey: one record, a <code>proposal_stub</code> pack that moves{" "}
+          Proposals under Art 51.3(a)(ii) ride the same rails as every other journey: one record, a proposal-stub pack that moves{" "}
           <em>draft → pending → published</em>, a receipt when it enters pending, and a <code>BBNJ-ABMT-YYYY-NNNNN</code> public record id at first
-          publish. No ABMT-specific content model exists in this build — the stage name says so.
+          publish.
         </p>
         <p>{SEED_HONESTY}</p>
       </AboutPanel>

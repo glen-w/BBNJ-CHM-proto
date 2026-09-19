@@ -5,6 +5,7 @@ import { flashFrom } from "@/components/flash";
 import { Field, KeyFields, SubmitButton, selectClass } from "@/components/forms";
 import { AbnjBox } from "@/lib/contracts/events";
 import { getDb } from "@/lib/db";
+import { cadenceLabel, DOMAIN_LABEL } from "@/lib/format";
 import { savePreferencesAction } from "@/server/actions";
 import { getSubscription } from "@/server/queries";
 import { CBTMT_THEMES } from "@/server/seed";
@@ -37,7 +38,7 @@ export default async function PreferencesPage({ searchParams }: Props) {
             <legend className="text-sm font-medium">Domains</legend>
             {(["mgr", "eia", "cbtmt", "abmt"] as const).map((d) => (
               <label key={d} className="mr-4 inline-flex items-center gap-1 text-sm" title={d === "abmt" ? "ABMT proposal stubs (without prejudice to COP1)" : undefined}>
-                <input type="checkbox" name="domains" value={d} defaultChecked={sub?.domains.includes(d)} /> {d.toUpperCase()}
+                <input type="checkbox" name="domains" value={d} defaultChecked={sub?.domains.includes(d)} /> {DOMAIN_LABEL[d]}
               </label>
             ))}
           </fieldset>
@@ -59,9 +60,9 @@ export default async function PreferencesPage({ searchParams }: Props) {
           </fieldset>
           <Field label="Digest cadence" hint="Daily and weekly digests can be run on demand from Notifications.">
             <select name="digest" defaultValue={sub?.digest ?? "daily"} className={selectClass}>
-              <option value="immediate">immediate</option>
-              <option value="daily">daily</option>
-              <option value="weekly">weekly</option>
+              <option value="immediate">{cadenceLabel("immediate")}</option>
+              <option value="daily">{cadenceLabel("daily")}</option>
+              <option value="weekly">{cadenceLabel("weekly")}</option>
             </select>
           </Field>
           <SubmitButton>Save subscription</SubmitButton>

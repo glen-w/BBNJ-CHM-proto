@@ -87,6 +87,20 @@ describe("seed I/O", () => {
     expect(pack.abmt.length).toBeGreaterThanOrEqual(4);
     expect(pack.research.length).toBeGreaterThanOrEqual(5);
     expect(pack.research.filter((r) => r.status === "published").length).toBeGreaterThanOrEqual(3);
+    expect(pack.research.some((r) => r.zoteroKey === "6K6WPBFQ")).toBe(true);
+    expect(pack.research.some((r) => r.zoteroKey === "U7EHXJMV")).toBe(true);
+    expect(pack.research.some((r) => r.zoteroKey === "TU7WCKWE")).toBe(true);
+    expect(pack.research.filter((r) => r.zoteroKey).length).toBeGreaterThan(100);
+    const splash = pack.research.find((r) => r.zoteroKey === "U7EHXJMV")!;
+    expect(splash.pillars).toContain("eia");
+    expect(splash.geographies).toContain("Mid-Atlantic Splashdown Corridor");
+    const oae = pack.research.find((r) => r.zoteroKey === "TU7WCKWE")!;
+    expect(oae.pillars).toContain("eia");
+    expect(oae.geographies).toContain("North Atlantic OAE Trial Box");
+    const mesoPaper = pack.research.find((r) => r.zoteroKey === "6K6WPBFQ")!;
+    expect(mesoPaper.pillars).toContain("eia");
+    expect(mesoPaper.ifbs).toContain("RFMO");
+    expect(mesoPaper.geographies).toContain("NE Atlantic Mesopelagic Belt");
     expect(pack.relatedSystems.length).toBeGreaterThanOrEqual(7);
     expect(pack.cbtmtMatches.length).toBeGreaterThanOrEqual(4);
     expect(csvStorylineCounts().abnjBoxes).toBe(AbnjBox.options.length);
@@ -203,7 +217,9 @@ describe("seed I/O", () => {
     expect(sargassoResearch.every((r) => r.geographies.includes("Sargasso Sea Core"))).toBe(true);
     expect(sargassoResearch.some((r) => r.pillars.includes("eia") && !r.pillars.includes("abmt"))).toBe(false);
     const crDome = getAbmtProposal(h.db, ids.rich.abmt.crDome)!;
-    expect(listRelatedResearchForAbmt(h.db, crDome)).toEqual([]);
+    const crDomeResearch = listRelatedResearchForAbmt(h.db, crDome);
+    expect(crDomeResearch.length).toBeGreaterThanOrEqual(1);
+    expect(crDomeResearch.every((r) => r.geographies.includes("Costa Rica Thermal Dome") && r.pillars.includes("abmt"))).toBe(true);
     const cczResearch = listRelatedResearchForAbmt(h.db, ccz);
     expect(cczResearch.some((r) => r.ifbs.includes("ISA"))).toBe(true);
 

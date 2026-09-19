@@ -70,7 +70,7 @@ export function JourneysNav({
   researchLaneEnabled = true,
 }: {
   items: { href: string; label: string; caption: string; enabled: boolean }[];
-  /** P1 Research tab must pass the same global gate; omitted from `items` in P0. */
+  /** Literature tab uses the same global gate and is omitted from `items` when the lane is off. */
   researchLaneEnabled?: boolean;
 }) {
   const pathname = usePathname();

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { RESEARCH_LANE_META_KEY, RESEARCH_NAV_HREF, researchLaneEnabled } from "@/lib/research-lane";
+import { RESEARCH_LANE_META_KEY, RESEARCH_NAV_HREF, literatureBrowseHref, researchLaneEnabled } from "@/lib/research-lane";
 
 describe("research lane gate", () => {
   it("uses the meta key research_lane_enabled and defaults on", () => {
@@ -17,5 +17,10 @@ describe("research lane gate", () => {
     expect(researchLaneEnabled("0")).toBe(false);
     expect(researchLaneEnabled("off")).toBe(false);
     expect(researchLaneEnabled("false")).toBe(false);
+    expect(literatureBrowseHref()).toBe("/research");
+    expect(literatureBrowseHref("eia", "CCZ")).toBe("/research?pillar=eia&box=CCZ");
+    expect(literatureBrowseHref("eia", "Mid-Atlantic Splashdown Corridor")).toBe(
+      "/research?pillar=eia&box=Mid-Atlantic+Splashdown+Corridor",
+    );
   });
 });

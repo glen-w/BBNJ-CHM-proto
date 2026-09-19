@@ -76,7 +76,7 @@ export async function HomeWelcomeBand() {
                 BBNJ Cl-HM evaluation desk
               </h1>
               <p className="mt-2 text-sm leading-relaxed text-institutional-foreground/90">
-                A Session&nbsp;1 prototype for walking the Clearing-House rails — submit, manage, publish,
+                A Session&nbsp;1 evaluation desk for walking the Clearing-House rails — submit, manage, publish,
                 notify, audit — with demo data. Not the official Cl-HM. Without prejudice to COP1.
               </p>
             </div>

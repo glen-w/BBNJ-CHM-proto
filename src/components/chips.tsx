@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { DOMAIN_ICON, isAccentDomain, type AccentDomain } from "@/components/domain-icons";
 import type { ConfidentialityTier } from "@/lib/contracts/events";
-import { DOMAIN_LABEL } from "@/lib/format";
+import { DOMAIN_LABEL, stageLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { whoCanSee } from "@/lib/tiers";
 
@@ -83,8 +83,8 @@ export function ConfidentialityBadge({ tier }: { tier: string }) {
 export function TierNote({ tier }: { tier: ConfidentialityTier }) {
   return (
     <p className="text-xs text-muted-foreground">
-      <span className="font-medium">Who can see this ({tier}):</span> {whoCanSee(tier)} A separate <em>proprietary</em> category (PrepCom3 annex) is
-      deferred in this build — commercially sensitive material sits under <em>confidential</em> for now.
+      <span className="font-medium">Who can see this ({tier}):</span> {whoCanSee(tier)} A separate proprietary category is not used; commercially
+      sensitive material sits under confidential.
     </p>
   );
 }
@@ -101,7 +101,7 @@ export function ChannelBadge({ channel }: { channel: string }) {
 export function StageChip({ stage, status, version }: { stage: string; status: string; version: number }) {
   return (
     <span className="inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs">
-      <span className="font-medium">{stage.replace(/_/g, " ")}</span>
+      <span className="font-medium">{stageLabel(stage)}</span>
       <span className="text-muted-foreground">v{version}</span>
       <StatusChip status={status} />
     </span>

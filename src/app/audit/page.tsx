@@ -8,7 +8,7 @@ import { Timeline } from "@/components/timeline";
 import { buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getDb } from "@/lib/db";
-import { fmtDate } from "@/lib/format";
+import { DOMAIN_LABEL, actionLabel, fmtDate, roleLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { resetSandboxAction } from "@/server/actions";
 import { listDigestRuns } from "@/server/digest";
@@ -70,9 +70,10 @@ export default async function AuditPage({ searchParams }: Props) {
           <span className="block text-xs text-muted-foreground">Domain</span>
           <select name="domain" defaultValue={domain} className={cn(selectClass, "w-40")}>
             <option value="">all</option>
-            <option value="mgr">mgr</option>
-            <option value="eia">eia</option>
-            <option value="cbtmt">cbtmt</option>
+            <option value="mgr">{DOMAIN_LABEL.mgr}</option>
+            <option value="eia">{DOMAIN_LABEL.eia}</option>
+            <option value="cbtmt">{DOMAIN_LABEL.cbtmt}</option>
+            <option value="abmt">{DOMAIN_LABEL.abmt}</option>
           </select>
         </label>
         <label className="text-sm">
@@ -104,12 +105,12 @@ export default async function AuditPage({ searchParams }: Props) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>at</TableHead>
-                    <TableHead>actor</TableHead>
-                    <TableHead>action</TableHead>
-                    <TableHead>domain / record</TableHead>
-                    <TableHead>path</TableHead>
-                    <TableHead>reason</TableHead>
+                    <TableHead>When</TableHead>
+                    <TableHead>Actor</TableHead>
+                    <TableHead>Action</TableHead>
+                    <TableHead>Domain / record</TableHead>
+                    <TableHead>Path</TableHead>
+                    <TableHead>Reason</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -117,12 +118,16 @@ export default async function AuditPage({ searchParams }: Props) {
                     <TableRow key={r.id}>
                       <TableCell className="whitespace-nowrap text-xs">{fmtDate(r.at)}</TableCell>
                       <TableCell className="text-xs">
-                        {r.actorRole}
-                        {r.actorUserId ? <span className="ml-1 font-mono text-muted-foreground">…{r.actorUserId.slice(-4)}</span> : null}
+                        {roleLabel(r.actorRole)}
+                        {r.actorUserId ? (
+                          <span className="ml-1 font-mono text-muted-foreground" title={r.actorUserId}>
+                            …{r.actorUserId.slice(-4)}
+                          </span>
+                        ) : null}
                       </TableCell>
-                      <TableCell className="font-mono text-xs">{r.action}</TableCell>
+                      <TableCell className="text-xs">{actionLabel(r.action)}</TableCell>
                       <TableCell className="font-mono text-xs">
-                        {r.domain ?? "—"}
+                        {r.domain ? DOMAIN_LABEL[r.domain] ?? r.domain : "—"}
                         {r.recordId ? ` · ${r.recordId.startsWith("BBNJ-") ? r.recordId : r.recordId.slice(0, 8)}` : ""}
                       </TableCell>
                       <TableCell className="font-mono text-xs">{r.path ?? "—"}</TableCell>
@@ -144,7 +149,7 @@ export default async function AuditPage({ searchParams }: Props) {
                   {imports.map((r) => (
                     <li key={r.runId} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2">
                       <Link href={importRunPath(r)} className="underline">
-                        {fmtDate(r.at)} · {r.domain.toUpperCase()} · {r.filename ?? "upload"}
+                        {fmtDate(r.at)} · {DOMAIN_LABEL[r.domain] ?? r.domain.toUpperCase()} · {r.filename ?? "upload"}
                       </Link>
                       <span className="text-xs text-muted-foreground">
                         {r.accepted} accepted · {r.rejected} rejected · Party {r.partyCode}

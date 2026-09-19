@@ -15,7 +15,7 @@ A claim is **shipped** only when `npm run smoke` or `npm run demo` asserts it. T
 | Confidentiality | public / restricted / confidential on every read path; refusal log | No field-level redaction inside a public record |
 | Compare | `/compare` by Session 1 basic function with live deep links | Interim column = public DOALOS pages as understood, dated |
 | Exhibit | `/exhibit` printable evaluator one-pager (criteria + live inventory + logins) | Print from the browser; chrome hides |
-| Related research | `research_items` catalog + Settings `research_lane_enabled` (default on) + ABMT related-research panel | CSV seed only; no Zotero sync; no Research nav |
+| Related research | Zotero BBNJ snapshot in `research_items` + Literature nav (`/research`) + related panels on ABMT, EIA and MGR | Snapshot, not a live Zotero sync; a paper shows on a record only when journey and place match; no file store |
 | Hands-on | Five passwordless logins; clone or Docker; optional `SANDBOX_RESET=1` | **No hosted public URL** yet |
 | CI | `.github/workflows/ci.yml` runs `contracts:check` + `smoke` on push/PR to `main` | No browser e2e / axe gate yet |
 
@@ -32,4 +32,4 @@ npm run demo             # 17 narrated checkpoints
 npm run db:check         # contracts + reconcile
 ```
 
-Presenter talk-track: in-app notify · Excel = pattern · B-SBI ≠ public id · language stub · ABMT without prejudice · functions-first `/compare` · printable `/exhibit` · no hosted URL on the EOI slide until it exists.
+Presenter talk-track: in-app notify · Excel = pattern · B-SBI ≠ public id · language stub · ABMT without prejudice · literature = Zotero snapshot, not a second library · functions-first `/compare` · printable `/exhibit` · no hosted URL on the EOI slide until it exists.

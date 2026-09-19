@@ -16,9 +16,10 @@ const FEATURES = [
   "Pack status, not record status — draft / pending / published on each pack so stages can coexist",
   "Five roles enforced on the server — Party, Secretariat, public, STB, non-State uploader; every refusal logged",
   "Confidentiality tiers — public / restricted / confidential on every list, export and notification",
-  "In-app notify — subscriptions, hold + digest semantics (no e-mail in this build)",
+  "In-app notify — subscriptions, hold + digest semantics (in-app bell in this build)",
   "Policy-aware full-text search — restricted rows never leak to public readers",
   "Honesty labels — Interim (DOALOS) vs Demo scenario badges on seeded storylines",
+  "Literature — Zotero stays the catalog; the desk stores a citation and a link. A paper appears on a record only when it shares that journey and that place",
 ];
 
 export default async function AboutPage({ searchParams }: Props) {
@@ -73,7 +74,7 @@ export default async function AboutPage({ searchParams }: Props) {
         <section className="space-y-3">
           <h2 className="text-lg font-semibold">Interim set-up vs this desk</h2>
           <p className="text-sm text-muted-foreground">
-            The interim DOALOS pages are informational; this prototype is transactional. A design contrast, not a critique.
+            The interim DOALOS pages are informational; this desk is transactional. A design contrast, not a critique.
           </p>
           <div className="overflow-x-auto rounded-lg border">
             <table className="w-full min-w-[520px] text-left text-sm">

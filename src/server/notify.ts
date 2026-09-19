@@ -9,6 +9,7 @@ import type { Db } from "@/lib/db";
 import type { User } from "@/lib/contracts/events";
 import { DEMO_COMMENT_WINDOW_DAYS, type NotificationKind } from "@/lib/contracts/extensions";
 import type { StoredEvent } from "@/lib/contracts/extensions";
+import { DOMAIN_LABEL, stageLabel } from "@/lib/format";
 import { nowIso } from "./ids";
 import { getEiaActivity } from "./eia";
 import { getEvent, type EventRow, rowToEvent } from "./outbox";
@@ -72,7 +73,7 @@ export function eventVisibleTo(db: Db, user: User, eventId: string): boolean {
 /** Human summary of a published pack event, version-aware. Shared with the digest runner. */
 export function publishSummaryOf(event: StoredEvent, meta: Pick<RecordMeta, "publicRecordId" | "title">): string {
   const label = meta.publicRecordId ?? event.publicRecordId ?? meta.title;
-  const base = `${event.domain.toUpperCase()} · ${event.stage.replace(/_/g, " ")}`;
+  const base = `${DOMAIN_LABEL[event.domain] ?? event.domain.toUpperCase()} · ${stageLabel(event.stage)}`;
   if (event.version > 1) {
     const kind = event.materialChange ? "material change" : "editorial";
     return `${base} amended v${event.version} (${kind}) — ${label}${event.changeNote ? `: ${event.changeNote}` : ""}`;

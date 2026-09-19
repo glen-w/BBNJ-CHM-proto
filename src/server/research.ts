@@ -232,10 +232,15 @@ export function abmtResearchFacets(proposal: StoredAbmtProposal): ResearchFacets
 }
 
 /**
- * ABMT panel query: published items tagged `abmt` that share geography or IFB
- * with the proposal. No geo and no IFB on the record → empty (honest for
- * form-created stubs).
+ * Desk panel query: published items tagged `pillar` that share `geography`.
+ * No recognised geography → empty (a free-text location hint does not invent a join).
  */
+export function listRelatedResearchForPillar(db: Db, pillar: Domain, geography: string | undefined): ResearchItem[] {
+  const box = AbnjBox.safeParse(geography);
+  if (!box.success) return [];
+  return listPublishedResearch(db).filter((item) => item.pillars.includes(pillar) && item.geographies.includes(box.data));
+}
+
 export function listRelatedResearchForAbmt(db: Db, proposal: StoredAbmtProposal): ResearchItem[] {
   const facets = abmtResearchFacets(proposal);
   if (facets.geographies.length === 0 && facets.ifbs.length === 0) return [];

@@ -34,11 +34,11 @@ export default async function NewAbmtPage({ searchParams }: Props) {
       <WithoutPrejudiceBanner />
       <form action={createAbmtAction} className="max-w-xl space-y-4 rounded-lg border p-4">
         <KeyFields returnTo="/abmt/new" />
-        <Field label="Proposal title" required hint="A working title only. The stub carries no ABMT content fields in this build.">
+        <Field label="Proposal title" required hint="A working title only — the stub carries no ABMT content fields.">
           <Input name="title" required placeholder="e.g. Proposal stub — seamount reference area" />
         </Field>
         {!hasRole(p, "party") ? (
-          <Field label="Party code (on behalf)" required hint={isSecretariat(p) ? "Secretariat-assisted: recorded as sourceChannel = assisted." : undefined}>
+          <Field label="Party code (on behalf)" required hint={isSecretariat(p) ? "Secretariat-assisted intake, recorded as the assisted channel." : undefined}>
             <Input name="partyCode" defaultValue="XSD" maxLength={3} />
           </Field>
         ) : null}
@@ -53,7 +53,7 @@ export default async function NewAbmtPage({ searchParams }: Props) {
         </Field>
         <SubmitButton>Open proposal stub (draft)</SubmitButton>
         <p className="text-xs text-muted-foreground">
-          Opens a <code>proposal_stub</code> pack as a draft. Submit it from the proposal page to obtain a receipt; the Secretariat publishes it like any
+          Opens a proposal-stub pack as a draft. Submit it from the proposal page to obtain a receipt; the Secretariat publishes it like any
           other pack.
         </p>
       </form>

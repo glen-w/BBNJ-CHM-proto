@@ -24,7 +24,7 @@ export function buildCompareSections(ctx: CompareContext): CompareSection[] {
     {
       n: 1,
       title: "Receipt, management and storage of information",
-      para: `Consolidated study ¶61: submission/publishing, search/retrieval, reporting/export. Interim column: what public DOALOS pages show (${asOf}), not what may exist behind them. This prototype receives structured records, validates them, versions them and exports them.`,
+      para: `Consolidated study ¶61: submission/publishing, search/retrieval, reporting/export. Interim column: what public DOALOS pages show (${asOf}), not what may exist behind them. This desk receives structured records, validates them, versions them and exports them.`,
       rows: [
         {
           area: "Intake",
@@ -73,7 +73,7 @@ export function buildCompareSections(ctx: CompareContext): CompareSection[] {
         {
           area: "Reporting / export",
           interim: `Not offered on the public interim informational pages (${asOf})`,
-          prototype: "CSV (RFC 4180) and JSON envelopes per domain, for the audit log and for digest runs; per-record JSON and a one-page PDF stub — all policy-filtered.",
+          prototype: "CSV (RFC 4180) and JSON envelopes per domain, for the audit log and for digest runs; per-record JSON and a one-page PDF extract — all policy-filtered.",
           links: [
             { href: "/api/export/mgr.csv", label: "mgr.csv", external: true },
             { href: "/api/export/audit.json", label: "audit.json", external: true },
@@ -89,7 +89,7 @@ export function buildCompareSections(ctx: CompareContext): CompareSection[] {
         {
           area: "ABMT",
           interim: `Informational pages only on the public interim set-up (${asOf})`,
-          prototype: "Thin proposal_stub journey on the same rails (draft → pending → published, receipt, BBNJ-ABMT id). Without prejudice to COP1; no content model.",
+          prototype: "Thin proposal stub on the same rails (draft → pending → published, receipt, BBNJ-ABMT id). Without prejudice to COP1; no content model.",
           links: [{ href: "/abmt", label: "ABMT stub" }, ...(ctx.abmt ? [{ href: `/abmt/${ctx.abmt}`, label: "Seeded proposal stub" }] : [])],
         },
       ],
@@ -97,7 +97,7 @@ export function buildCompareSections(ctx: CompareContext): CompareSection[] {
     {
       n: 2,
       title: "Notification and alerts",
-      para: `PrepCom3 annex parameters: subscriptions, deadlines, digests. No subscription model is visible on public interim pages (${asOf}); the prototype fans every published outbox row out to owners, subscribers, reviewers — with cadence — into an in-app bell.`,
+      para: `PrepCom3 annex parameters: subscriptions, deadlines, digests. No subscription model is visible on public interim pages (${asOf}); this desk fans every published outbox row out to owners, subscribers, reviewers — with cadence — into an in-app bell.`,
       rows: [
         {
           area: "Subscriptions",
@@ -108,7 +108,7 @@ export function buildCompareSections(ctx: CompareContext): CompareSection[] {
         {
           area: "Delivery",
           interim: `Not visible on public interim pages (${asOf})`,
-          prototype: "In-app bell only (no e-mail or push yet). Synchronous dispatch after commit; idempotent (UNIQUE user × event × kind); dispatch_log; replay inserts nothing on a consistent DB.",
+          prototype: "In-app bell only. Synchronous dispatch after commit; idempotent (UNIQUE user × event × kind); dispatch_log; replay inserts nothing on a consistent DB.",
           links: [{ href: "/notifications", label: "Bell / inbox" }, { href: "/audit", label: `Dispatch column${loginHint}` }],
         },
         {
@@ -120,13 +120,13 @@ export function buildCompareSections(ctx: CompareContext): CompareSection[] {
         {
           area: "Deadlines",
           interim: `Not visible on public interim pages (${asOf})`,
-          prototype: "Publishing a draft EIA emits a deadline row (demo 30-day window, or the activity's explicit dueAt) to owner and subscribers, and an STB review request.",
+          prototype: "Publishing a draft EIA emits a deadline row (demo 30-day window, or the activity's explicit due date) to owner and subscribers, and an STB review request.",
           links: ctx.eia2 ? [{ href: `/eia/${ctx.eia2}`, label: "Draft EIA v1" }, { href: "/stb", label: "STB queue" }] : [{ href: "/stb", label: "STB queue" }],
         },
         {
           area: "Matches",
           interim: `Not visible on public interim pages (${asOf})`,
-          prototype: "CBTMT match = row + match_suggested event; both owners notified; deterministic shared-theme rule (not brokerage, not ML) plus a human facilitation note.",
+          prototype: "CBTMT match = row + match-suggested event; both owners notified; deterministic shared-theme rule (not brokerage, not ML) plus a human facilitation note.",
           links: [{ href: "/capacity", label: "Capacity board" }, ...(ctx.need ? [{ href: `/capacity/${ctx.need}`, label: "Seeded need" }] : [])],
         },
       ],
@@ -134,7 +134,7 @@ export function buildCompareSections(ctx: CompareContext): CompareSection[] {
     {
       n: 3,
       title: "User management",
-      para: `Role-based access, audit logging, account lifecycle. Public interim pages expose no role taxonomy (${asOf}); the prototype enforces five roles server-side and records every refusal.`,
+      para: `Role-based access, audit logging, account lifecycle. Public interim pages expose no role taxonomy (${asOf}); this desk enforces five roles server-side and records every refusal.`,
       rows: [
         {
           area: "Roles",

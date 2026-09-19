@@ -25,7 +25,7 @@ export default async function StbPage({ searchParams }: Props) {
     <AppShell title="STB review queue — published draft EIAs awaiting consolidated comments" flash={flash}>
       <p className="max-w-3xl text-sm text-muted-foreground">
         The STB sees exactly what the public sees — <strong>published</strong> draft EIA packs — plus restricted-tier records. A pack leaves the queue
-        when a <code>comments_stb</code> row exists for the same version; one consolidated comment per version (Arts 34–35).
+        when an STB comments pack exists for the same version; one consolidated comment per version (Arts 34–35).
       </p>
       {!canComment ? (
         <p className="text-sm">
@@ -39,14 +39,20 @@ export default async function StbPage({ searchParams }: Props) {
       {queue.length === 0 ? (
         clearedId ? (
           <p className="rounded-lg border border-published-line bg-published/10 p-4 text-sm">
-            Queue cleared — consolidated <code>comments_stb</code> comment recorded.{" "}
+            Queue cleared — consolidated STB comment recorded.{" "}
             <Link href={`/eia/${clearedId}`} className="font-medium underline">
               Open the activity
             </Link>
             .
           </p>
         ) : (
-          <p className="text-sm text-muted-foreground">Queue is empty.</p>
+          <p className="text-sm text-muted-foreground">
+            Queue is empty. Published draft EIAs appear here until an STB comment is recorded.{" "}
+            <Link href="/eia" className="underline">
+              Open EIA
+            </Link>
+            .
+          </p>
         )
       ) : (
         <ul className="space-y-4">
@@ -69,7 +75,7 @@ export default async function StbPage({ searchParams }: Props) {
                   <Field label="Consolidated STB comment" required>
                     <Textarea name="text" rows={3} required placeholder="Consolidated observations on the draft EIA…" />
                   </Field>
-                  <SubmitButton size="sm">Record comment (publishes comments_stb v{q.version})</SubmitButton>
+                  <SubmitButton size="sm">Record comment (publishes STB comments v{q.version})</SubmitButton>
                 </form>
               ) : null}
             </li>

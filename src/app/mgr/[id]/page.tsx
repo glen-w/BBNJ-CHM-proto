@@ -10,17 +10,21 @@ import { flashFrom } from "@/components/flash";
 import { Field, KeyFields, SubmitButton, selectClass } from "@/components/forms";
 import { MgrForm } from "@/components/mgr-form";
 import { PublishButton } from "@/components/publish-button";
+import { RelatedResearchPanel } from "@/components/related-research-panel";
 import { Timeline } from "@/components/timeline";
 import { TreatyCiteDrawer } from "@/components/treaty-cite-drawer";
 import { Input } from "@/components/ui/input";
 import { AmendForm, VersionHistory } from "@/components/version-history";
 import { getDb } from "@/lib/db";
+import { stageLabel } from "@/lib/format";
 import { FIELD_DEFS } from "@/lib/mgr-fields";
+import { literatureBrowseHref } from "@/lib/research-lane";
 import { cn } from "@/lib/utils";
 import { addMgrPackAction } from "@/server/actions";
 import { getMgrBatch, MGR_AMENDABLE_STAGES } from "@/server/mgr";
 import { can, hasRole } from "@/server/policy";
 import { packsOf, recordVisible, timelineOf } from "@/server/queries";
+import { isResearchLaneEnabled, listRelatedResearchForPillar } from "@/server/research";
 import { provenanceBadgeForRecord } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
@@ -48,6 +52,8 @@ export default async function MgrBatchPage({ params, searchParams }: Props) {
   const amendable = MGR_AMENDABLE_STAGES.filter((s) => latestByStage.get(s)?.status === "published").map((s) => ({ stage: s, version: latestByStage.get(s)!.version }));
   const canAmend = can(p, "amend", { ownerUserId: batch.ownerUserId ?? null });
   const provenance = provenanceBadgeForRecord(db, id);
+  const researchLaneOn = isResearchLaneEnabled(db);
+  const relatedResearch = researchLaneOn ? listRelatedResearchForPillar(db, "mgr", batch.locationHint) : [];
 
   return (
     <AppShell title={`MGR batch — ${batch.title}`} flash={flash}>
@@ -95,7 +101,7 @@ export default async function MgrBatchPage({ params, searchParams }: Props) {
         <ol className="flex flex-wrap items-center gap-2 text-sm">
           {STAGES.map((s, i) => (
             <li key={s} className="flex items-center gap-2">
-              <span className={cn("rounded-md border px-3 py-1.5", i <= reached ? "border-institutional/50 bg-institutional/10 font-medium text-institutional" : "text-muted-foreground")}>{s.replace(/_/g, " ")}</span>
+              <span className={cn("rounded-md border px-3 py-1.5", i <= reached ? "border-institutional/50 bg-institutional/10 font-medium text-institutional" : "text-muted-foreground")}>{stageLabel(s)}</span>
               {i < STAGES.length - 1 ? <span className="text-muted-foreground">→</span> : null}
             </li>
           ))}
@@ -231,6 +237,10 @@ export default async function MgrBatchPage({ params, searchParams }: Props) {
           </details>
         ) : null}
       </section>
+
+      {researchLaneOn ? (
+        <RelatedResearchPanel items={relatedResearch} browseHref={literatureBrowseHref("mgr", batch.locationHint)} />
+      ) : null}
 
       <section>
         <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">Timeline</h2>

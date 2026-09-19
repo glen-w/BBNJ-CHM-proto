@@ -3,19 +3,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { cookies } from "next/headers";
 
-import { DomainBadge } from "@/components/chips";
+import { DomainBadge, StatusChip } from "@/components/chips";
 import { FlashBanner, type Flash } from "@/components/flash";
 import { LanguageControl } from "@/components/language-control";
 import { InstitutionalNav, JourneysNav, RailsNav } from "@/components/shell-nav";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getDb } from "@/lib/db";
-import { fmtDate } from "@/lib/format";
+import { fmtDate, fmtRelative, kindLabel, roleLabel, stageLabel } from "@/lib/format";
 import { TREATY_LANG_COOKIE, treatyLangOf } from "@/lib/locale";
+import { RESEARCH_NAV_HREF } from "@/lib/research-lane";
 import { cn } from "@/lib/utils";
 import { logoutAction } from "@/server/actions";
 import { actorRoleOf, can } from "@/server/policy";
-import { notificationsFor, unreadCount } from "@/server/queries";
+import { latestVisibleEvent, notificationsFor, unreadCount } from "@/server/queries";
 import { isResearchLaneEnabled } from "@/server/research";
 import { getSessionUser } from "@/server/session";
 
@@ -24,7 +25,8 @@ const journeys: { href: string; label: string; caption: string; enabled: boolean
   { href: "/mgr", label: "MGR", caption: "marine genetic resources", enabled: true },
   { href: "/eia", label: "EIA", caption: "environmental impact assessment", enabled: true },
   { href: "/capacity", label: "CBTMT", caption: "capacity-building & technology transfer", enabled: true },
-  { href: "/abmt", label: "ABMT", caption: "area-based management tools (stub, without prejudice)", enabled: true },
+  { href: "/abmt", label: "ABMT", caption: "area-based management tools", enabled: true },
+  { href: RESEARCH_NAV_HREF, label: "Literature", caption: "Zotero-backed papers linked to the journeys", enabled: true },
 ];
 
 export async function AppShell({
@@ -40,7 +42,9 @@ export async function AppShell({
   const db = getDb();
   const unread = unreadCount(db, principal);
   const recent = notificationsFor(db, principal, 8);
+  const latest = latestVisibleEvent(db, principal);
   const role = actorRoleOf(principal);
+  const roleName = roleLabel(role);
   const username = principal.kind === "user" ? principal.user.username : "anonymous";
   const store = await cookies();
   const treatyLang = treatyLangOf(store.get(TREATY_LANG_COOKIE)?.value);
@@ -120,7 +124,7 @@ export async function AppShell({
                           <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
                             <span className="flex items-center gap-1.5 uppercase">
                               {n.domain ? <DomainBadge domain={n.domain} /> : null}
-                              {n.kind.replace("_", " ")}
+                              {kindLabel(n.kind)}
                             </span>
                             <span>{fmtDate(n.at)}</span>
                           </div>
@@ -145,11 +149,11 @@ export async function AppShell({
               href="/login"
               className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "whitespace-nowrap")}
               title={principal.kind === "user" ? `Signed in as ${username} — switch role` : "Switch role"}
-              aria-label={principal.kind === "user" ? `Signed in as ${username}, role ${role}. Switch role` : `Role ${role}. Switch role`}
+              aria-label={principal.kind === "user" ? `Signed in as ${username}, role ${roleName}. Switch role` : `Role ${roleName}. Switch role`}
             >
               <span className="inline-flex items-center gap-1 rounded border border-line bg-muted px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
                 <User aria-hidden="true" className="size-3 shrink-0" />
-                {role}
+                {roleName}
               </span>
             </Link>
             {principal.kind === "user" ? (
@@ -163,8 +167,8 @@ export async function AppShell({
         </div>
       </header>
 
-      {/* Band 3 — desk tabs · journeys · search. */}
-      <div className="sticky top-0 z-30 border-b bg-card">
+      {/* Band 3 — desk tabs · journeys · search · latest transaction. */}
+      <div className="sticky top-0 z-30 border-b bg-card print:hidden">
         <div className="mx-auto flex w-full max-w-6xl items-center gap-x-4 px-6">
           <InstitutionalNav />
           <JourneysNav items={journeys} researchLaneEnabled={researchLaneEnabled} />
@@ -186,6 +190,26 @@ export async function AppShell({
             </button>
           </form>
         </div>
+        {latest ? (
+          <div className="border-t border-line/80">
+            <div className="mx-auto flex w-full max-w-6xl items-center gap-2 px-6 py-1 text-xs text-muted-foreground">
+              <span className="shrink-0 font-medium text-foreground">Latest transaction</span>
+              <Link
+                href={`/audit?event=${latest.id}`}
+                className="flex min-w-0 items-center gap-1.5 truncate hover:text-institutional hover:underline"
+                title={latest.summary}
+              >
+                <DomainBadge domain={latest.domain} />
+                <span className="font-mono text-foreground">
+                  {latest.publicRecordId ?? latest.bSbi ?? "unpublished"}
+                </span>
+                <span>{stageLabel(latest.stage)}</span>
+                <StatusChip status={latest.status} className="scale-90" />
+                <span className="shrink-0">{fmtRelative(latest.at)}</span>
+              </Link>
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-6xl flex-1 space-y-5 px-6 py-5 outline-none">

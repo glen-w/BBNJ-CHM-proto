@@ -48,7 +48,7 @@ export default async function NewEiaPage({ searchParams }: Props) {
           <Field
             label="Party code (on behalf)"
             required
-            hint={isSecretariat(p) ? "Secretariat-assisted intake: the activity is recorded with sourceChannel = assisted, on behalf of this Party (Art 51.5)." : undefined}
+            hint={isSecretariat(p) ? "Secretariat-assisted intake, recorded as the assisted channel on behalf of this Party (Art 51.5)." : undefined}
           >
             <Input name="partyCode" defaultValue="XSD" maxLength={3} />
           </Field>

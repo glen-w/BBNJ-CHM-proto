@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { DOMAIN_LABEL, domainPath, fmtDate, fmtRelative, stageLabel } from "@/lib/format";
+import { DOMAIN_LABEL, actionLabel, cadenceLabel, domainPath, fmtDate, fmtRelative, kindLabel, roleLabel, stageLabel } from "@/lib/format";
 
 describe("fmtDate", () => {
   it("renders a valid ISO timestamp in UTC", () => {
@@ -38,8 +38,13 @@ describe("fmtRelative", () => {
 });
 
 describe("stageLabel / domainPath", () => {
-  it("replaces underscores in stage names", () => {
+  it("replaces underscores in stage names and keeps acronyms in caps", () => {
     expect(stageLabel("pre_collection")).toBe("pre collection");
+    expect(stageLabel("draft_eia")).toBe("draft EIA");
+    expect(stageLabel("comments_stb")).toBe("comments STB");
+    expect(stageLabel("proposal_stub")).toBe("proposal stub");
+    expect(stageLabel("eia_required")).toBe("EIA required");
+    expect(stageLabel("no_eia")).toBe("no EIA");
   });
 
   it("maps each domain to its list/detail path", () => {
@@ -48,5 +53,27 @@ describe("stageLabel / domainPath", () => {
     expect(domainPath("cbtmt", "abc")).toBe("/capacity/abc");
     expect(domainPath("abmt", "abc")).toBe("/abmt/abc");
     expect(DOMAIN_LABEL.cbtmt).toBe("CBTMT");
+  });
+});
+
+describe("roleLabel / kindLabel / actionLabel / cadenceLabel", () => {
+  it("humanizes actor roles without leaking contract enums", () => {
+    expect(roleLabel("non_state_uploader")).toBe("non-State uploader");
+    expect(roleLabel("secretariat")).toBe("Secretariat");
+    expect(roleLabel("stb")).toBe("STB");
+    expect(roleLabel("publishing_authority")).toBe("authorised publisher");
+  });
+
+  it("humanizes notification kinds and refusal actions", () => {
+    expect(kindLabel("stb_review")).toBe("STB review");
+    expect(kindLabel("publish")).toBe("publish");
+    expect(actionLabel("comment_stb")).toBe("STB comment");
+    expect(actionLabel("reset_sandbox")).toBe("reset database");
+    expect(actionLabel("suggest_match")).toBe("suggest match");
+  });
+
+  it("capitalizes digest cadence", () => {
+    expect(cadenceLabel("immediate")).toBe("Immediate");
+    expect(cadenceLabel("daily")).toBe("Daily");
   });
 });

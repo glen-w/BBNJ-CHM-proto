@@ -3,13 +3,22 @@
  *
  * Persisted in `meta.research_lane_enabled` (`1` / `0`). Missing key defaults ON
  * so fixture demos show the panel. One switch for the whole desk — not per user,
- * per pillar, or per journey. Future Research nav / browse must call
- * `isResearchLaneEnabled` (or this parser) and stay hidden when off.
+ * per pillar, or per journey. Literature nav and `/research` call the same gate
+ * and stay hidden when off.
  */
 export const RESEARCH_LANE_META_KEY = "research_lane_enabled";
 
-/** P1 Research journey href — do not add to primary nav in P0. */
+/** Literature journey. Hidden with the rest of the lane when the gate is off. */
 export const RESEARCH_NAV_HREF = "/research";
+
+/** Browse href for the literature desk, optionally narrowed to a pillar and geography. */
+export function literatureBrowseHref(pillar?: string, box?: string): string {
+  const q = new URLSearchParams();
+  if (pillar) q.set("pillar", pillar);
+  if (box) q.set("box", box);
+  const s = q.toString();
+  return s ? `${RESEARCH_NAV_HREF}?${s}` : RESEARCH_NAV_HREF;
+}
 
 /**
  * Parse the stored meta value.

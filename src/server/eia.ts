@@ -5,6 +5,7 @@
 import type { Db } from "@/lib/db";
 import { AbnjBox, EiaPublishableStages, type ArtifactRef, type EiaStage, type PublishStatus } from "@/lib/contracts/events";
 import { StoredEiaActivity, type IdempotencyKey, type StoredEvent } from "@/lib/contracts/extensions";
+import { stageLabel } from "@/lib/format";
 import { DomainError } from "./errors";
 import { nowIso } from "./ids";
 import { dispatch } from "./notify";
@@ -153,7 +154,7 @@ export function addEiaPack(
     recordId: activityId,
     stage,
     status: opts.status ?? "pending",
-    summary: summary.trim() || `${stage.replace(/_/g, " ")} pack`,
+    summary: summary.trim() || `${stageLabel(stage)} pack`,
     idempotencyKey: key,
     artifactRefs: opts.artifactRefs,
     extras: stage === "screening" ? { screeningOutcome: opts.screeningOutcome } : undefined,

@@ -5,6 +5,7 @@ import { createAbmtProposal } from "@/server/abmt";
 import {
   isResearchLaneEnabled,
   listRelatedResearchForAbmt,
+  listRelatedResearchForPillar,
   openHrefForResearch,
   setResearchLaneEnabled,
   upsertResearchItem,
@@ -104,6 +105,10 @@ describe("research items", () => {
     expect(cczHits.map((i) => i.title)).toEqual(["CCZ ISA note"]);
     expect(openHrefForResearch(cczHits[0]!)).toBe("https://doi.org/10.1000/ccz");
     expect(listRelatedResearchForAbmt(h.db, noBox)).toEqual([]);
+    expect(listRelatedResearchForPillar(h.db, "eia", "NE Atlantic Mesopelagic Belt").map((i) => i.title)).toEqual(["Mesopelagic EIA paper"]);
+    expect(listRelatedResearchForPillar(h.db, "mgr", "NE Atlantic Mesopelagic Belt")).toEqual([]);
+    expect(listRelatedResearchForPillar(h.db, "eia", "not a box")).toEqual([]);
+    expect(listRelatedResearchForPillar(h.db, "mgr", undefined)).toEqual([]);
   });
 
   it("defaults the lane on and hides when meta is 0", () => {

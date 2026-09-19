@@ -12,6 +12,7 @@ import ExcelJS from "exceljs";
 import type { Db } from "@/lib/db";
 import type { IdempotencyKey } from "@/lib/contracts/extensions";
 import { EIA_SCREENING_FIELDS, EIA_SCREENING_TEMPLATE_NAME, EIA_SCREENING_TEMPLATE_VERSION, coerceEiaScreeningInput, normaliseEiaHeader } from "@/lib/eia-fields";
+import { stageLabel } from "@/lib/format";
 import { FIELD_DEFS, MGR_TEMPLATE_NAME, MGR_TEMPLATE_VERSION, MgrPreCollectionInput, coerceMgrInput, normaliseHeader } from "@/lib/mgr-fields";
 import { addEiaPack, createEiaActivity } from "./eia";
 import { DomainError } from "./errors";
@@ -364,7 +365,7 @@ export async function importEiaScreeningExcel(
           { title: input.title, abnjBox: input.abnjBox, partyCode: input.partyCode, confidentiality: input.confidentiality, sourceChannel: "excel" },
           rowKey,
         );
-        const pack = addEiaPack(db, actor, created.activity.id, "screening", `Screening (offline Excel, Art 31): ${input.screeningOutcome.replace("_", " ")}`, `${rowKey}:screening`.slice(0, 128), {
+        const pack = addEiaPack(db, actor, created.activity.id, "screening", `Screening (offline Excel, Art 31): ${stageLabel(input.screeningOutcome)}`, `${rowKey}:screening`.slice(0, 128), {
           screeningOutcome: input.screeningOutcome,
           status: "pending",
         });

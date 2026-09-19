@@ -127,8 +127,9 @@ export default async function SettingsPage({ searchParams }: Props) {
             <li className="px-4 py-3">
               <div className="font-medium">Show related research</div>
               <p className="mt-1 text-muted-foreground">
-                One switch for the whole desk (<code className="font-mono text-xs">{RESEARCH_LANE_META_KEY}</code>). When off, the related-research
-                panel is gone — not an empty state. Future Research browse and nav must honour the same flag. Default is on when the key is missing.
+                One switch for the whole desk (<code className="font-mono text-xs">{RESEARCH_LANE_META_KEY}</code>). Zotero stays the catalog; this
+                desk only shows the seeded snapshot. When off, the Literature tab and related-research panels are gone — not an empty state. Default
+                is on when the key is missing.
               </p>
               <form action={setResearchLaneAction} className="mt-3 flex flex-wrap items-center gap-2">
                 <KeyFields returnTo="/settings?tab=desk" />
@@ -147,11 +148,11 @@ export default async function SettingsPage({ searchParams }: Props) {
             </li>
             <li className="px-4 py-3">
               <div className="font-medium">Notification channels</div>
-              <p className="mt-1 text-muted-foreground">In-app only in this build. SMTP and digest scheduling would attach to the same outbox semantics.</p>
+              <p className="mt-1 text-muted-foreground">Notifications are in-app in this build.</p>
             </li>
             <li className="px-4 py-3">
               <div className="font-medium">Controlled vocabularies</div>
-              <p className="mt-1 text-muted-foreground">ABNJ boxes, CBTMT themes and confidentiality labels are fixed in seed data until an operator backend ships.</p>
+              <p className="mt-1 text-muted-foreground">ABNJ boxes, CBTMT themes and confidentiality labels are fixed in seed data.</p>
             </li>
             <li className="px-4 py-3">
               <div className="font-medium">Subscriptions</div>

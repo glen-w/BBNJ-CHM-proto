@@ -6,7 +6,7 @@ import { flashFrom } from "@/components/flash";
 import { KeyFields, SubmitButton } from "@/components/forms";
 import { buttonVariants } from "@/components/ui/button";
 import { getDb } from "@/lib/db";
-import { fmtDate } from "@/lib/format";
+import { cadenceLabel, fmtDate, kindLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { markAllReadAction, runDigestAction } from "@/server/actions";
 import { can } from "@/server/policy";
@@ -37,14 +37,14 @@ export default async function NotificationsPage({ searchParams }: Props) {
         <>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="max-w-2xl text-sm text-muted-foreground">
-              Kinds: publish · deadline · digest · match · stb_review. Rows are produced by the dispatcher from published outbox events only; drafts and
-              pending packs never notify. Delivery is <strong>in-app only</strong> (this bell) — no e-mail or push in this build.{" "}
+              Kinds: publish · deadline · digest · match · STB review. Rows are produced by the dispatcher from published outbox events only; drafts and
+              pending packs never notify. Delivery is in-app (this bell).{" "}
               {sub ? (
                 sub.digest === "immediate" ? (
-                  <>Your cadence is <strong>immediate</strong>: every matching publication reaches the bell at once.</>
+                  <>Your cadence is <strong>{cadenceLabel("immediate")}</strong>: every matching publication reaches the bell at once.</>
                 ) : (
                   <>
-                    Your cadence is <strong>{sub.digest}</strong>: subscription matches are <em>held</em> and rolled into one digest row per window. Rows
+                    Your cadence is <strong>{cadenceLabel(sub.digest)}</strong>: subscription matches are <em>held</em> and rolled into one digest row per window. Rows
                     about your own records, STB review requests, deadlines and material amendments still arrive immediately.
                   </>
                 )
@@ -84,7 +84,7 @@ export default async function NotificationsPage({ searchParams }: Props) {
                   <div>
                     <span className="mr-2 inline-flex items-center gap-1.5">
                       {n.domain ? <DomainBadge domain={n.domain} /> : null}
-                      <span className="rounded bg-muted px-1.5 text-xs uppercase">{n.kind.replace("_", " ")}</span>
+                      <span className="rounded bg-muted px-1.5 text-xs uppercase">{kindLabel(n.kind)}</span>
                     </span>
                     {n.recordHref ? (
                       <Link href={n.recordHref} className="hover:underline">

@@ -158,7 +158,7 @@ export default async function CapacityPage({ searchParams }: Props) {
       <AboutPanel title="About this workflow">
         <p>
           Needs and offers are records with a pending → published pack. A <strong className="text-foreground">match</strong> is a row (need, offer, rule,
-          at) plus a <code>match_suggested</code> outbox event carrying the <code>matchId</code>. Matching is a{" "}
+          at) plus a match-suggested outbox event carrying the match id. Matching is a{" "}
           <strong className="text-foreground">deterministic shared-theme rule</strong>, not brokerage and not ML: the rule only finds the pair. Human
           matchmaking is the Secretariat&apos;s <em>facilitation note</em> on the match — theme-join alone is not facilitation.
         </p>

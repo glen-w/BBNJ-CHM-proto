@@ -16,6 +16,7 @@ import { VersionHistory } from "@/components/version-history";
 import { WithoutPrejudiceBanner } from "@/components/without-prejudice";
 import { getDb } from "@/lib/db";
 import { fmtDate } from "@/lib/format";
+import { literatureBrowseHref } from "@/lib/research-lane";
 import { submitAbmtAction } from "@/server/actions";
 import { getAbmtProposal } from "@/server/abmt";
 import { can } from "@/server/policy";
@@ -120,7 +121,9 @@ export default async function AbmtProposalPage({ params, searchParams }: Props) 
         ) : null}
       </section>
 
-      {researchLaneOn ? <RelatedResearchPanel items={relatedResearch} /> : null}
+      {researchLaneOn ? (
+        <RelatedResearchPanel items={relatedResearch} browseHref={literatureBrowseHref("abmt", proposal.abnjBox)} />
+      ) : null}
 
       <section className="rounded-lg border p-4" id="versions">
         <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">Version history</h2>
@@ -131,8 +134,8 @@ export default async function AbmtProposalPage({ params, searchParams }: Props) 
         <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">Timeline</h2>
         <Timeline rows={timeline} />
         <p className="mt-2 text-xs text-muted-foreground">
-          Without prejudice: a <code>proposal_stub</code> row on the shared outbox, nothing more. Its shape is the same as every other pack row so
-          later ABMT packages can reuse the receipt and publish record unchanged.
+          Without prejudice: a proposal-stub row on the shared outbox. Its shape is the same as every other pack row so later ABMT packages can
+          reuse the receipt and publish record unchanged.
         </p>
       </section>
     </AppShell>

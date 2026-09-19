@@ -37,7 +37,7 @@ export default async function CbtmtRecordPage({ params, searchParams }: Props) {
   const amendable = latestPost?.status === "published" ? [{ stage: postStage, version: latestPost.version }] : [];
 
   return (
-    <AppShell title={`CBTMT ${record.kind} — ${record.title}`} flash={flash}>
+    <AppShell title={`CBTMT ${record.kind === "need" ? "need" : "offer"} — ${record.title}`} flash={flash}>
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
         <div className="flex flex-wrap items-center gap-2">
           <Link href="/capacity" className="underline">

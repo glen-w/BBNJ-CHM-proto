@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import type { Domain } from "@/lib/contracts/events";
 import { SEARCH_SUGGESTIONS } from "@/lib/exhibit";
 import { getDb } from "@/lib/db";
-import { fmtDate, stageLabel } from "@/lib/format";
+import { DOMAIN_LABEL, fmtDate, stageLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { searchRecords } from "@/server/queries";
 import { getSessionUser } from "@/server/session";
@@ -94,7 +94,7 @@ export default async function SearchPage({ searchParams }: Props) {
         <div className="space-y-6">
           <p className="text-sm text-muted-foreground">
             {hits.length} result{hits.length === 1 ? "" : "s"} for “{q}”
-            {domain ? ` in ${domain.toUpperCase()}` : ""}.
+            {domain ? ` in ${DOMAIN_LABEL[domain] ?? domain}` : ""}.
           </p>
           {(["mgr", "eia", "cbtmt", "abmt"] as const).map((d) => {
             const rows = byDomain[d];
@@ -104,7 +104,7 @@ export default async function SearchPage({ searchParams }: Props) {
                 <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
                   <DomainBadge domain={d} />
                   <span>
-                    {d.toUpperCase()} ({rows.length})
+                    {DOMAIN_LABEL[d]} ({rows.length})
                   </span>
                 </h2>
                 <div className="overflow-x-auto rounded-lg border bg-card">

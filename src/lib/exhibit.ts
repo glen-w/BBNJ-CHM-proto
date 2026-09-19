@@ -27,6 +27,7 @@ export const EXHIBIT_LIMITS = [
   "Excel loop is an Art 51.5 pattern, not a WCAG certificate",
   "Treaty-text locale stub only — UI stays English",
   "Related systems are named links, not federation",
+  "Literature is a Zotero snapshot (link-out), not a live library or file store",
 ] as const;
 
 export const EXHIBIT_LOGINS = [
@@ -75,6 +76,13 @@ export const EXHIBIT_SECTIONS: ExhibitSection[] = [
         evidence: "Policy-aware FTS5; Interim (DOALOS) vs Demo scenario badges",
         href: "/search?q=TEMP",
         label: "Search TEMP",
+      },
+      {
+        area: "Literature",
+        status: "shipped",
+        evidence: "Zotero stays the catalog. /research is a snapshot with link-out; a record shows a paper only when journey and place match. Not a live sync.",
+        href: "/research",
+        label: "Literature",
       },
       {
         area: "Confidentiality",

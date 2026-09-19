@@ -3,6 +3,7 @@
  * Seed map beside stage enums — pack detail “Agreement basis” drawer only.
  */
 import type { Domain } from "@/lib/contracts/events";
+import { stageLabel } from "@/lib/format";
 
 export type TreatyCite = { article: string; label: string };
 
@@ -30,7 +31,7 @@ const ABMT: TreatyCite[] = [{ article: "Art 51.3(a)(ii)", label: "Area-based man
 /** One-line caption for stage rails / selects (EIA). */
 export function citeCaption(domain: Domain, stage: string): string {
   const cites = citesFor(domain, stage);
-  if (cites.length === 0) return stage.replace(/_/g, " ");
+  if (cites.length === 0) return stageLabel(stage);
   return cites.map((c) => `${c.article} — ${c.label}`).join("; ");
 }
 
