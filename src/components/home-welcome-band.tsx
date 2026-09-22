@@ -11,10 +11,8 @@ import {
   homeWelcomeVisible,
   type HomeWelcomeCard,
 } from "@/lib/home-welcome";
-import { getDb } from "@/lib/db";
 import { cn } from "@/lib/utils";
 import { setHomeWelcomeAction } from "@/server/actions";
-import { findEventByKey } from "@/server/outbox";
 import { can, hasRole, isSecretariat } from "@/server/policy";
 import { getSessionUser } from "@/server/session";
 
@@ -38,9 +36,7 @@ export async function HomeWelcomeBand() {
     can(principal, "submit"),
     can(principal, "submit", { domain: "cbtmt", recordKind: "offer" }),
   );
-  const db = getDb();
-  const rec = (key: string) => findEventByKey(db, `seed:${key}`)?.recordId;
-  const cards = homeWelcomeGetStarted(mode, { mgrA: rec("mgr-a"), eia2: rec("eia-2") });
+  const cards = homeWelcomeGetStarted(mode);
 
   if (!visible) {
     return (

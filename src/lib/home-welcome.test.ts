@@ -61,30 +61,11 @@ describe("home welcome navigation", () => {
 
     const learn = homeWelcomeGetStarted("public").find((c) => c.key === "learn");
     expect(learn?.links.map((l) => l.href)).toContain("/about");
-    expect(learn?.links.map((l) => l.label)).toEqual([
-      "About the Clearing House",
-      "The four journeys",
-      "Public view",
-      "Party receipt (B-SBI)",
-      "Secretariat publish + import",
-      "STB review",
-      "Expression of interest",
-    ]);
-    expect(learn?.links.map((l) => l.href)).toEqual([
-      "/about",
-      "#journeys",
-      "/",
-      "/mgr/new",
-      "/mgr/import",
-      "/stb",
-      "/exhibit",
+    expect(learn?.links).toEqual([
+      { href: "/about", label: "About the Clearing House" },
+      { href: "#journeys", label: "The four journeys" },
+      { href: "/settings?tab=demo", label: "Guided path" },
     ]);
     expect(learn?.links.some((l) => /agreement/i.test(l.label))).toBe(false);
-  });
-
-  it("resolves guided path record links when seed ids are provided", () => {
-    const learn = homeWelcomeGetStarted("public", { mgrA: "mgr-seed", eia2: "eia-seed" }).find((c) => c.key === "learn");
-    expect(learn?.links.map((l) => l.href)).toContain("/mgr/mgr-seed");
-    expect(learn?.links.map((l) => l.href)).toContain("/eia/eia-seed");
   });
 });

@@ -227,8 +227,7 @@ export async function AppShell({
         {children}
       </main>
       <footer className="border-t print:hidden">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-1 px-6 py-2 text-xs text-muted-foreground">
-          <span>Clearing House</span>
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-end gap-x-6 gap-y-1 px-6 py-2 text-xs text-muted-foreground">
           <Link href="/about" className="underline underline-offset-2 hover:text-institutional">
             About the Clearing House
           </Link>
