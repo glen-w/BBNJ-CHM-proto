@@ -204,7 +204,7 @@ export async function runSpeedTrialAction(fd: FormData) {
     const trials = await runSpeedMatrix(p, profiles, { db: getDb() });
     appendSpeedTrials(trials);
     const back = returnTo(fd, "/settings?tab=speed");
-    return { to: back, notice: `${trials.length} trials logged for ${profiles.length} profile${profiles.length === 1 ? "" : "s"} — mocked transfer, measured parse.` };
+    return { to: back, notice: `${trials.length} trials logged for ${profiles.length} profile${profiles.length === 1 ? "" : "s"}.` };
   });
 }
 

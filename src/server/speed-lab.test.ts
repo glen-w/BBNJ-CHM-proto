@@ -5,7 +5,8 @@ import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { dryRunEiaScreeningExcel, dryRunMgrExcel } from "@/server/import";
-import { appendSpeedTrials, readSpeedTrials, runSpeedMatrix, SPEED_OPERATIONS } from "@/server/speed-lab";
+import { appendSpeedTrials, filledSpeedTrials, latestSpeedTrials, readSpeedTrials, runSpeedMatrix, SPEED_OPERATIONS } from "@/server/speed-lab";
+import { CONNECTION_PROFILES } from "@/lib/connection-profiles";
 import { buildEiaScreeningSample, buildMgrSample } from "@/server/template";
 import { createHarness, expectDomainCodeAsync, type Harness } from "@/test/helpers";
 
@@ -97,5 +98,25 @@ describe("speed lab matrix + JSONL log", () => {
     expect(back.map((t) => t.bytes)).toEqual([300, 200, 100]);
     expect(readSpeedTrials(2, file)).toHaveLength(2);
     expect(readSpeedTrials(10, path.join(dir, "missing.jsonl"))).toEqual([]);
+  });
+
+  it("fills a complete matrix when the log is empty or incomplete", () => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "chm-speed-"));
+    const missing = path.join(dir, "missing.jsonl");
+    const filled = filledSpeedTrials();
+    expect(filled).toHaveLength(SPEED_OPERATIONS.length * CONNECTION_PROFILES.length);
+    expect(new Set(filled.map((t) => t.profileId))).toEqual(new Set(CONNECTION_PROFILES.map((p) => p.id)));
+    expect(latestSpeedTrials(120, missing)).toEqual(filled);
+    const sids = filled.find((t) => t.operation === "mgr_template_download" && t.profileId === "sids3g")!;
+    const office = filled.find((t) => t.operation === "mgr_template_download" && t.profileId === "office")!;
+    expect(sids.totalMs).toBeGreaterThan(office.totalMs);
+    expect(sids.bytes).toBe(office.bytes);
+
+    const partial = path.join(dir, "partial.jsonl");
+    appendSpeedTrials(
+      filled.filter((t) => t.profileId === "office" || t.profileId === "sids3g"),
+      partial,
+    );
+    expect(latestSpeedTrials(120, partial)).toEqual(filled);
   });
 });

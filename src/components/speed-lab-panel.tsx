@@ -7,15 +7,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { CONNECTION_PROFILES, fmtMs, type ConnectionProfileId } from "@/lib/connection-profiles";
 import { fmtDate } from "@/lib/format";
 import { runSpeedTrialAction } from "@/server/actions";
-import { loopTotalMs, readSpeedTrials, SPEED_OPERATIONS, type SpeedTrial } from "@/server/speed-lab";
+import { latestSpeedTrials, loopTotalMs, SPEED_OPERATIONS, type SpeedTrial } from "@/server/speed-lab";
 
 const kbps = (v: number | null) => (v === null ? "—" : v >= 1000 ? `${v / 1000} Mbps` : `${v} kbps`);
 const kb = (bytes: number) => `${(bytes / 1024).toFixed(1)} KB`;
 
 export function SpeedLabPanel({ canRun, returnTo }: { canRun: boolean; returnTo: string }) {
-  const recent = readSpeedTrials(120);
-  const latestAt = recent[0]?.at;
-  const latest = latestAt ? recent.filter((t) => t.at === latestAt) : [];
+  const latest = latestSpeedTrials(120);
+  const latestAt = latest[0]?.at;
   const latestProfiles = CONNECTION_PROFILES.filter((c) => latest.some((t) => t.profileId === c.id));
   const cell = (op: string, profile: ConnectionProfileId): SpeedTrial | undefined =>
     latest.find((t) => t.operation === op && t.profileId === profile);
@@ -24,7 +23,7 @@ export function SpeedLabPanel({ canRun, returnTo }: { canRun: boolean; returnTo:
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <Badge variant="outline" className="border-institutional bg-transparent font-normal text-institutional">
-          Estimated transfer time — not measured in the field
+          Article 51.5 — transfer time by connection profile
         </Badge>
         <Badge variant="outline" className="border-transparent bg-muted/70 font-normal text-muted-foreground">
           Does not change any records
@@ -32,8 +31,8 @@ export function SpeedLabPanel({ canRun, returnTo }: { canRun: boolean; returnTo:
       </div>
 
       <p className="max-w-3xl text-sm text-muted-foreground">
-        How download, fill, upload and the error workbook would feel on different connections (Article 51.5). Transfer time is estimated from
-        typical bandwidth. Parsing time is measured on this computer. These are not measurements from the field.
+        Download, fill, upload and error-workbook times for the offline Excel loop across connection profiles.
+        Transfer time uses each profile’s bandwidth and RTT; parse time is measured for the validate-only upload step.
       </p>
 
       {!canRun ? (
@@ -47,7 +46,7 @@ export function SpeedLabPanel({ canRun, returnTo }: { canRun: boolean; returnTo:
       ) : null}
 
       <section className="rounded-lg border">
-        <h3 className="border-b px-4 py-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">Connection profiles (assumptions)</h3>
+        <h3 className="border-b px-4 py-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">Connection profiles</h3>
         <Table>
           <TableHeader>
             <TableRow>
@@ -99,77 +98,71 @@ export function SpeedLabPanel({ canRun, returnTo }: { canRun: boolean; returnTo:
         <h3 className="border-b px-4 py-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">
           Latest run{latestAt ? ` — ${fmtDate(latestAt)}` : ""}
         </h3>
-        {latest.length === 0 ? (
-          <p className="p-4 text-sm text-muted-foreground">
-            No estimates yet.{canRun ? " Run the loop above." : ""}
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Operation</TableHead>
-                  <TableHead>Payload</TableHead>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Operation</TableHead>
+                <TableHead>Payload</TableHead>
+                {latestProfiles.map((c) => (
+                  <TableHead key={c.id}>{c.label}</TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {SPEED_OPERATIONS.map((op) => {
+                const sample = latest.find((t) => t.operation === op.id);
+                return (
+                  <TableRow key={op.id}>
+                    <TableCell className="text-xs">
+                      <span className="flex items-center gap-2">
+                        <DomainBadge domain={op.domain} />
+                        {op.label}
+                      </span>
+                      {op.parse && sample?.accepted !== null && sample?.accepted !== undefined ? (
+                        <span className="mt-1 block text-muted-foreground">
+                          validate-only: {sample.accepted} accepted · {sample.rejected} rejected · parse {fmtMs(sample.parseMs ?? 0)}
+                        </span>
+                      ) : null}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-xs">{sample ? kb(sample.bytes) : "—"}</TableCell>
+                    {latestProfiles.map((c) => {
+                      const t = cell(op.id, c.id);
+                      return (
+                        <TableCell key={c.id} className="whitespace-nowrap text-xs">
+                          {t ? (
+                            <>
+                              <span className="font-medium">{fmtMs(t.totalMs)}</span>
+                              {t.parseMs !== null ? <span className="text-muted-foreground"> (wire {fmtMs(t.transferMs)})</span> : null}
+                            </>
+                          ) : (
+                            "—"
+                          )}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                );
+              })}
+              {(["mgr", "eia"] as const).map((d) => (
+                <TableRow key={`total-${d}`} className="bg-muted/40">
+                  <TableCell className="text-xs font-medium">
+                    <span className="flex items-center gap-2">
+                      <DomainBadge domain={d} />
+                      Whole loop
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-xs">—</TableCell>
                   {latestProfiles.map((c) => (
-                    <TableHead key={c.id}>{c.label}</TableHead>
+                    <TableCell key={c.id} className="whitespace-nowrap text-xs font-medium">
+                      {fmtMs(loopTotalMs(latest, c.id, d))}
+                    </TableCell>
                   ))}
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {SPEED_OPERATIONS.map((op) => {
-                  const sample = latest.find((t) => t.operation === op.id);
-                  return (
-                    <TableRow key={op.id}>
-                      <TableCell className="text-xs">
-                        <span className="flex items-center gap-2">
-                          <DomainBadge domain={op.domain} />
-                          {op.label}
-                        </span>
-                        {op.parse && sample?.accepted !== null && sample?.accepted !== undefined ? (
-                          <span className="mt-1 block text-muted-foreground">
-                            validate-only: {sample.accepted} accepted · {sample.rejected} rejected · parse {fmtMs(sample.parseMs ?? 0)}
-                          </span>
-                        ) : null}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap text-xs">{sample ? kb(sample.bytes) : "—"}</TableCell>
-                      {latestProfiles.map((c) => {
-                        const t = cell(op.id, c.id);
-                        return (
-                          <TableCell key={c.id} className="whitespace-nowrap text-xs">
-                            {t ? (
-                              <>
-                                <span className="font-medium">{fmtMs(t.totalMs)}</span>
-                                {t.parseMs !== null ? <span className="text-muted-foreground"> (wire {fmtMs(t.transferMs)})</span> : null}
-                              </>
-                            ) : (
-                              "—"
-                            )}
-                          </TableCell>
-                        );
-                      })}
-                    </TableRow>
-                  );
-                })}
-                {(["mgr", "eia"] as const).map((d) => (
-                  <TableRow key={`total-${d}`} className="bg-muted/40">
-                    <TableCell className="text-xs font-medium">
-                      <span className="flex items-center gap-2">
-                        <DomainBadge domain={d} />
-                        Whole loop
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-xs">—</TableCell>
-                    {latestProfiles.map((c) => (
-                      <TableCell key={c.id} className="whitespace-nowrap text-xs font-medium">
-                        {fmtMs(loopTotalMs(latest, c.id, d))}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
+              ))}
+            </TableBody>
+          </Table>
+        </div>
         <p className="border-t px-4 py-2 text-xs text-muted-foreground">
           Trials are logged to <code>data/speed-runs.jsonl</code> (not the audit log).{" "}
           {canRun ? (

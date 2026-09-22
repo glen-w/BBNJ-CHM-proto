@@ -58,163 +58,167 @@ export async function AppShell({
       >
         Skip to content
       </a>
-      <header className="border-b bg-card print:hidden">
-        {/* Band 1 — UN masthead (welcome + treaty-text locale). */}
-        <div className="border-b border-institutional/40 bg-muted/40">
-          <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-1 px-6 py-1">
-            <p className="text-xs text-muted-foreground">Welcome to the United Nations</p>
-            <div
-              className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground"
-              dir={treatyLang.code === "ar" ? "rtl" : "ltr"}
-            >
-              <LanguageControl active={treatyLang.code} />
-            </div>
+
+      {/* Band 1 — UN masthead (welcome + treaty-text locale). Scrolls away with the page. */}
+      <div className="border-b border-institutional/40 bg-muted/40 print:hidden">
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-1 px-6 py-1">
+          <p className="text-xs text-muted-foreground">Welcome to the United Nations</p>
+          <div
+            className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground"
+            dir={treatyLang.code === "ar" ? "rtl" : "ltr"}
+          >
+            <LanguageControl active={treatyLang.code} />
           </div>
         </div>
+      </div>
 
+      {/* Logo bar + desk tabs stay visible while scrolling. */}
+      <div className="sticky top-0 z-30 print:hidden">
         {/* Band 2 — product mark · rails · account. */}
-        <div className="mx-auto flex w-full max-w-6xl items-center gap-x-3 px-6 py-2">
-          <Link
-            href="/"
-            className="flex shrink-0 items-center gap-2.5 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            <Image src="/bbnj-emblem.svg" alt="" width={40} height={40} className="size-[39.6px] shrink-0" unoptimized />
-            <span className="flex flex-col leading-tight">
-              <span className="text-[1.375rem] font-semibold tracking-tight text-institutional">Clearing House</span>
-              <span className="text-[0.9625rem] text-muted-foreground">Biodiversity Beyond National Jurisdiction</span>
-            </span>
-          </Link>
-          <div className="ms-auto flex shrink-0 flex-nowrap items-center gap-1.5">
-            {railItems.length > 0 ? <RailsNav items={railItems} /> : null}
+        <header className="border-b bg-card">
+          <div className="mx-auto flex w-full max-w-6xl items-center gap-x-3 px-6 py-2">
             <Link
-              href="/settings"
-              className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "shrink-0 px-2")}
-              title="Settings"
-              aria-label="Settings"
+              href="/"
+              className="flex shrink-0 items-center gap-2.5 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
             >
-              <Settings aria-hidden="true" className="size-4" />
-            </Link>
-            {principal.kind === "user" ? (
-              <details className="relative">
-                <summary
-                  className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "cursor-pointer list-none")}
-                  title="Notifications"
-                  aria-label={unread > 0 ? `Notifications, ${unread} unread` : "Notifications"}
-                >
-                  <Bell aria-hidden="true" />
-                  {unread > 0 ? (
-                    <span className="rounded-full bg-institutional px-1.5 text-[10px] font-medium tabular-nums text-institutional-foreground">{unread}</span>
-                  ) : null}
-                </summary>
-                <div className="absolute right-0 z-40 mt-2 w-96 rounded-lg border bg-popover p-3 text-sm shadow-md" role="region" aria-label="Notifications">
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="font-medium">Notifications</span>
-                    <Link href="/notifications" className="text-xs underline">
-                      all · preferences
-                    </Link>
-                  </div>
-                  {recent.length === 0 ? (
-                    <p className="text-muted-foreground">Nothing yet. Published packs matching your subscription will land here.</p>
-                  ) : (
-                    <ul className="space-y-2">
-                      {recent.map((n) => (
-                        <li key={n.id} className={cn("rounded-md border p-2", !n.read && "border-institutional/40 bg-institutional/5")}>
-                          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1.5 uppercase">
-                              {n.domain ? <DomainBadge domain={n.domain} /> : null}
-                              {kindLabel(n.kind)}
-                            </span>
-                            <span>{fmtDate(n.at)}</span>
-                          </div>
-                          {n.recordHref ? (
-                            <Link href={n.recordHref} className="mt-1 block hover:underline">
-                              {n.summary}
-                            </Link>
-                          ) : (
-                            <span className="mt-1 block">{n.summary}</span>
-                          )}
-                          <Link href={`/audit?event=${n.eventId}`} className="mt-0.5 block text-xs text-muted-foreground hover:underline">
-                            On the timeline
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </details>
-            ) : null}
-            <Link
-              href="/login"
-              className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "whitespace-nowrap")}
-              title={principal.kind === "user" ? `Signed in as ${username} — switch role` : "Switch role"}
-              aria-label={principal.kind === "user" ? `Signed in as ${username}, role ${roleName}. Switch role` : `Role ${roleName}. Switch role`}
-            >
-              <span className="inline-flex items-center gap-1 rounded border border-line bg-muted px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
-                <User aria-hidden="true" className="size-3 shrink-0" />
-                {roleName}
+              <Image src="/bbnj-emblem.svg" alt="" width={40} height={40} className="size-[39.6px] shrink-0" unoptimized />
+              <span className="flex flex-col leading-tight">
+                <span className="text-[1.375rem] font-semibold tracking-tight text-institutional">Clearing House</span>
+                <span className="text-[0.9625rem] text-muted-foreground">Biodiversity Beyond National Jurisdiction</span>
               </span>
             </Link>
-            {principal.kind === "user" ? (
-              <form action={logoutAction}>
-                <button type="submit" className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
-                  Sign out
-                </button>
-              </form>
-            ) : null}
-          </div>
-        </div>
-      </header>
-
-      {/* Band 3 — desk tabs · journeys · search · latest transaction. */}
-      <div className="sticky top-0 z-30 border-b bg-card print:hidden">
-        <div className="mx-auto flex w-full max-w-6xl items-center px-6">
-          <AllNav />
-          <span aria-hidden="true" className="mx-4 h-4 w-px shrink-0 bg-line" />
-          <CoreNav items={journeys} />
-          {researchLaneEnabled ? (
-            <>
-              <span aria-hidden="true" className="mx-4 h-4 w-px shrink-0 bg-line" />
-              <LibraryNav />
-            </>
-          ) : null}
-          <form action="/search" method="get" className="ms-auto flex min-w-0 shrink-0 items-center gap-1.5 py-1.5 ps-4" role="search">
-            <Input
-              name="q"
-              type="search"
-              placeholder="Search all Cl-HM records"
-              aria-label="Search all Cl-HM records"
-              className="h-8 w-44 sm:w-56"
-            />
-            <button
-              type="submit"
-              className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "px-2")}
-              aria-label="Search"
-              title="Search"
-            >
-              <Search aria-hidden="true" className="size-4" />
-            </button>
-          </form>
-        </div>
-        {latest ? (
-          <div className="border-t border-line/80">
-            <div className="mx-auto flex w-full max-w-6xl items-center gap-2 px-6 py-1 text-xs text-muted-foreground">
-              <span className="shrink-0 font-medium text-foreground">Latest transaction</span>
+            <div className="ms-auto flex shrink-0 flex-nowrap items-center gap-1.5">
+              {railItems.length > 0 ? <RailsNav items={railItems} /> : null}
               <Link
-                href={`/audit?event=${latest.id}`}
-                className="flex min-w-0 items-center gap-1.5 truncate hover:text-institutional hover:underline"
-                title={latest.summary}
+                href="/settings"
+                className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "shrink-0 px-2")}
+                title="Settings"
+                aria-label="Settings"
               >
-                <DomainBadge domain={latest.domain} />
-                <span className="font-mono text-foreground">
-                  {latest.publicRecordId ?? latest.bSbi ?? "unpublished"}
-                </span>
-                <span>{stageLabel(latest.stage)}</span>
-                <StatusChip status={latest.status} className="scale-90" />
-                <span className="shrink-0">{fmtRelative(latest.at)}</span>
+                <Settings aria-hidden="true" className="size-4" />
               </Link>
+              {principal.kind === "user" ? (
+                <details className="relative">
+                  <summary
+                    className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "cursor-pointer list-none")}
+                    title="Notifications"
+                    aria-label={unread > 0 ? `Notifications, ${unread} unread` : "Notifications"}
+                  >
+                    <Bell aria-hidden="true" />
+                    {unread > 0 ? (
+                      <span className="rounded-full bg-institutional px-1.5 text-[10px] font-medium tabular-nums text-institutional-foreground">{unread}</span>
+                    ) : null}
+                  </summary>
+                  <div className="absolute right-0 z-40 mt-2 w-96 rounded-lg border bg-popover p-3 text-sm shadow-md" role="region" aria-label="Notifications">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="font-medium">Notifications</span>
+                      <Link href="/notifications" className="text-xs underline">
+                        all · preferences
+                      </Link>
+                    </div>
+                    {recent.length === 0 ? (
+                      <p className="text-muted-foreground">Nothing yet. Published packs matching your subscription will land here.</p>
+                    ) : (
+                      <ul className="space-y-2">
+                        {recent.map((n) => (
+                          <li key={n.id} className={cn("rounded-md border p-2", !n.read && "border-institutional/40 bg-institutional/5")}>
+                            <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                              <span className="flex items-center gap-1.5 uppercase">
+                                {n.domain ? <DomainBadge domain={n.domain} /> : null}
+                                {kindLabel(n.kind)}
+                              </span>
+                              <span>{fmtDate(n.at)}</span>
+                            </div>
+                            {n.recordHref ? (
+                              <Link href={n.recordHref} className="mt-1 block hover:underline">
+                                {n.summary}
+                              </Link>
+                            ) : (
+                              <span className="mt-1 block">{n.summary}</span>
+                            )}
+                            <Link href={`/audit?event=${n.eventId}`} className="mt-0.5 block text-xs text-muted-foreground hover:underline">
+                              On the timeline
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </details>
+              ) : null}
+              <Link
+                href="/login"
+                className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "whitespace-nowrap")}
+                title={principal.kind === "user" ? `Signed in as ${username} — switch role` : "Switch role"}
+                aria-label={principal.kind === "user" ? `Signed in as ${username}, role ${roleName}. Switch role` : `Role ${roleName}. Switch role`}
+              >
+                <span className="inline-flex items-center gap-1 rounded border border-line bg-muted px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
+                  <User aria-hidden="true" className="size-3 shrink-0" />
+                  {roleName}
+                </span>
+              </Link>
+              {principal.kind === "user" ? (
+                <form action={logoutAction}>
+                  <button type="submit" className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
+                    Sign out
+                  </button>
+                </form>
+              ) : null}
             </div>
           </div>
-        ) : null}
+        </header>
+
+        {/* Band 3 — desk tabs · journeys · search · latest transaction. */}
+        <div className="border-b bg-card">
+          <div className="mx-auto flex w-full max-w-6xl items-center px-6">
+            <AllNav />
+            <span aria-hidden="true" className="mx-4 h-4 w-px shrink-0 bg-line" />
+            <CoreNav items={journeys} />
+            {researchLaneEnabled ? (
+              <>
+                <span aria-hidden="true" className="mx-4 h-4 w-px shrink-0 bg-line" />
+                <LibraryNav />
+              </>
+            ) : null}
+            <form action="/search" method="get" className="ms-auto flex min-w-0 shrink-0 items-center gap-1.5 py-1.5 ps-4" role="search">
+              <Input
+                name="q"
+                type="search"
+                placeholder="Search all Cl-HM records"
+                aria-label="Search all Cl-HM records"
+                className="h-8 w-44 sm:w-56"
+              />
+              <button
+                type="submit"
+                className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "px-2")}
+                aria-label="Search"
+                title="Search"
+              >
+                <Search aria-hidden="true" className="size-4" />
+              </button>
+            </form>
+          </div>
+          {latest ? (
+            <div className="border-t border-line/80">
+              <div className="mx-auto flex w-full max-w-6xl items-center gap-2 px-6 py-1 text-xs text-muted-foreground">
+                <span className="shrink-0 font-medium text-foreground">Latest transaction</span>
+                <Link
+                  href={`/audit?event=${latest.id}`}
+                  className="flex min-w-0 items-center gap-1.5 truncate hover:text-institutional hover:underline"
+                  title={latest.summary}
+                >
+                  <DomainBadge domain={latest.domain} />
+                  <span className="font-mono text-foreground">
+                    {latest.publicRecordId ?? latest.bSbi ?? "unpublished"}
+                  </span>
+                  <span>{stageLabel(latest.stage)}</span>
+                  <StatusChip status={latest.status} className="scale-90" />
+                  <span className="shrink-0">{fmtRelative(latest.at)}</span>
+                </Link>
+              </div>
+            </div>
+          ) : null}
+        </div>
       </div>
 
       <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-6xl flex-1 space-y-5 px-6 py-5 outline-none">

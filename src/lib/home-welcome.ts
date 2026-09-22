@@ -1,3 +1,5 @@
+import { demoUserBeats } from "@/lib/demo-user-beats";
+
 /** Home welcome band — on until the visitor hides it. Not UI i18n. */
 export const HOME_WELCOME_COOKIE = "chm_home_welcome";
 
@@ -47,7 +49,10 @@ export function homeWelcomeSubmitMode(canSubmit: boolean, canSubmitCbtmtOffer: b
 }
 
 /** LEARN / SEARCH / SUBMIT launchers — same shape as the CBD CHM “Get started” row. */
-export function homeWelcomeGetStarted(mode: HomeWelcomeSubmitMode): HomeWelcomeCard[] {
+export function homeWelcomeGetStarted(
+  mode: HomeWelcomeSubmitMode,
+  guidedLinks?: { mgrA?: string; eia2?: string },
+): HomeWelcomeCard[] {
   const submitLinks: HomeWelcomeLink[] =
     mode === "party"
       ? [
@@ -66,6 +71,11 @@ export function homeWelcomeGetStarted(mode: HomeWelcomeSubmitMode): HomeWelcomeC
             { href: "/about", label: "Help submitting records" },
           ];
 
+  const guidedPaths: HomeWelcomeLink[] = demoUserBeats(guidedLinks ?? {}).map((b) => ({
+    href: b.href,
+    label: b.title,
+  }));
+
   return [
     {
       key: "learn",
@@ -74,7 +84,7 @@ export function homeWelcomeGetStarted(mode: HomeWelcomeSubmitMode): HomeWelcomeC
       links: [
         { href: "/about", label: "About the Clearing House" },
         { href: "#journeys", label: "The four journeys" },
-        { href: "https://www.un.org/bbnjagreement/en", label: "About the Agreement", external: true },
+        ...guidedPaths,
       ],
     },
     {

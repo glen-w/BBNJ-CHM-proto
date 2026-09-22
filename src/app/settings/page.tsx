@@ -1,10 +1,12 @@
 import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
+import { ComparePanel } from "@/components/compare-panel";
 import { flashFrom } from "@/components/flash";
 import { KeyFields, SubmitButton } from "@/components/forms";
 import { SpeedLabPanel } from "@/components/speed-lab-panel";
 import { buttonVariants } from "@/components/ui/button";
+import { buildCompareSections } from "@/lib/compare-rows";
 import { demoUserBeats } from "@/lib/demo-user-beats";
 import { getDb } from "@/lib/db";
 import { cn } from "@/lib/utils";
@@ -20,12 +22,13 @@ const TABS = [
   { id: "demo", label: "Guided path" },
   { id: "speed", label: "Speed" },
   { id: "desk", label: "Desk" },
+  { id: "compare", label: "Compare" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
 
 function tabOf(raw: string | undefined): TabId {
-  if (raw === "speed" || raw === "desk") return raw;
+  if (raw === "speed" || raw === "desk" || raw === "compare") return raw;
   return "demo";
 }
 
@@ -39,6 +42,15 @@ export default async function SettingsPage({ searchParams }: Props) {
   const beats = demoUserBeats({ mgrA: rec("mgr-a"), eia2: rec("eia-2") });
   const canRunSpeed = can(p, "import");
   const researchLaneOn = isResearchLaneEnabled(db);
+  const compareSections = buildCompareSections({
+    mgrA: rec("mgr-a"),
+    mgrD: rec("mgr-d"),
+    eia2: rec("eia-2"),
+    eia3: rec("eia-3"),
+    need: rec("cbtmt-need"),
+    abmt: rec("abmt-1"),
+    secretariat: can(p, "view_full_audit"),
+  });
 
   return (
     <AppShell title="Settings" flash={flash}>
@@ -101,7 +113,7 @@ export default async function SettingsPage({ searchParams }: Props) {
           <p className="text-xs text-muted-foreground">
             Expression of interest: <Link href="/exhibit" className="underline">summary</Link>
             {" · "}
-            Comparison with the interim pages: <Link href="/compare" className="underline">compare</Link>
+            Comparison with the interim pages: <Link href="/settings?tab=compare" className="underline">compare</Link>
           </p>
         </section>
       ) : null}
@@ -155,6 +167,18 @@ export default async function SettingsPage({ searchParams }: Props) {
               </p>
             </li>
           </ul>
+        </section>
+      ) : null}
+
+      {tab === "compare" ? (
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold">Compare</h2>
+            <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
+              Interim DOALOS pages and this Clearing House, side by side.
+            </p>
+          </div>
+          <ComparePanel sections={compareSections} />
         </section>
       ) : null}
     </AppShell>
