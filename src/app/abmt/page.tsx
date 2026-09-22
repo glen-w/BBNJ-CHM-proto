@@ -15,7 +15,7 @@ import { abmtListCaption, listAudienceFromRoles } from "@/lib/list-captions";
 import { cn } from "@/lib/utils";
 import { can } from "@/server/policy";
 import { listAbmtProposals } from "@/server/queries";
-import { SEED_HONESTY, provenanceBadgeForRecord } from "@/server/seed-pack";
+import { provenanceBadgeForRecord } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -101,11 +101,9 @@ export default async function AbmtPage({ searchParams }: Props) {
       </ListFilter>
       <AboutPanel title="About this workflow">
         <p>
-          Proposals under Art 51.3(a)(ii) ride the same rails as every other journey: one record, a proposal-stub pack that moves{" "}
-          <em>draft → pending → published</em>, a receipt when it enters pending, and a <code>BBNJ-ABMT-YYYY-NNNNN</code> public record id at first
-          publish.
+          A proposal moves from draft to submitted to published. Submission issues a receipt. The first publication issues a public record id
+          (<code>BBNJ-ABMT-YYYY-NNNNN</code>). Without prejudice to COP1.
         </p>
-        <p>{SEED_HONESTY}</p>
       </AboutPanel>
     </AppShell>
   );

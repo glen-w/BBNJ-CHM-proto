@@ -17,7 +17,7 @@ import { parseCsv } from "./parseCsv";
 export type ProvenanceBadge = "Interim (DOALOS)" | "Demo scenario";
 
 export const SEED_HONESTY =
-  "Plausible demo data; not real Party filings. Interim mirrors cite DOALOS pages; operators and Party code XSD are fictional stand-ins.";
+  "Records here are illustrative, not Party filings. Entries marked Interim (DOALOS) mirror a public page. Other scenarios, including Party code XSD, are examples.";
 
 export type EiaCsvPack = {
   stage: (typeof EiaPublishableStages)[number];
@@ -118,20 +118,20 @@ export type LoadedSeedPack = {
 const AGREEMENT_OVERLAY: Record<string, { extras: TreatyCite[]; footnotes: string[] }> = {
   "eia-mesopelagic-fishery": {
     extras: [
-      { article: "Part IV", label: "EIA pathway — RFMO-gap framing (demo)" },
-      { article: "Art 31", label: "Screening where activity sits outside clear single-RFMO stock measures" },
+      { article: "Part IV", label: "Environmental impact assessment where a regional fisheries body does not clearly cover the stock" },
+      { article: "Art 31", label: "Screening where the activity sits outside a single regional fisheries measure" },
     ],
     footnotes: [
-      "Zotero 6K6WPBFQ (Gjerde, Wright, Durussel 2021) — Strengthening high seas governance through enhanced environmental assessment processes: mesopelagic fisheries and options for a future BBNJ treaty. Cite as RFMO-gap / Part IV framing, not only as an artefact URL.",
+      "Gjerde, Wright and Durussel (2021), Strengthening high seas governance through enhanced environmental assessment processes. The screening treats this as a gap in regional fisheries measures, under Part IV.",
     ],
   },
   "eia-cable-southern": {
     extras: [
-      { article: "Art 34", label: "Decision with conditions on the same activity (demo)" },
-      { article: "Arts 38–40", label: "Monitoring, reporting and review pack (demo)" },
+      { article: "Art 34", label: "Decision with conditions on the same activity" },
+      { article: "Arts 38–40", label: "Monitoring, reporting and review on the same activity" },
     ],
     footnotes: [
-      "Demo Part IV spine: screening → notice → draft EIA → decision → monitoring on one record. Not a real Party filing.",
+      "This activity carries screening, notice, a draft assessment, a decision and monitoring on one record. It is an illustrative scenario, not a Party filing.",
     ],
   },
 };
@@ -247,7 +247,7 @@ export function getSeedPack(): LoadedSeedPack {
     const artifactRefs: ArtifactRef[] | undefined = interimUrl
       ? [
           { kind: "url", label: `DOALOS interim — ${hint || "MGR TEMP"}`, href: interimUrl },
-          { kind: "note", label: "Plausible demo mirror; not a real Party filing" },
+          { kind: "note", label: "Mirrors a public DOALOS page — not a Party filing" },
         ]
       : undefined;
     const path = row.status_path ?? "";
@@ -297,7 +297,7 @@ export function getSeedPack(): LoadedSeedPack {
       row.artifact_url && row.artifact_label
         ? {
             kind: "url",
-            label: zoteroKey ? `${row.artifact_label} (Zotero ${zoteroKey})` : row.artifact_label,
+            label: row.artifact_label,
             href: row.artifact_url,
           }
         : undefined;

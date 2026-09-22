@@ -22,7 +22,7 @@ export function homeWelcomeVisible(
 export const HOME_WELCOME_JUMPS = [
   { href: "#get-started", label: "Get started" },
   { href: "#recent-records", label: "Recent records" },
-  { href: "/about", label: "About this desk" },
+  { href: "/about", label: "About" },
 ] as const;
 
 export type HomeWelcomeSubmitMode = "party" | "offer" | "public";
@@ -72,9 +72,7 @@ export function homeWelcomeGetStarted(mode: HomeWelcomeSubmitMode): HomeWelcomeC
       label: "Learn",
       headerHref: "/about",
       links: [
-        { href: "/about", label: "Learn about the Cl-HM" },
-        { href: "/exhibit", label: "Evaluator exhibit" },
-        { href: "/settings?tab=demo", label: "Demo user path" },
+        { href: "/about", label: "About the Clearing House" },
         { href: "#journeys", label: "The four journeys" },
         { href: "https://www.un.org/bbnjagreement/en", label: "About the Agreement", external: true },
       ],
@@ -85,7 +83,7 @@ export function homeWelcomeGetStarted(mode: HomeWelcomeSubmitMode): HomeWelcomeC
       headerHref: "/search",
       links: [
         { href: "/search", label: "Search all records" },
-        { href: "/search?q=TEMP", label: "Try “TEMP” (interim MGR)" },
+        { href: "/search?q=TEMP", label: "Interim MGR notice" },
         { href: "#journeys", label: "Filter a journey list" },
       ],
     },

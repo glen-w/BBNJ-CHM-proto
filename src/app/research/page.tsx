@@ -37,11 +37,11 @@ export default async function LiteraturePage({ searchParams }: Props) {
     return (
       <AppShell title="Library">
         <p className="max-w-2xl text-sm text-muted-foreground">
-          Related research is hidden for this desk.{" "}
+          The library is hidden.{" "}
           <Link href="/settings?tab=desk" className="underline underline-offset-2 hover:text-institutional">
             Settings
           </Link>{" "}
-          turns the literature lane back on.
+          can show it again.
         </p>
       </AppShell>
     );
@@ -56,7 +56,7 @@ export default async function LiteraturePage({ searchParams }: Props) {
   return (
     <AppShell title="Library">
       <p className="max-w-3xl text-sm text-muted-foreground">
-        Published papers from a Zotero BBNJ library. The Clearing House stores the citation and a link-out — Zotero stays the catalog of record.
+        A library of open-access research and resources for the Agreement. The Clearing House keeps the citation and a link to the source.
       </p>
       <nav aria-label="Literature by journey" className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
         <Link
@@ -86,7 +86,7 @@ export default async function LiteraturePage({ searchParams }: Props) {
           </Link>
         </p>
       ) : null}
-      <ListFilter label="Filter this list" placeholder="Title, author, year, Zotero key…">
+      <ListFilter label="Filter this list" placeholder="Title, author, year…">
         <p className="text-sm text-muted-foreground">
           {items.length} {items.length === 1 ? "paper" : "papers"}
           {pillar ? ` tagged ${DOMAIN_LABEL[pillar]}` : ""}
@@ -106,7 +106,7 @@ export default async function LiteraturePage({ searchParams }: Props) {
               {items.length === 0 ? (
                 <TableRow data-empty="true">
                   <TableCell colSpan={4} className="text-muted-foreground">
-                    No papers in this slice.
+                    No papers match.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -118,7 +118,6 @@ export default async function LiteraturePage({ searchParams }: Props) {
                         <div className="font-medium">{item.title}</div>
                         <div className="mt-0.5 text-xs text-muted-foreground">
                           {item.citation ?? "Citation not recorded"}
-                          {item.zoteroKey ? <span className="ms-2 font-mono">{item.zoteroKey}</span> : null}
                         </div>
                       </TableCell>
                       <TableCell className="w-16 tabular-nums text-xs">{item.year ?? "—"}</TableCell>
@@ -155,18 +154,14 @@ export default async function LiteraturePage({ searchParams }: Props) {
       </ListFilter>
       <AboutPanel title="About this list">
         <p>
-          Zotero remains the catalog of record. This desk keeps a published slice — citation, year, and a link — so a reviewer can see which papers
-          speak to a journey and a place. It is not a second library, and it does not store the PDF.
+          Each entry is a citation, a year and a link to the source. The Clearing House does not store the file.
         </p>
         <p>
-          <strong className="font-medium text-foreground">Related research</strong> on an MGR, EIA, or ABMT record lists only papers tagged with that
-          journey and that record’s ABNJ box. No shared place means “No linked research”, not every paper in the snapshot. Place tags are keyword
-          matches on the title and abstract (Sargasso, CCZ, mesopelagic, Southern Ocean, and the other seeded boxes) — a demo aid, not a gazetteer.
+          <strong className="font-medium text-foreground">Related research</strong> on an MGR, EIA or ABMT record lists papers that share that
+          journey and that area. If there is no shared place, the record says “No linked research”. A paper is tied to a place when its title or
+          abstract names that area.
         </p>
-        <p>
-          Settings → Desk turns the whole lane off: the Library link and the panels disappear. The rows stay in the database. There is no live
-          sync. “Suggest a paper” is not in this build. These are not Party filings.
-        </p>
+        <p>These are reference materials, not Party filings.</p>
       </AboutPanel>
     </AppShell>
   );

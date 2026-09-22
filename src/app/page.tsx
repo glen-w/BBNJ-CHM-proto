@@ -51,7 +51,7 @@ export default async function HomePage({ searchParams }: Props) {
           href="/mgr"
           count={journeys.mgr}
           rail="Notify → receipt → publish"
-          about="Pre-collection notification → valid receipt mints the Art 12 B-SBI → Secretariat publish mints the publicRecordId. Offline Excel template available for low-bandwidth Parties."
+          about="A pre-collection notice receives a receipt and, when it is valid, the Article 12 B-SBI. Publication gives it a public record id. An offline Excel template is available for low-bandwidth Parties."
         />
         <JourneyCard
           domain="eia"
@@ -59,7 +59,7 @@ export default async function HomePage({ searchParams }: Props) {
           href="/eia"
           count={journeys.eia}
           rail="Screen → notice → draft EIA"
-          about="Pack-level publish spine: screening, notices, draft EIA, STB comments, decision. Status lives on each pack; a published screening and a draft EIA coexist."
+          about="Screening, notice, draft assessment, comments, decision and monitoring. Each step has its own status, so a published screening can sit beside a draft assessment."
         />
         <JourneyCard
           domain="cbtmt"
@@ -67,7 +67,7 @@ export default async function HomePage({ searchParams }: Props) {
           href="/capacity"
           count={journeys.cbtmt}
           rail="Need / offer → match"
-          about="Needs and offers as records; a match is a row plus a match-suggested event under a deterministic shared-theme rule."
+          about="Needs and offers are published as records. A match joins a need and an offer that share a theme, and the Secretariat can add a facilitation note."
         />
         <JourneyCard
           domain="abmt"
@@ -75,7 +75,7 @@ export default async function HomePage({ searchParams }: Props) {
           href="/abmt"
           count={journeys.abmt}
           rail="Proposal → receipt → publish"
-          about="Proposal stub on the same rails — draft → pending → published, receipt and BBNJ-ABMT id. Without prejudice to COP1."
+          about="A proposal moves from draft to submitted to published, with a receipt and a public record id. Without prejudice to COP1."
         />
       </section>
 

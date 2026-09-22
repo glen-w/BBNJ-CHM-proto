@@ -110,7 +110,7 @@ function targetsFor(db: Db, event: StoredEvent, meta: RecordMeta): Target[] {
     const closes = activity?.dueAt
       ? activity.dueAt.slice(0, 10)
       : new Date(new Date(event.at).getTime() + DEMO_COMMENT_WINDOW_DAYS * 86400000).toISOString().slice(0, 10);
-    const windowNote = activity?.dueAt ? "explicit dueAt" : `${DEMO_COMMENT_WINDOW_DAYS}-day demo window`;
+    const windowNote = activity?.dueAt ? "due date set on the activity" : `${DEMO_COMMENT_WINDOW_DAYS}-day comment window`;
     const deadlineSummary = `Comment window on draft EIA ${label} closes ${closes} (${windowNote})`;
     for (const s of subs) targets.push({ userId: s.userId, kind: "deadline", summary: deadlineSummary });
     if (meta.ownerUserId) targets.push({ userId: meta.ownerUserId, kind: "deadline", summary: deadlineSummary });

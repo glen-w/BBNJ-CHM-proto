@@ -27,7 +27,7 @@ export function AbnjSchematic({
         viewBox={`0 0 ${ABNJ_SCHEMATIC_VIEWBOX.width} ${ABNJ_SCHEMATIC_VIEWBOX.height}`}
         className="mx-auto w-full max-w-md"
         role="img"
-        aria-label={`Schematic of demo ABNJ boxes; current box ${currentBox}`}
+        aria-label={`Schematic of areas beyond national jurisdiction; current area ${currentBox}`}
       >
         <rect x="0" y="0" width={ABNJ_SCHEMATIC_VIEWBOX.width} height={ABNJ_SCHEMATIC_VIEWBOX.height} fill="transparent" />
         <path
@@ -36,7 +36,7 @@ export function AbnjSchematic({
           strokeDasharray="2 1"
         />
         <text x="50" y="8" textAnchor="middle" className="fill-muted-foreground text-[3px]">
-          ABNJ boxes (schematic — not GIS)
+          Not a map
         </text>
         {ABNJ_SCHEMATIC_NODES.map((node) => {
           const isCurrent = node.box === currentBox;
@@ -66,7 +66,7 @@ export function AbnjSchematic({
         })}
       </svg>
       <figcaption className="mt-2 text-xs text-muted-foreground">
-        Schematic of the demo ABNJ vocabulary — not a chart, not GIS. The box is the only spatial key in this build.
+        A schematic of areas beyond national jurisdiction — not a map. The named area is how records are placed.
       </figcaption>
       {inBox.length > 0 ? (
         <ul className="mt-2 flex flex-wrap gap-2 text-xs">

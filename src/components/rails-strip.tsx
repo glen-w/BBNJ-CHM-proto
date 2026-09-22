@@ -14,7 +14,7 @@ const RAILS: {
   { key: "manage", label: "Manage", href: "/audit?status=pending", caption: "pending packs", icon: "manage" },
   { key: "publish", label: "Publish", href: "/audit?status=published", caption: "published rows", icon: "publish" },
   { key: "notify", label: "Notify", href: "/notifications", caption: "your notifications", icon: "notify" },
-  { key: "audit", label: "Audit", href: "/audit", caption: "outbox rows visible to you", icon: "audit" },
+  { key: "audit", label: "Audit", href: "/audit", caption: "entries visible to you", icon: "audit" },
 ];
 
 export function RailsStrip({ counts }: { counts: RailCounts }) {

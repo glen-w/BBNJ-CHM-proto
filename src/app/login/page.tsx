@@ -15,11 +15,11 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 
 const BLURB: Record<string, string> = {
   "party.nfp": "Submits MGR notifications, EIA packs and capacity needs for Party XSD. Sees own drafts plus everything published.",
-  secretariat: "Authorised publishing role. Publishes pending packs, imports offline Excel, suggests matches, sees the full audit projection.",
+  secretariat: "Publishes records that are waiting, imports offline Excel, suggests matches, and sees the full audit.",
   public: "Read-only. Published, public-tier rows only — never drafts or pending packs.",
   stb: "Scientific and Technical Body reviewer. Sees published draft EIAs in a review queue and files one consolidated comment per version.",
   "nonstate.uploader":
-    "PrepCom3-style registered non-State actor (demo). May post CBTMT offers only — no needs, no other domains, no amendments, no publishing. Every other attempt is refused and logged.",
+    "Registered non-State provider. May post capacity-building offers only. Other actions are refused and recorded.",
 };
 
 export default async function LoginPage({ searchParams }: Props) {

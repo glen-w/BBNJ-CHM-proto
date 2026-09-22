@@ -37,8 +37,7 @@ export default async function NotificationsPage({ searchParams }: Props) {
         <>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="max-w-2xl text-sm text-muted-foreground">
-              Kinds: publish · deadline · digest · match · STB review. Rows are produced by the dispatcher from published outbox events only; drafts and
-              pending packs never notify. Delivery is in-app (this bell).{" "}
+              Publication, deadlines, digests, matches and Scientific and Technical Body review. Only published records send a notice. Notices appear here.{" "}
               {sub ? (
                 sub.digest === "immediate" ? (
                   <>Your cadence is <strong>{cadenceLabel("immediate")}</strong>: every matching publication reaches the bell at once.</>
@@ -55,11 +54,11 @@ export default async function NotificationsPage({ searchParams }: Props) {
                 <>
                   <form action={runDigestAction} className="flex gap-1">
                     <KeyFields returnTo="/notifications" />
-                    <SubmitButton variant="outline" size="sm" title="Rolls held publications into one digest row per daily/weekly subscriber (idempotent); written to the in-app bell">
+                    <SubmitButton variant="outline" size="sm" title="Sends one digest to each daily or weekly subscriber">
                       Run digest now
                     </SubmitButton>
                   </form>
-                  <a href="/api/export/digests.csv" className={cn(buttonVariants({ variant: "outline", size: "sm" }))} title="Secretariat projection: one row per digest window (RFC 4180 CSV)">
+                  <a href="/api/export/digests.csv" className={cn(buttonVariants({ variant: "outline", size: "sm" }))} title="One row per digest, as a spreadsheet">
                     Digest runs (.csv)
                   </a>
                 </>

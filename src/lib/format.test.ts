@@ -42,7 +42,7 @@ describe("stageLabel / domainPath", () => {
     expect(stageLabel("pre_collection")).toBe("pre collection");
     expect(stageLabel("draft_eia")).toBe("draft EIA");
     expect(stageLabel("comments_stb")).toBe("comments STB");
-    expect(stageLabel("proposal_stub")).toBe("proposal stub");
+    expect(stageLabel("proposal_stub")).toBe("proposal");
     expect(stageLabel("eia_required")).toBe("EIA required");
     expect(stageLabel("no_eia")).toBe("no EIA");
   });

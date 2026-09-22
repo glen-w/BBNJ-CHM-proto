@@ -21,17 +21,17 @@ export type ExhibitSection = {
 export const EXHIBIT_AS_OF = "Session 1 basic functions + PrepCom3 annex parameters";
 
 export const EXHIBIT_LIMITS = [
-  "No hosted public URL — clone or Docker",
-  "Notifications are in-app only (no SMTP)",
-  "ABMT is a thin proposal_stub, without prejudice to COP1",
-  "Excel loop is an Art 51.5 pattern, not a WCAG certificate",
-  "Treaty-text locale stub only — UI stays English",
-  "Related systems are named links, not federation",
-  "Literature is a Zotero snapshot (link-out), not a live library or file store",
+  "No public web address yet — run it from a copy of this Clearing House, or with Docker",
+  "Notifications stay in the Clearing House (no e-mail / SMTP)",
+  "Area-based management proposals are without prejudice to COP1. They record a title and follow publication; the full measure is for the Conference of the Parties",
+  "The offline workbook is a way to submit without a reliable connection (Art 51.5). It is not an accessibility certificate",
+  "The masthead can show the Agreement text in six languages. The interface is in English",
+  "Related systems are links. This Clearing House does not exchange data with them",
+  "The library lists open-access research and resources, with a citation and a link. It does not store the files",
 ] as const;
 
 export const EXHIBIT_LOGINS = [
-  { username: "party.nfp", role: "Party XSD NFP", does: "Submit MGR, EIA, CBTMT needs, ABMT stubs" },
+  { username: "party.nfp", role: "Party XSD focal point", does: "Submit MGR, EIA, capacity needs and ABMT proposals" },
   { username: "secretariat", role: "Authorised publisher", does: "Publish, import Excel, match, audit, digests" },
   { username: "public", role: "Public reader", does: "Published, public-tier only" },
   { username: "stb", role: "STB reviewer", does: "Published + restricted; draft-EIA queue" },
@@ -45,14 +45,14 @@ export const EXHIBIT_SECTIONS: ExhibitSection[] = [
       {
         area: "Structured intake",
         status: "shipped",
-        evidence: "Forms generated from Art 12.2 fields; EIA screening fields; ABMT one-field stub",
+        evidence: "Forms for Article 12.2 and for environmental impact screening. An area-based management proposal records a title and a confidentiality tier",
         href: "/mgr/new",
         label: "MGR form",
       },
       {
         area: "Offline / assisted (Art 51.5)",
         status: "shipped",
-        evidence: "MGR + EIA screening Excel → import → error workbook → re-import; Secretariat-assisted channel on a seeded SIDS notice",
+        evidence: "Excel for marine genetic resources and for screening: import, an error workbook, then import again. A small-island notice can be filed with Secretariat assistance",
         href: "/mgr/import",
         label: "MGR import",
       },
@@ -73,14 +73,14 @@ export const EXHIBIT_SECTIONS: ExhibitSection[] = [
       {
         area: "Search & retrieval",
         status: "shipped",
-        evidence: "Policy-aware FTS5; Interim (DOALOS) vs Demo scenario badges",
+        evidence: "Search respects confidentiality. Records are labelled Interim (DOALOS) or illustrative",
         href: "/search?q=TEMP",
         label: "Search TEMP",
       },
       {
         area: "Literature",
         status: "shipped",
-        evidence: "Zotero stays the catalog. /research is a snapshot with link-out; a record shows a paper only when journey and place match. Not a live sync.",
+        evidence: "Open-access research and resources, with a citation and a link. A paper shows on a record when the journey and the place match.",
         href: "/research",
         label: "Literature",
       },
@@ -120,7 +120,7 @@ export const EXHIBIT_SECTIONS: ExhibitSection[] = [
       {
         area: "Delivery channel",
         status: "partial",
-        evidence: "In-app bell + /notifications. No SMTP in this build.",
+        evidence: "Notifications appear in the Clearing House. E-mail is not included.",
         href: "/notifications",
         label: "Bell / inbox",
       },
@@ -146,7 +146,7 @@ export const EXHIBIT_SECTIONS: ExhibitSection[] = [
       {
         area: "Account lifecycle",
         status: "partial",
-        evidence: "Seeded users; inactive falls back to anonymous. No self-registration or IdP.",
+        evidence: "Five sign-in roles are provided for this review. There is no self-registration.",
         href: "/login",
         label: "Logins",
       },
@@ -159,6 +159,6 @@ export const SEARCH_SUGGESTIONS: { q: string; why: string }[] = [
   { q: "utilisation", why: "Art 12.8 pack on the Indian Ridge cruise" },
   { q: "mesopelagic", why: "RFMO-gap EIA storyline" },
   { q: "sequencing", why: "SIDS CBTMT need / offer pair" },
-  { q: "Sargasso", why: "Published ABMT stub (pending MGR when signed in as owner)" },
+  { q: "Sargasso", why: "Published area-based management proposal" },
   { q: "Polar Front", why: "Observatory cable with decision + monitoring packs" },
 ];

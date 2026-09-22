@@ -216,7 +216,7 @@ export default async function MgrBatchPage({ params, searchParams }: Props) {
         <VersionHistory packs={packs} />
         {batch.detailsHistory.length > 0 && can(p, "view_full_audit") ? (
           <details className="mt-3 text-sm">
-            <summary className="cursor-pointer text-muted-foreground">Superseded Art 12.2 values ({batch.detailsHistory.length}) — Secretariat projection</summary>
+            <summary className="cursor-pointer text-muted-foreground">Superseded Article 12.2 values ({batch.detailsHistory.length}) — Secretariat only</summary>
             <ul className="mt-2 space-y-2 text-xs">
               {batch.detailsHistory.map((h) => (
                 <li key={`${h.version}-${h.at}`} className="rounded-md border p-2">

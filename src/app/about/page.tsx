@@ -11,34 +11,34 @@ import { SEED_HONESTY } from "@/server/seed-pack";
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
 const FEATURES = [
-  "Structured intake — web forms plus offline Excel (MGR pre-collection and EIA screening) with error workbooks",
-  "Identifiers in order — receipt → Art 12 B-SBI at valid MGR receipt (before publish) → publicRecordId at first publish",
-  "Pack status, not record status — draft / pending / published on each pack so stages can coexist",
-  "Five roles enforced on the server — Party, Secretariat, public, STB, non-State uploader; every refusal logged",
-  "Confidentiality tiers — public / restricted / confidential on every list, export and notification",
-  "In-app notify — subscriptions, hold + digest semantics (in-app bell in this build)",
-  "Policy-aware full-text search — restricted rows never leak to public readers",
-  "Honesty labels — Interim (DOALOS) vs Demo scenario badges on seeded storylines",
-  "Literature — Zotero stays the catalog; the desk stores a citation and a link. A paper appears on a record only when it shares that journey and that place",
+  "Structured intake — web forms and offline Excel for marine genetic resource notifications and environmental impact assessment screening, with an error workbook when a row fails",
+  "Identifiers in order — a receipt, the Article 12 B-SBI when a pre-collection notification is valid, and a public record id when the Secretariat first publishes",
+  "Each submission has its own status — draft, pending or published — so stages of one activity can sit side by side",
+  "Five roles — Party, Secretariat, public, Scientific and Technical Body, and non-State provider. A refusal is recorded",
+  "Confidentiality — public, restricted or confidential — on lists, exports and notifications",
+  "Notifications in the Clearing House — subscriptions, immediate alerts and digests",
+  "Search that respects confidentiality — a restricted record does not appear for a public reader",
+  "Labels on illustrative records — Interim (DOALOS), or an example scenario",
+  "A library of open-access research and resources — a citation and a link. A paper appears on a record when it shares that journey and that place",
 ];
 
 export default async function AboutPage({ searchParams }: Props) {
   const flash = await flashFrom(searchParams);
 
   return (
-    <AppShell title="About this desk" flash={flash}>
+    <AppShell title="About the Clearing House" flash={flash}>
       <div className="max-w-3xl space-y-8">
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold">What this desk is</h2>
+          <h2 className="text-lg font-semibold">What this Clearing House is</h2>
           <p className="text-sm leading-relaxed text-muted-foreground">{SEED_HONESTY}</p>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Submit, manage, publish and notify across MGR, EIA, capacity-building and (as a stub) area-based management tools — one desk, four
-            journeys on shared rails.
+            Submit, manage, publish and notify across marine genetic resources, environmental impact assessment, capacity-building and
+            area-based management.
           </p>
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold">What you can demonstrate</h2>
+          <h2 className="text-lg font-semibold">What it does</h2>
           <ul className="list-disc space-y-1.5 pl-5 text-sm text-muted-foreground">
             {FEATURES.map((f) => (
               <li key={f}>{f}</li>
@@ -72,9 +72,9 @@ export default async function AboutPage({ searchParams }: Props) {
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold">Interim set-up vs this desk</h2>
+          <h2 className="text-lg font-semibold">Interim pages and this Clearing House</h2>
           <p className="text-sm text-muted-foreground">
-            The interim DOALOS pages are informational; this desk is transactional. A design contrast, not a critique.
+            The interim DOALOS pages are informational. This Clearing House receives, checks, stores, publishes and notifies.
           </p>
           <div className="overflow-x-auto rounded-lg border">
             <table className="w-full min-w-[520px] text-left text-sm">
@@ -82,7 +82,7 @@ export default async function AboutPage({ searchParams }: Props) {
                 <tr>
                   <th className="px-4 py-2 font-medium">Area</th>
                   <th className="px-4 py-2 font-medium">Interim</th>
-                  <th className="px-4 py-2 font-medium">This desk</th>
+                  <th className="px-4 py-2 font-medium">This Clearing House</th>
                 </tr>
               </thead>
               <tbody>
@@ -103,23 +103,23 @@ export default async function AboutPage({ searchParams }: Props) {
               Full comparison with live deep links
             </Link>
             <Link href="/exhibit" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
-              Printable evaluator exhibit
+              Expression of interest
             </Link>
           </div>
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold">Offline loop &amp; speed tests</h2>
+          <h2 className="text-lg font-semibold">Offline submission</h2>
           <p className="text-sm text-muted-foreground">
-            Art 51.5 pattern proof: download template → fill offline → import → per-row validation → error workbook → re-import. Wire time on
-            mocked SIDS / satellite profiles is calculated from nominal bandwidth; parse time is measured locally. Not a field measurement.
+            Download a template, fill it offline, import it, correct any rows the workbook flags, and import again. Transfer times under Speed
+            are estimates for slow and satellite links, not measurements from the field.
           </p>
           <div className="flex flex-wrap gap-2">
             <Link href="/settings?tab=speed" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
-              Speed tests (Settings)
+              Connection estimates
             </Link>
             <Link href="/settings?tab=demo" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
-              Demo user path
+              Guided path
             </Link>
             <a href="/api/template/mgr.xlsx" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
               MGR template (.xlsx)
@@ -129,13 +129,13 @@ export default async function AboutPage({ searchParams }: Props) {
 
         <section className="space-y-3">
           <h2 className="text-lg font-semibold">Related systems</h2>
-          <p className="text-sm text-muted-foreground">Reference links only — not federation or data exchange.</p>
+          <p className="text-sm text-muted-foreground">Links only. This Clearing House does not exchange data with them.</p>
           <RelatedSystemsList />
         </section>
 
         <section className="space-y-2 text-sm text-muted-foreground">
           <p>
-            <strong className="text-foreground">ABMT</strong> is a thin stub only — same rails, without prejudice to COP1.
+            <strong className="text-foreground">Area-based management</strong> proposals follow the same receipt and publication path. Without prejudice to COP1. The full content of a measure is for the Conference of the Parties.
           </p>
           <div className="flex flex-wrap gap-2 pt-2">
             <a href="/api/export/mgr.csv" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>

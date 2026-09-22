@@ -15,7 +15,7 @@ import { listAudienceFromRoles, mgrListCaption } from "@/lib/list-captions";
 import { cn } from "@/lib/utils";
 import { can } from "@/server/policy";
 import { listMgrBatches } from "@/server/queries";
-import { SEED_HONESTY, provenanceBadgeForRecord } from "@/server/seed-pack";
+import { provenanceBadgeForRecord } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -114,11 +114,10 @@ export default async function MgrPage({ searchParams }: Props) {
 
       <AboutPanel title="About this workflow">
         <p>
-          Pre-collection notification (Art 12.2) → valid receipt issues the <strong className="text-foreground">B-SBI</strong> → Secretariat publishes
-          the pack → <strong className="text-foreground">publicRecordId</strong> → bell and audit. Post-collection and utilisation packs attach to the
-          same batch.
+          A pre-collection notification (Art 12.2) receives a receipt and, when it is valid, the <strong className="text-foreground">B-SBI</strong>.
+          Publication issues the <strong className="text-foreground">public record id</strong> and notifies subscribers. Later notifications on the
+          same batch — after collection, and on utilisation — stay with that record.
         </p>
-        <p>{SEED_HONESTY}</p>
       </AboutPanel>
     </AppShell>
   );

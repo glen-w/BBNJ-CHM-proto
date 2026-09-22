@@ -21,22 +21,21 @@ export default async function ExhibitPage() {
   const csv = csvStorylineCounts();
 
   return (
-    <AppShell title="Evaluator exhibit — Session 1 / EOI">
+    <AppShell title="Expression of interest">
       <div className="max-w-3xl space-y-8 print:max-w-none">
         <section className="space-y-3">
           <p className="text-sm leading-relaxed text-muted-foreground">
-            One page for a Session&nbsp;1 / expression-of-interest evaluator. Print from the browser (chrome hides).{" "}
-            {EXHIBIT_AS_OF}. {SEED_HONESTY}
+            For this expression of interest. Print from the browser. {EXHIBIT_AS_OF}. {SEED_HONESTY}
           </p>
           <div className="flex flex-wrap gap-2 print:hidden">
             <Link href="/compare" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
               Full comparison with live links
             </Link>
             <Link href="/settings?tab=demo" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
-              Demo user path
+              Guided path
             </Link>
             <Link href="/about" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
-              About this desk
+              About the Clearing House
             </Link>
           </div>
         </section>
@@ -47,7 +46,7 @@ export default async function ExhibitPage() {
             <code className="font-mono text-foreground">npm ci &amp;&amp; npm run db:seed &amp;&amp; npm run dev</code>
             {" — or "}
             <code className="font-mono text-foreground">docker compose up --build</code>
-            . Five passwordless logins at <Link href="/login" className="underline">/login</Link>. No hosted public URL.
+            . Five sign-in roles at <Link href="/login" className="underline">sign in</Link>. There is no public web address yet.
           </p>
           <div className="overflow-x-auto rounded-lg border">
             <table className="w-full min-w-[520px] text-left text-sm">
@@ -72,17 +71,17 @@ export default async function ExhibitPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-lg font-semibold">What is in this desk</h2>
+          <h2 className="text-lg font-semibold">What is here</h2>
           <p className="text-sm text-muted-foreground">
-            Visible to <span className="font-mono text-foreground">{p.kind === "user" ? p.user.username : "anonymous public"}</span>
-            : {live.mgr} MGR · {live.eia} EIA · {live.cbtmt} CBTMT · {live.abmt} ABMT. CSV storylines (plus smoke
-            fixtures): {csv.mgr} MGR · {csv.eia} EIA · {csv.cbtmtNeeds} needs · {csv.cbtmtOffers} offers · {csv.cbtmtMatches}{" "}
-            matches · {csv.abmt} ABMT stubs · {csv.abnjBoxes} ABNJ boxes.
+            Visible to <span className="font-mono text-foreground">{p.kind === "user" ? p.user.username : "the public"}</span>
+            : {live.mgr} MGR · {live.eia} EIA · {live.cbtmt} CBTMT · {live.abmt} ABMT. Illustrative records: {csv.mgr} MGR · {csv.eia} EIA · {csv.cbtmtNeeds} needs · {csv.cbtmtOffers} offers · {csv.cbtmtMatches}{" "}
+            matches · {csv.abmt} area-based management proposals · {csv.abnjBoxes} areas.
           </p>
           <p className="text-sm text-muted-foreground">
-            Geography now includes the Central Indian Ridge, Tonga-Kermadec Arc and Southern Ocean Polar Front beside the
-            Atlantic / CCZ set. Look for utilisation (Art 12.8), a pending MGR, an assisted SIDS notice, a full EIA
-            monitoring spine, unmatched CBTMT rows, and Interim vs Demo badges.
+            Areas include the Central Indian Ridge, the Tonga-Kermadec Arc and the Southern Ocean Polar Front, beside the
+            Atlantic and Clarion-Clipperton set. Look for utilisation (Article 12.8), a marine genetic resources notice that is not yet published, a
+            small-island notice entered with Secretariat assistance, an assessment with a decision and monitoring, unmatched capacity needs and offers,
+            and the Interim and Illustrative labels.
           </p>
         </section>
 
@@ -95,7 +94,7 @@ export default async function ExhibitPage() {
                   <tr>
                     <th className="px-4 py-2 font-medium">Area</th>
                     <th className="px-4 py-2 font-medium">Status</th>
-                    <th className="px-4 py-2 font-medium">What you can show</th>
+                    <th className="px-4 py-2 font-medium">What is included</th>
                     <th className="px-4 py-2 font-medium print:hidden">Open</th>
                   </tr>
                 </thead>
@@ -105,7 +104,7 @@ export default async function ExhibitPage() {
                       <td className="px-4 py-2 font-medium">{row.area}</td>
                       <td className="px-4 py-2">
                         <span className="rounded border px-1.5 font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
-                          {row.status}
+                          {row.status === "shipped" ? "Included" : "Limited"}
                         </span>
                       </td>
                       <td className="px-4 py-2 text-muted-foreground">{row.evidence}</td>
@@ -123,7 +122,7 @@ export default async function ExhibitPage() {
         ))}
 
         <section className="space-y-2">
-          <h2 className="text-lg font-semibold">Stated limits</h2>
+          <h2 className="text-lg font-semibold">Limits</h2>
           <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
             {EXHIBIT_LIMITS.map((item) => (
               <li key={item}>{item}</li>

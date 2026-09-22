@@ -7,7 +7,6 @@ import { SpeedLabPanel } from "@/components/speed-lab-panel";
 import { buttonVariants } from "@/components/ui/button";
 import { demoUserBeats } from "@/lib/demo-user-beats";
 import { getDb } from "@/lib/db";
-import { RESEARCH_LANE_META_KEY } from "@/lib/research-lane";
 import { cn } from "@/lib/utils";
 import { setResearchLaneAction } from "@/server/actions";
 import { findEventByKey } from "@/server/outbox";
@@ -18,7 +17,7 @@ import { getSessionUser } from "@/server/session";
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
 const TABS = [
-  { id: "demo", label: "Demo user" },
+  { id: "demo", label: "Guided path" },
   { id: "speed", label: "Speed" },
   { id: "desk", label: "Desk" },
 ] as const;
@@ -44,7 +43,7 @@ export default async function SettingsPage({ searchParams }: Props) {
   return (
     <AppShell title="Settings" flash={flash}>
       <p className="max-w-3xl text-sm text-muted-foreground">
-        Desk configuration and the guided demo path. Subscription filters remain on{" "}
+        Settings for this Clearing House. Subscription filters are on{" "}
         <Link href="/preferences" className="underline">preferences</Link>.
       </p>
 
@@ -67,10 +66,9 @@ export default async function SettingsPage({ searchParams }: Props) {
       {tab === "demo" ? (
         <section className="space-y-4">
           <div>
-            <h2 className="text-lg font-semibold">Demo user path</h2>
+            <h2 className="text-lg font-semibold">Guided path</h2>
             <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-              Five beats through the shared rails — sign in as each role, then open the live route. Clone or Docker gives the same hands-on path
-              without a hosted public URL.
+              Five steps through the Clearing House. Sign in as each role, then open the page.
             </p>
           </div>
           <ol className="space-y-3">
@@ -94,42 +92,38 @@ export default async function SettingsPage({ searchParams }: Props) {
                     Sign in as {beat.login}
                   </Link>
                   <Link href={beat.href} className={cn(buttonVariants({ size: "sm" }))}>
-                    Open route
+                    Open
                   </Link>
                 </div>
               </li>
             ))}
           </ol>
           <p className="text-xs text-muted-foreground">
-            Evaluator exhibit: <Link href="/exhibit" className="underline">/exhibit</Link>
+            Expression of interest: <Link href="/exhibit" className="underline">summary</Link>
             {" · "}
-            Full interim comparison: <Link href="/compare" className="underline">/compare</Link>
-            {" · "}
-            Narrated script: <code>DEMO-SCRIPT.md</code>
+            Comparison with the interim pages: <Link href="/compare" className="underline">compare</Link>
           </p>
         </section>
       ) : null}
 
       {tab === "speed" ? (
         <section>
-          <h2 className="mb-3 text-lg font-semibold">Speed tests — offline loop</h2>
+          <h2 className="mb-3 text-lg font-semibold">Connection estimates</h2>
           <SpeedLabPanel canRun={canRunSpeed} returnTo="/settings?tab=speed" />
         </section>
       ) : null}
 
       {tab === "desk" ? (
         <section className="space-y-4">
-          <h2 className="text-lg font-semibold">Desk configuration</h2>
+          <h2 className="text-lg font-semibold">Clearing House</h2>
           <p className="max-w-3xl text-sm text-muted-foreground">
-            Operator settings for this evaluation desk. Cookie logins and seeded accounts remain the demo affordance.
+            Options for this Clearing House.
           </p>
           <ul className="divide-y rounded-lg border text-sm">
             <li className="px-4 py-3">
               <div className="font-medium">Show related research</div>
               <p className="mt-1 text-muted-foreground">
-                One switch for the whole desk (<code className="font-mono text-xs">{RESEARCH_LANE_META_KEY}</code>). Zotero stays the catalog; this
-                desk only shows the seeded snapshot. When off, the Library link and related-research panels are gone — not an empty state. Default
-                is on when the key is missing.
+                Shows or hides the Library and the related-research panels on records. When hidden, those links are gone.
               </p>
               <form action={setResearchLaneAction} className="mt-3 flex flex-wrap items-center gap-2">
                 <KeyFields returnTo="/settings?tab=desk" />
@@ -143,16 +137,16 @@ export default async function SettingsPage({ searchParams }: Props) {
             <li className="px-4 py-3">
               <div className="font-medium">UI language</div>
               <p className="mt-1 text-muted-foreground">
-                Treaty-text locale is in the masthead. Full six-language UI catalogs are deferred — human i18n, not machine translation.
+                The masthead can show the Agreement text in six languages. The interface is in English.
               </p>
             </li>
             <li className="px-4 py-3">
               <div className="font-medium">Notification channels</div>
-              <p className="mt-1 text-muted-foreground">Notifications are in-app in this build.</p>
+              <p className="mt-1 text-muted-foreground">Notifications appear in the Clearing House. E-mail is not included.</p>
             </li>
             <li className="px-4 py-3">
               <div className="font-medium">Controlled vocabularies</div>
-              <p className="mt-1 text-muted-foreground">ABNJ boxes, CBTMT themes and confidentiality labels are fixed in seed data.</p>
+              <p className="mt-1 text-muted-foreground">Areas, capacity-building themes and confidentiality labels are set for this Clearing House.</p>
             </li>
             <li className="px-4 py-3">
               <div className="font-medium">Subscriptions</div>

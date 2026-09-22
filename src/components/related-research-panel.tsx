@@ -35,18 +35,7 @@ export function RelatedResearchPanel({
         </Link>
       </div>
       {items.length === 0 ? (
-        <p className="text-xs text-muted-foreground">
-          No linked research for this record ·{" "}
-          <button
-            type="button"
-            disabled
-            className="underline underline-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
-            title="Suggest a paper is not in this build"
-          >
-            Suggest a paper
-          </button>
-          .
-        </p>
+        <p className="text-xs text-muted-foreground">No linked research for this record.</p>
       ) : (
         <ul className="space-y-1.5" aria-label="Related research">
           {shown.map((item) => {
@@ -74,7 +63,7 @@ export function RelatedResearchPanel({
       {more > 0 ? (
         <p className="mt-2 text-xs text-muted-foreground">
           <Link href={href} className="underline underline-offset-2 hover:text-institutional">
-            {more} more on the literature desk
+            {more} more in the library
           </Link>
         </p>
       ) : null}

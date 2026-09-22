@@ -38,7 +38,7 @@ describe("role-aware list captions", () => {
   });
 
   it("does not name pending ABMT candidates for public readers", () => {
-    expect(abmtListCaption("public", 2)).toMatch(/Published stubs only/);
+    expect(abmtListCaption("public", 2)).toMatch(/Published proposals only/);
     expect(abmtListCaption("public", 2)).not.toMatch(/Costa Rica Dome/);
     expect(abmtListCaption("public", 2)).not.toMatch(/visible to your role\. visible/);
     expect(abmtListCaption("operator", 4)).toMatch(/Costa Rica Dome/);

@@ -15,9 +15,10 @@ describe("evaluator exhibit", () => {
       "stb",
       "nonstate.uploader",
     ]);
-    expect(EXHIBIT_LIMITS.some((l) => /hosted public URL/i.test(l))).toBe(true);
+    expect(EXHIBIT_LIMITS.some((l) => /public web address/i.test(l))).toBe(true);
     expect(EXHIBIT_LIMITS.some((l) => /SMTP/i.test(l))).toBe(true);
-    expect(EXHIBIT_LIMITS.some((l) => /Zotero snapshot/i.test(l))).toBe(true);
+    expect(EXHIBIT_LIMITS.some((l) => /open-access research/i.test(l))).toBe(true);
+    expect(EXHIBIT_LIMITS.join(" ")).not.toMatch(/Zotero/i);
     expect(EXHIBIT_SECTIONS.flatMap((s) => s.rows).some((r) => r.href === "/research")).toBe(true);
   });
 

@@ -196,7 +196,7 @@ describe("seed I/O", () => {
     const meso = getEiaActivity(h.db, ids.rich.eia.mesopelagic)!;
     const basis = agreementBasisExtrasForRecord(h.db, meso.id);
     expect(basis.extras.some((c) => /Part IV|Art 31/.test(c.article))).toBe(true);
-    expect(basis.footnotes.some((f) => f.includes("6K6WPBFQ"))).toBe(true);
+    expect(basis.footnotes.some((f) => f.includes("Gjerde"))).toBe(true);
     expect(provenanceBadgeForRecord(h.db, meso.id)).toBe("Demo scenario");
     expect(provenanceBadgeForRecord(h.db, ids.rich.mgr.interimTemp)).toBe("Interim (DOALOS)");
 

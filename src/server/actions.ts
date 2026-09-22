@@ -435,7 +435,7 @@ export async function createAbmtAction(fd: FormData) {
       },
       keyOf(fd),
     );
-    return { to: `/abmt/${r.proposal.id}`, notice: "ABMT proposal stub opened as a draft (Art 51.3(a)(ii); without prejudice to COP1)." };
+    return { to: `/abmt/${r.proposal.id}`, notice: "Proposal saved as a draft. Without prejudice to COP1." };
   });
 }
 
@@ -444,7 +444,7 @@ export async function submitAbmtAction(fd: FormData) {
   const proposalId = str(fd, "proposalId");
   attempt(`/abmt/${proposalId}`, () => {
     const r = submitAbmtProposal(getDb(), p, proposalId, keyOf(fd));
-    return { to: `/abmt/${proposalId}`, notice: `Receipt ${r.event.receiptId ?? "—"} — proposal stub pending Secretariat publication.`, minted: "receipt" };
+    return { to: `/abmt/${proposalId}`, notice: `Receipt ${r.event.receiptId ?? "—"}. The proposal is waiting for the Secretariat to publish.`, minted: "receipt" };
   });
 }
 

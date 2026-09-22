@@ -82,7 +82,7 @@ export function seedRichPack(db: Db, party: Principal, secretariat: Principal): 
         party,
         r.batch.id,
         "post_collection",
-        "Post-collection notification (demo): samples logged; repository deposit pending",
+        "Post-collection notification: samples logged; repository deposit pending",
         csvKey(`${row.seedKey}-post`),
         { at: postAt },
       );
@@ -102,7 +102,7 @@ export function seedRichPack(db: Db, party: Principal, secretariat: Principal): 
         party,
         r.batch.id,
         "utilisation",
-        "Utilisation notification (Art 12.8, demo): sequence data deposited; no commercial utilisation declared",
+        "Utilisation notification (Art 12.8): sequence data deposited; no commercial utilisation declared",
         csvKey(`${row.seedKey}-util`),
         { at: utilAt },
       );
@@ -130,7 +130,7 @@ export function seedRichPack(db: Db, party: Principal, secretariat: Principal): 
     for (const p of row.packs) {
       const refs: ArtifactRef[] | undefined =
         p.stage === "screening" && row.artifact
-          ? [row.artifact, { kind: "note", label: "Plausible demo scenario; not a real Party filing" }]
+          ? [row.artifact, { kind: "note", label: "Illustrative scenario — not a Party filing" }]
           : undefined;
       addEiaPack(db, party, act.activity.id, p.stage, p.summary, csvKey(`${row.seedKey}-${p.stage}`), {
         screeningOutcome: p.screeningOutcome,

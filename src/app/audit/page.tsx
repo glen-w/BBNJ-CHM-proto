@@ -37,19 +37,17 @@ export default async function AuditPage({ searchParams }: Props) {
   const showReset = full && sandboxResetEnabled();
 
   return (
-    <AppShell title="Audit — events outbox" flash={flash}>
+    <AppShell title="Audit" flash={flash}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <p className="max-w-3xl text-sm text-muted-foreground">
-          Every receipt, transition and publication is a row; rows are never updated or deleted. Notifications are fan-out of these rows.{" "}
+          Every receipt, change and publication is kept. Notifications are sent from these records.{" "}
           {full ? (
             <>
-              You see the <strong>Secretariat projection</strong>: actor user, idempotency key, dispatch outcome, plus the refusal log, import runs and
-              digest windows below.
+              You are seeing the full audit: who acted, whether a notice was delivered, plus refusals, imports and digests below.
             </>
           ) : (
             <>
-              You see the <strong>public projection</strong>: published, public-tier rows; actor role, never user identifiers. Refusals, import runs
-              and digest windows are not part of this projection.
+              You are seeing published, public records, with the actor’s role and not their name. Refusals, imports and digests are not included.
             </>
           )}
         </p>
@@ -58,7 +56,7 @@ export default async function AuditPage({ searchParams }: Props) {
           {showReset ? (
             <form action={resetSandboxAction}>
               <KeyFields returnTo="/audit" />
-              <SubmitButton variant="destructive" size="sm" title="Deletes the database file, recreates schema, and re-seeds">
+              <SubmitButton variant="destructive" size="sm" title="Restores the illustrative records">
                 Reset database
               </SubmitButton>
             </form>
@@ -97,10 +95,10 @@ export default async function AuditPage({ searchParams }: Props) {
           <section className="rounded-lg border" id="refusals">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2">
               <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Refusal log — every authorisation that was denied</h2>
-              <span className="text-xs text-muted-foreground">{refusals.length} shown (newest first) · Secretariat projection only</span>
+              <span className="text-xs text-muted-foreground">{refusals.length} shown (newest first) · Secretariat only</span>
             </div>
             {refusals.length === 0 ? (
-              <p className="p-4 text-sm text-muted-foreground">No refusals recorded yet. Try publishing as <code>party.nfp</code> or opening /mgr/import as the public.</p>
+              <p className="p-4 text-sm text-muted-foreground">No refusals recorded yet.</p>
             ) : (
               <Table>
                 <TableHeader>

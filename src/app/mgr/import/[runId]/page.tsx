@@ -66,9 +66,9 @@ export default async function ImportRunPage({ params, searchParams }: Props) {
       </div>
 
       <p className="max-w-3xl text-sm text-muted-foreground">
-        Accepted rows are received pre-collection notifications with a B-SBI, <em>pending</em> Secretariat publication (publish from the batch page).
-        Rejected rows carry field-level validation errors; nothing was written for them. This run is durable and appears in the Secretariat audit
-        projection. Connection timings: <Link href="/settings?tab=speed" className="underline">Settings → Speed</Link>.
+        Accepted rows are pre-collection notifications with a B-SBI, waiting for the Secretariat to publish them from the batch page.
+        Rejected rows list the fields that failed; nothing was saved for them. This run is kept in the audit.
+        Connection estimates: <Link href="/settings?tab=speed" className="underline">Settings → Speed</Link>.
       </p>
 
       <div className="overflow-x-auto rounded-lg border">

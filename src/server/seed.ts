@@ -91,12 +91,12 @@ export function seedDatabase(db: Db): SeedIds {
     db,
     party,
     {
-      title: "Deep-sea sampling cruise DEMO-01",
+      title: "Deep-sea sampling cruise",
       locationHint: "Clarion-Clipperton South",
       objectives: "Baseline microbial and meiofaunal diversity of abyssal sediments; reference collection for taxonomy training.",
       methodMeans: "RV Demo Explorer (2,400 t, research vessel, ice class none); box corer, ROV push cores, CTD rosette.",
       expectedDates: "2026-11-03 to 2026-12-01",
-      sponsoringInstitution: "Demo Institute of Marine Science — Dr A. Example",
+      sponsoringInstitution: "Institute of Marine Science — Dr A. Example",
       participationOpportunities: "Two berths and remote data access for scientists from developing States.",
       dataManagementPlan: "https://example.org/dmp/demo-01",
       tkFpicFlag: false,
@@ -127,12 +127,12 @@ export function seedDatabase(db: Db): SeedIds {
     K("mgr-a-post-v2"),
   );
 
-  const b = saveMgrDraft(db, party, { title: "Seamount sponge survey DEMO-02 (draft)", locationHint: "Reykjanes Ridge" }, K("mgr-b"));
+  const b = saveMgrDraft(db, party, { title: "Seamount sponge survey (draft)", locationHint: "Reykjanes Ridge" }, K("mgr-b"));
 
   const c = receivePreCollection(
     db,
     secretariat,
-    { title: "Offline-submitted cruise DEMO-03", locationHint: "CCZ", objectives: "Imported from the offline Excel template by the Secretariat." },
+    { title: "Offline-submitted cruise", locationHint: "CCZ", objectives: "Imported from the offline Excel template by the Secretariat." },
     "excel",
     K("mgr-c"),
     { partyCode: "XSD", at: "2026-09-02T08:00:00.000Z" },
@@ -141,7 +141,7 @@ export function seedDatabase(db: Db): SeedIds {
   const d = receivePreCollection(
     db,
     party,
-    { title: "Restricted cruise DEMO-04", locationHint: "CCZ", confidentiality: "restricted", objectives: "Restricted tier — visible to Secretariat, owner and STB only." },
+    { title: "Restricted cruise", locationHint: "CCZ", confidentiality: "restricted", objectives: "Restricted tier — visible to Secretariat, owner and STB only." },
     "form",
     K("mgr-d"),
     { at: "2026-09-02T09:00:00.000Z" },
@@ -152,7 +152,7 @@ export function seedDatabase(db: Db): SeedIds {
     db,
     party,
     {
-      title: "Confidential cruise DEMO-05",
+      title: "Confidential cruise",
       locationHint: "CCZ",
       confidentiality: "confidential",
       objectives: "Confidential tier — visible to Secretariat and the submitting Party only; STB never sees it.",
@@ -204,7 +204,7 @@ export function seedDatabase(db: Db): SeedIds {
   const offer = createCbtmtRecord(
     db,
     secretariat,
-    { kind: "offer", title: "Marine genomics lab placements", themes: ["taxonomy"], provider: "Demo Ocean Tech Consortium" },
+    { kind: "offer", title: "Marine genomics lab placements", themes: ["taxonomy"], provider: "Ocean Tech Consortium" },
     K("cbtmt-offer"),
   );
   publishPack(db, secretariat, { domain: "cbtmt", recordId: offer.record.id, stage: "offer_posted", at: "2026-08-29T10:00:00.000Z" });
@@ -218,7 +218,7 @@ export function seedDatabase(db: Db): SeedIds {
   );
 
   // ---- ABMT (thin stub, Art 51.3(a)(ii); without prejudice to COP1): draft → pending → published on the same rails.
-  const abmt = createAbmtProposal(db, party, { title: "Demo ABMT proposal stub (without prejudice)" }, K("abmt-1"));
+  const abmt = createAbmtProposal(db, party, { title: "Seamount reference area" }, K("abmt-1"));
   submitAbmtProposal(db, party, abmt.proposal.id, K("abmt-1-submit"));
   publishPack(db, secretariat, { domain: "abmt", recordId: abmt.proposal.id, stage: "proposal_stub", at: "2026-09-05T10:00:00.000Z" });
 

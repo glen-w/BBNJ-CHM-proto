@@ -19,6 +19,9 @@ export const runtime = "nodejs";
 export const metadata: Metadata = {
   title: "Clearing House — BBNJ",
   description: "Clearing-House Mechanism — submit, publish and notify across MGR, EIA and CBTMT.",
+  icons: {
+    icon: [{ url: "/bbnj-emblem.svg", type: "image/svg+xml" }],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

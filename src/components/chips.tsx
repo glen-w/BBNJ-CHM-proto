@@ -73,7 +73,7 @@ const TIER_STYLE: Record<string, string> = {
 export function ConfidentialityBadge({ tier }: { tier: string }) {
   const explain = (["public", "restricted", "confidential"] as const).includes(tier as ConfidentialityTier) ? whoCanSee(tier as ConfidentialityTier) : "";
   return (
-    <Badge variant="outline" className={TIER_STYLE[tier] ?? ""} title={`Confidentiality tier — enforced in SQL for every list, count, feed, audit row, export and notification. ${explain}`}>
+    <Badge variant="outline" className={TIER_STYLE[tier] ?? ""} title={`Confidentiality — applied to lists, search, exports and notifications. ${explain}`}>
       {tier}
     </Badge>
   );
@@ -120,9 +120,9 @@ export function ProvenanceBadge({ badge }: { badge: "Interim (DOALOS)" | "Demo s
           ? "border-institutional bg-transparent text-institutional"
           : "border-transparent bg-muted/70 font-normal text-muted-foreground",
       )}
-      title={interim ? "Mirrors a live DOALOS interim page — not a Party filing through this desk" : "Plausible demo scenario; not a real Party filing"}
+      title={interim ? "Mirrors a public DOALOS page — not a filing made here" : "Illustrative scenario — not a Party filing"}
     >
-      {badge}
+      {interim ? badge : "Illustrative"}
     </Badge>
   );
 }

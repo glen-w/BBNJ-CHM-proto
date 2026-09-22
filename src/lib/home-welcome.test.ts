@@ -60,7 +60,8 @@ describe("home welcome navigation", () => {
     expect(offer.find((c) => c.key === "submit")?.links.map((l) => l.href)).toContain("/capacity");
 
     const learn = homeWelcomeGetStarted("public").find((c) => c.key === "learn");
-    expect(learn?.links.map((l) => l.href)).toContain("/settings?tab=demo");
-    expect(learn?.links.map((l) => l.href)).toContain("/exhibit");
+    expect(learn?.links.map((l) => l.href)).toContain("/about");
+    expect(learn?.links.map((l) => l.href)).toContain("https://www.un.org/bbnjagreement/en");
+    expect(learn?.links.map((l) => l.href)).not.toContain("/settings?tab=demo");
   });
 });

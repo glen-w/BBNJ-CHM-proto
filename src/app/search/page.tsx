@@ -43,8 +43,7 @@ export default async function SearchPage({ searchParams }: Props) {
   return (
     <AppShell title="Search" flash={flash}>
       <p className="max-w-2xl text-sm text-muted-foreground">
-        Search all Cl-HM records you are allowed to see. List pages filter the current table; this page is the full-text index. Visibility follows the
-        same confidentiality and role rules as every list — drafts and restricted rows never leak to public readers.
+        Search the records you can see. Drafts and restricted records stay with the people allowed to open them.
       </p>
 
       <form className="flex flex-wrap items-end gap-2" method="get" role="search">
@@ -73,7 +72,7 @@ export default async function SearchPage({ searchParams }: Props) {
 
       {!q.trim() ? (
         <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">Enter a query to search indexed record fields. Suggested starting points:</p>
+          <p className="text-sm text-muted-foreground">Suggested starting points:</p>
           <ul className="flex flex-wrap gap-2">
             {SEARCH_SUGGESTIONS.map((s) => (
               <li key={s.q}>

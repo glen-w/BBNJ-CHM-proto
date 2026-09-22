@@ -50,7 +50,7 @@ export function TreatyCiteDrawer({
         type="button"
         onClick={open}
         className="inline-flex items-center gap-1 rounded-md border border-line bg-card px-2 py-1 text-xs text-muted-foreground hover:border-institutional/40 hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-        title="Agreement basis — articles for packs on this record"
+        title="Agreement basis — articles that apply to this record"
       >
         <span aria-hidden="true">§</span>
         <span>Agreement basis</span>

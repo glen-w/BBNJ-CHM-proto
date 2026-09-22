@@ -94,12 +94,12 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
           label="Comment window due"
           value={activity.dueAt ? fmtDate(activity.dueAt) : undefined}
           mono={false}
-          caption={activity.dueAt ? "Explicit due date set on the activity (demo value; the Agreement fixes no day count)" : `Not set — deadline rows default to ${DEMO_COMMENT_WINDOW_DAYS} days after a draft EIA is published (demo value)`}
+          caption={activity.dueAt ? "Due date set on this activity. The Agreement does not fix a number of days." : `Not set. The comment window is ${DEMO_COMMENT_WINDOW_DAYS} days after a draft assessment is published. The Agreement does not fix a number of days.`}
         />
       </section>
 
       <section className="rounded-lg border p-4">
-        <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">Stage rail (latest stage cached on the record)</h2>
+        <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">Stages</h2>
         <ol className="flex flex-wrap items-center gap-1 text-xs">
           {EIA_STAGE_ORDER.map((s, i) => (
             <li key={s} className="flex items-center gap-1">

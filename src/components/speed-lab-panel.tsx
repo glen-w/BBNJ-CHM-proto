@@ -24,17 +24,16 @@ export function SpeedLabPanel({ canRun, returnTo }: { canRun: boolean; returnTo:
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <Badge variant="outline" className="border-institutional bg-transparent font-normal text-institutional">
-          Mocked transfer, not a field measurement
+          Estimated transfer time — not measured in the field
         </Badge>
         <Badge variant="outline" className="border-transparent bg-muted/70 font-normal text-muted-foreground">
-          Writes nothing to the desk
+          Does not change any records
         </Badge>
       </div>
 
       <p className="max-w-3xl text-sm text-muted-foreground">
-        How the Art 51.5 closed loop — download template → fill offline → upload → download the error workbook — would <em>feel</em> on
-        different links. Wire time is <strong>calculated</strong> from nominal bandwidth and round-trip time (
-        <code>rtt + bytes × 8 / bps</code>). Parse time is <strong>measured</strong> with a validate-only pass over bundled samples.
+        How download, fill, upload and the error workbook would feel on different connections (Article 51.5). Transfer time is estimated from
+        typical bandwidth. Parsing time is measured on this computer. These are not measurements from the field.
       </p>
 
       {!canRun ? (
@@ -102,8 +101,7 @@ export function SpeedLabPanel({ canRun, returnTo }: { canRun: boolean; returnTo:
         </h3>
         {latest.length === 0 ? (
           <p className="p-4 text-sm text-muted-foreground">
-            No trials yet. {canRun ? "Run the loop above, or " : ""}
-            <code>npm run speed</code> from a terminal.
+            No estimates yet.{canRun ? " Run the loop above." : ""}
           </p>
         ) : (
           <div className="overflow-x-auto">

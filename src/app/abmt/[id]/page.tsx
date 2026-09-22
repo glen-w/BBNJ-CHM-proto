@@ -47,12 +47,12 @@ export default async function AbmtProposalPage({ params, searchParams }: Props) 
   const relatedResearch = researchLaneOn ? listRelatedResearchForAbmt(db, proposal) : [];
 
   return (
-    <AppShell title={`ABMT proposal stub — ${proposal.title}`} flash={flash}>
+    <AppShell title={`ABMT proposal — ${proposal.title}`} flash={flash}>
       <WithoutPrejudiceBanner />
       {isaCaption ? (
         <p className="rounded-md border border-caution-line bg-caution/40 px-3 py-2 text-xs text-caution-foreground">
-          Not-undermine caption (demo): this CCZ network-node stub is illustrative only and does not purport to displace or undermine ISA processes
-          under UNCLOS or the Exploration Regulations.
+          This Clarion-Clipperton Zone example does not displace or undermine International Seabed Authority processes under UNCLOS or the
+          Exploration Regulations.
         </p>
       ) : null}
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -84,12 +84,12 @@ export default async function AbmtProposalPage({ params, searchParams }: Props) 
 
       <section className="grid gap-3 sm:grid-cols-3">
         <Identifier label="internalId" value={proposal.id} caption="UUID at creation — never shown as a public identifier" />
-        <Identifier label="receiptId" value={packs.find((e) => e.receiptId)?.receiptId} caption="Issued when the proposal stub entered pending" />
+        <Identifier label="receiptId" value={packs.find((e) => e.receiptId)?.receiptId} caption="Issued when the proposal was submitted" />
         <Identifier label="publicRecordId" value={proposal.publicRecordId} caption="BBNJ-ABMT-YYYY-NNNNN, minted at the first publish" />
       </section>
 
       <section className="rounded-lg border p-4">
-        <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">Pack — status lives here</h2>
+        <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">Status</h2>
         <div className="flex flex-wrap items-center gap-2">
           {packs.length === 0 ? <span className="text-sm text-muted-foreground">No packs visible to your role.</span> : null}
           {packs.map((e) => (
@@ -106,7 +106,7 @@ export default async function AbmtProposalPage({ params, searchParams }: Props) 
           <form action={submitAbmtAction} className="mt-4 flex flex-wrap items-center gap-3 border-t pt-4">
             <KeyFields returnTo={here} />
             <input type="hidden" name="proposalId" value={id} />
-            <SubmitButton size="sm">Submit proposal stub (pending)</SubmitButton>
+            <SubmitButton size="sm">Submit proposal</SubmitButton>
             <span className="text-xs text-muted-foreground">Moves the draft to pending and issues a receiptId. The Secretariat publishes.</span>
           </form>
         ) : null}
@@ -133,10 +133,6 @@ export default async function AbmtProposalPage({ params, searchParams }: Props) 
       <section>
         <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">Timeline</h2>
         <Timeline rows={timeline} />
-        <p className="mt-2 text-xs text-muted-foreground">
-          Without prejudice: a proposal-stub row on the shared outbox. Its shape is the same as every other pack row so later ABMT packages can
-          reuse the receipt and publish record unchanged.
-        </p>
       </section>
     </AppShell>
   );

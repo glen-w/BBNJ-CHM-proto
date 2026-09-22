@@ -5,7 +5,7 @@ export function SecretariatNoticesList() {
   const notices = SECRETARIAT_NOTICES();
 
   if (notices.length === 0) {
-    return <p className="text-sm text-muted-foreground">No notices in this build.</p>;
+    return <p className="text-sm text-muted-foreground">No notices.</p>;
   }
 
   return (

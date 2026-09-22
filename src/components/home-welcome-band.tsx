@@ -59,11 +59,13 @@ export async function HomeWelcomeBand() {
     <div className="space-y-0">
       <section aria-labelledby="home-welcome-heading" className="relative overflow-hidden rounded-t-lg border border-b-0 border-institutional/25">
         <div className="pointer-events-none absolute inset-0">
+          {/* Basic auth blocks the optimizer's internal fetch, so this file is served as-is. */}
           <Image
             src="/home-welcome-still.jpg"
             alt=""
             fill
             preload
+            unoptimized
             sizes="(max-width: 1152px) 100vw, 1152px"
             className="object-cover object-[68%_42%] opacity-80"
           />
@@ -73,11 +75,12 @@ export async function HomeWelcomeBand() {
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 max-w-2xl">
               <h1 id="home-welcome-heading" className="text-xl font-semibold tracking-tight text-institutional-foreground sm:text-2xl">
-                BBNJ Cl-HM evaluation desk
+                Clearing-House Mechanism
               </h1>
               <p className="mt-2 text-sm leading-relaxed text-institutional-foreground/90">
-                A Session&nbsp;1 evaluation desk for walking the Clearing-House rails — submit, manage, publish,
-                notify, audit — with demo data. Not the official Cl-HM. Without prejudice to COP1.
+                Submit, publish and follow records for marine genetic resources, environmental impact assessment,
+                capacity-building and area-based management. The records here are illustrative — not Party filings,
+                and not the official Clearing House.
               </p>
             </div>
             <form action={setHomeWelcomeAction} className="shrink-0">

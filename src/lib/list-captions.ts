@@ -15,7 +15,7 @@ export function listAudienceFromRoles(roles: readonly string[] | undefined): Lis
 
 const records = (n: number) => `${n} record${n === 1 ? "" : "s"} visible to your role`;
 const activities = (n: number) => `${n} activit${n === 1 ? "y" : "ies"} visible to your role`;
-const stubs = (n: number) => `${n} stub${n === 1 ? "" : "s"} visible to your role`;
+const proposals = (n: number) => `${n} proposal${n === 1 ? "" : "s"} visible to your role`;
 
 export function mgrListCaption(audience: ListAudience, n: number): string {
   const head = records(n);
@@ -40,16 +40,16 @@ export function eiaListCaption(audience: ListAudience, n: number): string {
 }
 
 export function abmtListCaption(audience: ListAudience, n: number): string {
-  const head = stubs(n);
+  const head = proposals(n);
   if (audience === "operator") {
-    return `${head}. Sargasso and CCZ are published; Costa Rica Dome and the Indian Ridge vent field wait on the publish gate.`;
+    return `${head}. Sargasso and CCZ are published; Costa Rica Dome and the Indian Ridge vent field are not yet published.`;
   }
   if (audience === "stb") {
-    return `${head}. Published stubs only (Sargasso, CCZ). Pending candidates wait on the publish gate.`;
+    return `${head}. Published proposals only (Sargasso, CCZ).`;
   }
-  return `${head}. Published stubs only (Sargasso, CCZ). Sign in as party.nfp or secretariat to see pending candidates.`;
+  return `${head}. Published proposals only (Sargasso, CCZ). Sign in to see proposals that are not yet published.`;
 }
 
 export function cbtmtListCaption(nNeeds: number, nOffers: number): string {
-  return `${nNeeds} need${nNeeds === 1 ? "" : "s"} and ${nOffers} offer${nOffers === 1 ? "" : "s"} visible — including a SIDS sequencing pair with a facilitation note, and unmatched legal-policy / remote-sensing / ship-time rows so the shared-theme rule is not a full join.`;
+  return `${nNeeds} need${nNeeds === 1 ? "" : "s"} and ${nOffers} offer${nOffers === 1 ? "" : "s"}. A SIDS sequencing need is paired with an offer and a facilitation note. Other needs and offers remain unmatched.`;
 }

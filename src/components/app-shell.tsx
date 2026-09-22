@@ -78,10 +78,10 @@ export async function AppShell({
             href="/"
             className="flex shrink-0 items-center gap-2.5 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           >
-            <Image src="/bbnj-emblem.svg" alt="" width={36} height={36} className="shrink-0" unoptimized />
+            <Image src="/bbnj-emblem.svg" alt="" width={40} height={40} className="size-[39.6px] shrink-0" unoptimized />
             <span className="flex flex-col leading-tight">
-              <span className="text-xl font-semibold tracking-tight text-institutional">Clearing House</span>
-              <span className="text-sm text-muted-foreground">Biodiversity Beyond National Jurisdiction</span>
+              <span className="text-[1.375rem] font-semibold tracking-tight text-institutional">Clearing House</span>
+              <span className="text-[0.9625rem] text-muted-foreground">Biodiversity Beyond National Jurisdiction</span>
             </span>
           </Link>
           <div className="ms-auto flex shrink-0 flex-nowrap items-center gap-1.5">
@@ -226,7 +226,7 @@ export async function AppShell({
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-1 px-6 py-2 text-xs text-muted-foreground">
           <span>Clearing House</span>
           <Link href="/about" className="underline underline-offset-2 hover:text-institutional">
-            About this desk
+            About the Clearing House
           </Link>
         </div>
       </footer>

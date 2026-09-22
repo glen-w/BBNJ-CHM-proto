@@ -18,9 +18,9 @@ export default async function NewAbmtPage({ searchParams }: Props) {
   if (!can(p, "submit", { domain: "abmt" })) {
     recordRefusal(p, "submit", { domain: "abmt", path: "/abmt/new", reason: "ABMT proposal form requested without the submit permission" });
     return (
-      <AppShell title="ABMT — new proposal stub" flash={flash}>
+      <AppShell title="New ABMT proposal" flash={flash}>
         <p className="text-sm">
-          Opening a proposal stub requires a Party or Secretariat login.{" "}
+          Opening a proposal requires a Party or Secretariat login.{" "}
           <Link href="/login?return=/abmt/new" className="underline">
             Switch login
           </Link>
@@ -30,12 +30,12 @@ export default async function NewAbmtPage({ searchParams }: Props) {
     );
   }
   return (
-    <AppShell title="ABMT — new proposal stub" flash={flash}>
+    <AppShell title="New ABMT proposal" flash={flash}>
       <WithoutPrejudiceBanner />
       <form action={createAbmtAction} className="max-w-xl space-y-4 rounded-lg border p-4">
         <KeyFields returnTo="/abmt/new" />
-        <Field label="Proposal title" required hint="A working title only — the stub carries no ABMT content fields.">
-          <Input name="title" required placeholder="e.g. Proposal stub — seamount reference area" />
+        <Field label="Proposal title" required hint="A title for now. The full content of an area-based measure is for the Conference of the Parties.">
+          <Input name="title" required placeholder="e.g. Seamount reference area" />
         </Field>
         {!hasRole(p, "party") ? (
           <Field label="Party code (on behalf)" required hint={isSecretariat(p) ? "Secretariat-assisted intake, recorded as the assisted channel." : undefined}>
@@ -51,10 +51,9 @@ export default async function NewAbmtPage({ searchParams }: Props) {
             ))}
           </select>
         </Field>
-        <SubmitButton>Open proposal stub (draft)</SubmitButton>
+        <SubmitButton>Save proposal (draft)</SubmitButton>
         <p className="text-xs text-muted-foreground">
-          Opens a proposal-stub pack as a draft. Submit it from the proposal page to obtain a receipt; the Secretariat publishes it like any
-          other pack.
+          Saves a draft. Submit it from the proposal page for a receipt. The Secretariat publishes it.
         </p>
       </form>
     </AppShell>

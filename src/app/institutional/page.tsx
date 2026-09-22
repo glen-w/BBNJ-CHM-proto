@@ -11,8 +11,8 @@ export default async function InstitutionalPage({ searchParams }: Props) {
   return (
     <AppShell title="Institutional" flash={flash}>
       <p className="max-w-3xl text-sm text-muted-foreground">
-        Interim DOALOS surfaces for focal points, formal communications and reference portals. These are related systems — not data feeds into
-        this desk.
+        Interim DOALOS pages for focal points, formal communications and reference portals. These are related systems, not a data exchange with
+        this Clearing House.
       </p>
 
       <section className="rounded-lg border bg-card p-5">
@@ -31,7 +31,7 @@ export default async function InstitutionalPage({ searchParams }: Props) {
           the Clearing-House Mechanism.
         </p>
         <p>
-          Until the Cl-HM is fully operational, Parties may use the interim channels cited in each notice (for example{" "}
+          Until the Clearing House is fully operational, Parties may use the interim channels cited in each notice (for example{" "}
           <a href="mailto:doalos@un.org" className="underline underline-offset-2 hover:text-institutional">
             doalos@un.org
           </a>

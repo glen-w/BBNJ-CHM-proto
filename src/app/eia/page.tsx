@@ -15,7 +15,7 @@ import { eiaListCaption, listAudienceFromRoles } from "@/lib/list-captions";
 import { cn } from "@/lib/utils";
 import { can } from "@/server/policy";
 import { listEiaActivities } from "@/server/queries";
-import { SEED_HONESTY, provenanceBadgeForRecord } from "@/server/seed-pack";
+import { provenanceBadgeForRecord } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -118,11 +118,9 @@ export default async function EiaPage({ searchParams }: Props) {
 
       <AboutPanel title="About this workflow">
         <p>
-          Each activity is one record carrying many <strong className="text-foreground">packs</strong> (screening, notices, draft EIA, STB comments,
-          decision, monitoring). Pack status is <em>draft → pending → published</em>; the record only caches the latest stage. Published draft EIAs
-          feed the STB queue.
+          Each activity is one record. Screening, notices, the draft assessment, comments, the decision and monitoring each have their own status:
+          draft, pending or published. A published draft assessment goes to the Scientific and Technical Body for review.
         </p>
-        <p>{SEED_HONESTY}</p>
       </AboutPanel>
     </AppShell>
   );

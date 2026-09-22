@@ -127,7 +127,7 @@ describe("dispatch I/O", () => {
       .prepare("SELECT summary FROM notifications WHERE event_id = ? AND kind = 'deadline'")
       .all(pub.event.id) as { summary: string }[];
     expect(rows.length).toBeGreaterThan(0);
-    expect(rows.every((r) => r.summary.includes("2026-11-01") && r.summary.includes("explicit dueAt"))).toBe(true);
+    expect(rows.every((r) => r.summary.includes("2026-11-01") && r.summary.includes("due date set on the activity"))).toBe(true);
     expect(rows.some((r) => r.summary.includes(`${DEMO_COMMENT_WINDOW_DAYS}-day`))).toBe(false);
   });
 

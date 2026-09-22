@@ -115,7 +115,7 @@ export function LibraryNav() {
         "inline-flex shrink-0 items-center gap-1.5 py-2 text-sm text-foreground/80 hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
         current && "font-medium text-institutional",
       )}
-      title="Zotero-backed papers linked to the journeys"
+      title="Open-access research and resources"
       aria-current={current ? "page" : undefined}
     >
       <Library aria-hidden="true" className="size-3.5 shrink-0" />

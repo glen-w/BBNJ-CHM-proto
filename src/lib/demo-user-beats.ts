@@ -15,7 +15,7 @@ export function demoUserBeats(links: {
     {
       n: 1,
       title: "Public view",
-      blurb: "Browse published, public-tier records only — rails counts, search and exports all respect one SQL visibility clause.",
+      blurb: "Published, public records only. Search and exports follow the same rule.",
       login: "public",
       href: "/",
     },
@@ -29,7 +29,7 @@ export function demoUserBeats(links: {
     {
       n: 3,
       title: "Secretariat publish + import",
-      blurb: "Publish pending packs, run the offline Excel import loop, and see refusals in the full audit projection.",
+      blurb: "Publish records that are waiting, run the offline Excel import, and review the audit, including refusals.",
       login: "secretariat",
       href: "/mgr/import",
     },
@@ -42,8 +42,8 @@ export function demoUserBeats(links: {
     },
     {
       n: 5,
-      title: "Interim vs this desk",
-      blurb: "Printable evaluator exhibit, then the Session-1 comparison — design contrast with the interim DOALOS pages, not a critique.",
+      title: "Expression of interest",
+      blurb: "The expression-of-interest summary, then how this Clearing House compares with the interim DOALOS pages.",
       login: "public",
       href: "/exhibit",
     },

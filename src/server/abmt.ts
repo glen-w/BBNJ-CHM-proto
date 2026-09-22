@@ -81,7 +81,7 @@ export function createAbmtProposal(
       recordId: id,
       stage: "proposal_stub",
       status: "draft",
-      summary: `ABMT proposal stub opened (Art 51.3(a)(ii); without prejudice): ${title}`,
+      summary: `Proposal opened (Art 51.3(a)(ii); without prejudice to COP1): ${title}`,
       idempotencyKey: key,
       at,
     });
@@ -103,7 +103,7 @@ export function submitAbmtProposal(db: Db, actor: Principal, proposalId: string,
     recordId: proposalId,
     stage: "proposal_stub",
     status: "pending",
-    summary: `ABMT proposal submitted for publication (without prejudice): ${proposal.title}`,
+    summary: `Proposal submitted for publication (without prejudice to COP1): ${proposal.title}`,
     idempotencyKey: key,
   });
   refreshCaches(db, "abmt", proposalId);

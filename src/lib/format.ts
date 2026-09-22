@@ -24,6 +24,7 @@ const STAGE_ACRONYMS = new Set(["eia", "stb", "mgr", "abmt", "cbtmt"]);
 
 /** Human stage name. Acronyms stay capitals (draft EIA, comments STB). */
 export function stageLabel(stage: string): string {
+  if (stage === "proposal_stub") return "proposal";
   return stage
     .split("_")
     .map((word) => (STAGE_ACRONYMS.has(word) ? word.toUpperCase() : word))
