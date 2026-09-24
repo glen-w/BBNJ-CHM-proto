@@ -140,7 +140,7 @@ export function buildCompareSections(ctx: CompareContext): CompareSection[] {
           area: "Roles",
           interim: `No role taxonomy visible on public interim pages; content appears Secretariat-published (${asOf})`,
           prototype: "Party, Secretariat, Scientific and Technical Body, public reader, and a registered non-State provider who may post capacity-building offers. Someone who is not signed in sees only what the public may see.",
-          links: [{ href: "/login", label: "Sign in" }, { href: "/settings?tab=demo", label: "Guided path" }],
+          links: [{ href: "/login", label: "Sign in" }, { href: "/settings?tab=demo", label: "Guided demo paths" }],
         },
         {
           area: "Refusal audit",

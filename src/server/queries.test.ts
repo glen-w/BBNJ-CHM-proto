@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 
+import { createAbmtProposal, submitAbmtProposal } from "@/server/abmt";
 import { createCbtmtRecord, getCbtmtRecord } from "@/server/cbtmt";
 import { addEiaPack, createEiaActivity, getEiaActivity } from "@/server/eia";
 import { getMgrBatch, receivePreCollection, saveMgrDraft } from "@/server/mgr";
@@ -127,6 +128,52 @@ describe("policy-filtered queries", () => {
 
     expect(toFtsQuery('  alpha "ridge" (x) ')).toBe('"alpha"* AND "ridge"* AND "x"*');
     expect(toFtsQuery("   ")).toBeNull();
+  });
+
+  it("searchRecords keeps confidential EIA and restricted ABMT off the public index and honours the domain filter", () => {
+    h = createHarness();
+    const token = "Zephyrine";
+    const eiaPub = createEiaActivity(h.db, h.party(), { title: `${token} public survey`, abnjBox: "CCZ" }, h.key());
+    addEiaPack(h.db, h.party(), eiaPub.activity.id, "screening", "Screening", h.key(), { screeningOutcome: "no_eia" });
+    publishPack(h.db, h.secretariat(), { domain: "eia", recordId: eiaPub.activity.id, stage: "screening" });
+    const eiaSecret = createEiaActivity(
+      h.db,
+      h.party(),
+      { title: `${token} confidential survey`, abnjBox: "CCZ", confidentiality: "confidential" },
+      h.key(),
+    );
+    addEiaPack(h.db, h.party(), eiaSecret.activity.id, "screening", "Screening", h.key(), { screeningOutcome: "no_eia" });
+    publishPack(h.db, h.secretariat(), { domain: "eia", recordId: eiaSecret.activity.id, stage: "screening" });
+
+    const abmtPub = createAbmtProposal(h.db, h.party(), { title: `${token} public measure` }, h.key());
+    submitAbmtProposal(h.db, h.party(), abmtPub.proposal.id, h.key());
+    publishPack(h.db, h.secretariat(), { domain: "abmt", recordId: abmtPub.proposal.id, stage: "proposal_stub" });
+    const abmtRestricted = createAbmtProposal(
+      h.db,
+      h.party(),
+      { title: `${token} restricted measure`, confidentiality: "restricted" },
+      h.key(),
+    );
+    submitAbmtProposal(h.db, h.party(), abmtRestricted.proposal.id, h.key());
+    publishPack(h.db, h.secretariat(), { domain: "abmt", recordId: abmtRestricted.proposal.id, stage: "proposal_stub" });
+
+    const publicHits = searchRecords(h.db, h.pub(), { q: token });
+    expect(publicHits.map((hit) => hit.id).sort()).toEqual([eiaPub.activity.id, abmtPub.proposal.id].sort());
+    expect(publicHits.every((hit) => hit.domain === "eia" || hit.domain === "abmt")).toBe(true);
+
+    const eiaOnly = searchRecords(h.db, h.pub(), { q: token, domain: "eia" });
+    expect(eiaOnly).toHaveLength(1);
+    expect(eiaOnly[0]?.domain).toBe("eia");
+    expect(eiaOnly[0]?.id).toBe(eiaPub.activity.id);
+
+    const secHits = searchRecords(h.db, h.secretariat(), { q: token });
+    expect(secHits.some((hit) => hit.id === eiaSecret.activity.id)).toBe(true);
+    expect(secHits.some((hit) => hit.id === abmtRestricted.proposal.id)).toBe(true);
+
+    const publicId = getEiaActivity(h.db, eiaPub.activity.id)!.publicRecordId!;
+    const byId = searchRecords(h.db, h.pub(), { q: publicId });
+    expect(byId.some((hit) => hit.id === eiaPub.activity.id)).toBe(true);
+    expect(byId.some((hit) => hit.id === eiaSecret.activity.id)).toBe(false);
   });
 
   it("resolves publicRecordId for EIA and CBTMT domains", () => {

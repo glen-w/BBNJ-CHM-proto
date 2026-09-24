@@ -7,7 +7,7 @@ import { whoCanSee } from "@/lib/tiers";
 
 /**
  * Pack-status chip colours come from the charter tokens in `globals.css` (`--draft` / `--pending` / `--published`).
- * The status text is always rendered — colour is never the only carrier (VISUAL-CHARTER.md §1.6).
+ * The status text is always rendered — colour is never the only carrier (docs/VISUAL-CHARTER.md §1.6).
  */
 const STATUS_STYLE: Record<string, string> = {
   draft: "bg-draft text-draft-foreground border-draft-line",

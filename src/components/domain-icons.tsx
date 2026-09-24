@@ -1,6 +1,6 @@
 import { Bell, ClipboardList, Dna, FolderPen, Globe, Handshake, Inbox, Map, ScrollText, Users, type LucideIcon } from "lucide-react";
 
-/** Domains that carry a quiet accent (VISUAL-CHARTER.md §2). ABMT's token is the quietest of the four. */
+/** Domains that carry a quiet accent (docs/VISUAL-CHARTER.md §2). ABMT's token is the quietest of the four. */
 export type AccentDomain = "mgr" | "eia" | "cbtmt" | "abmt";
 
 export const DOMAIN_ICON: Record<AccentDomain, LucideIcon> = {

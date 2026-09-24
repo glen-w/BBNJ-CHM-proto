@@ -1,7 +1,7 @@
 /**
  * demo.ts — the unattended 10-minute demo path, as code.
  *
- * Runs the DEMO-SCRIPT.md journey end to end against a temporary database,
+ * Runs the docs/DEMO-SCRIPT.md journey end to end against a temporary database,
  * printing a narrated checkpoint per step and asserting the observable claims.
  * Never touches data/chm.sqlite.
  *
@@ -189,7 +189,7 @@ async function main() {
 
   // 10d. ABMT thin stub — same rails, BBNJ-ABMT id at first publish, without prejudice
   const abmt = await import("../src/server/abmt");
-  const abmtDraft = abmt.createAbmtProposal(db, party, { title: "Demo ABMT proposal stub (without prejudice)" }, key());
+  const abmtDraft = abmt.createAbmtProposal(db, party, { title: "Demo ABMT proposal stub" }, key());
   const abmtPending = abmt.submitAbmtProposal(db, party, abmtDraft.proposal.id, key());
   assert.equal(abmtPending.proposal.publicRecordId, undefined);
   const abmtPub = packs.publishPack(db, secretariat, { domain: "abmt", recordId: abmtDraft.proposal.id, stage: "proposal_stub" });
@@ -252,7 +252,7 @@ async function main() {
     const restricted = (serverDb.prepare("SELECT public_record_id FROM mgr_batches WHERE confidentiality = 'restricted' AND public_record_id IS NOT NULL LIMIT 1").get() as { public_record_id: string } | undefined)?.public_record_id;
     await expect("/", undefined, 200, /Clearing-House Mechanism/);
     await expect("/about", undefined, 200, /Identifiers, in order/);
-    await expect("/settings", undefined, 200, /Demo user path/);
+    await expect("/settings", undefined, 200, /Guided demo paths/);
     await expect("/settings?tab=speed", "secretariat", 200, /Run the loop/);
     await expect("/lab/speed", undefined, [307, 308]);
     await expect("/compare", undefined, 200, /Receipt, management and storage/);

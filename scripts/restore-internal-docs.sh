@@ -50,7 +50,7 @@ cat >"$ARCHIVE/README.md" <<'EOF'
 
 Planning, EOI checklists, contract-amendment notes and the original `proposal/` pack. **Not part of the product** — kept locally for future development and presenter prep.
 
-The public repo documents the running desk in the root `README.md`, `DEMO-SCRIPT.md`, `VISUAL-CHARTER.md` and `ACCESSIBILITY.md`.
+The public repo documents the running desk in the root `README.md` and in `docs/` (`DEMO-SCRIPT.md`, `VISUAL-CHARTER.md`, `ACCESSIBILITY.md`, `SHIPPED.md`, `ROADMAP.md`).
 
 ## Layout
 

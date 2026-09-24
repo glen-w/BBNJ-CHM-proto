@@ -119,7 +119,7 @@ export default async function AboutPage({ searchParams }: Props) {
               Connection estimates
             </Link>
             <Link href="/settings?tab=demo" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
-              Guided path
+              Guided demo paths
             </Link>
             <a href="/api/template/mgr.xlsx" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
               MGR template (.xlsx)
@@ -135,7 +135,7 @@ export default async function AboutPage({ searchParams }: Props) {
 
         <section className="space-y-2 text-sm text-muted-foreground">
           <p>
-            <strong className="text-foreground">Area-based management</strong> proposals follow the same receipt and publication path. Without prejudice to COP1. The full content of a measure is for the Conference of the Parties.
+            <strong className="text-foreground">Area-based management</strong> proposals follow the same receipt and publication path. The full content of a measure is for the Conference of the Parties.
           </p>
           <div className="flex flex-wrap gap-2 pt-2">
             <a href="/api/export/mgr.csv" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>

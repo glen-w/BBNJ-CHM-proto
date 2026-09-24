@@ -435,7 +435,7 @@ export async function createAbmtAction(fd: FormData) {
       },
       keyOf(fd),
     );
-    return { to: `/abmt/${r.proposal.id}`, notice: "Proposal saved as a draft. Without prejudice to COP1." };
+    return { to: `/abmt/${r.proposal.id}`, notice: "Proposal saved as a draft." };
   });
 }
 

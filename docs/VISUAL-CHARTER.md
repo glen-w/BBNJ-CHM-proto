@@ -1,3 +1,6 @@
+Type: GUIDE
+Authority: Visual identity for this prototype. Does not define treaty behaviour, roles, or schemas.
+
 # Visual charter — BBNJ Cl-HM
 
 **Name for the look:** Working Cl-HM desk  
@@ -61,7 +64,7 @@ This charter governs the Cl-HM desk UI. It is a **team choice** for this prototy
 - **Shell:** three bands — UN masthead (welcome + treaty-text locale); product/account (emblem · **Clearing House** with subtitle *Biodiversity Beyond National Jurisdiction* · rails · Settings gear · global “Search all Cl-HM records” · bell · role switcher); contextual (**Institutional** tab · journey tabs · labelled **Latest transaction** from the last visible outbox event, public identifiers only). The long Agreement title does not sit in chrome. The ABMT tab is **enabled and quiet**: same weight as the other journeys, no “stub” / “not in this build” badge in the tab itself; the stub nature is stated once, in one sentence, on the ABMT page. STB users also get **STB queue** in the rails (`/stb`).  
 - **Institutional (`/institutional`):** Secretariat notices + related-systems links (same list as About). Caption related systems as *related systems*, never as “integrations” or “partners”.
 - **About this desk:** lives at `/about` (footer link + welcome hero jump). Identifier order, comparison highlights, speed-test explanation, related-systems repeat and `/records/<id>` notes — not stacked above journey tables on home. Per-journey “About this workflow” stays on journey cards. Footer is product mark (**Clearing House**) + About link.
-- **Settings (gear):** icon-only in band 2 (after rails, before search). Demo user path, speed tests and desk-config placeholders — not in primary nav.  
+- **Settings (gear):** icon-only in band 2 (after rails, before search). Guided demo paths, speed tests and desk-config placeholders — not in primary nav.  
 - **Deferred capability caption:** where a proprietary or deferred capability is referenced (e-mail delivery, GIS, federation, tagged PDF), use one quiet muted caption in the relevant panel — e.g. *in-app only in this build* — not a banner, not a roadmap list.  
 - **Record lists:** domain badge (quiet tint + optional Lucide icon with label) · public record id · status chip (**text + colour**, never colour-only) · **Updated** as a scan column — scannable tables, shadcn `Table` / `Badge` / `Button`. List pages **Filter … records** (live); header search is global FTS. MGR/EIA actions: primary **New** · **Import▾** (template underneath) · **Export▾**.  
 - **Home cards:** operational launchers (count + short rail + Open); essays behind “About this workflow”. Recently published: title / status / id+date on separate rows.  
@@ -71,7 +74,7 @@ This charter governs the Cl-HM desk UI. It is a **team choice** for this prototy
 - **CBTMT:** two-column needs↔offers; match as chip, not confetti.  
 - **Forms:** clear labels, inline validation, “Download template” as a first-class control on MGR intake.  
 - **Notify:** bell drawer — list, not toast spam.  
-- **Compare (`/compare`) and evaluator exhibit (`/exhibit`):** docs-style pages; **not** linked from the shell — open from `/about`, Settings → Demo user, welcome Learn card, or README / demo script. `/exhibit` is print-friendly (chrome `print:hidden`).
+- **Compare (`/compare`) and evaluator exhibit (`/exhibit`):** docs-style pages; **not** linked from the shell — open from `/about`, Settings → Guided demo paths, welcome Learn card, or README / demo script. `/exhibit` is print-friendly (chrome `print:hidden`).
 - **Neighbourhood (EIA):** schematic ABNJ diagram (labelled dots, not GIS tiles) above the same-box list — charter-allowed maps-without-hardcore-GIS.
 
 **Elevation:** flat / one soft shadow max. Prefer borders over shadows.
@@ -114,7 +117,7 @@ UN WCAG 2.1 AA mapping, measured contrast, and remediation status: [`ACCESSIBILI
 - Ids and B‑SBI labelled distinctly.  
 - Product chrome reads as a finished working desk — no “prototype”, “substrate”, “sandbox”, or COP1 disclaimers in the shell. Scope notes live in the README.  
 - Role labels: “Secretariat / authorised publishing role” — not “Publishing Authority” as a BBNJ organ.  
-- ABMT stub page: one sentence saying it is a thin stub without prejudice, then the working list/form — not roadmap marketing or contract-enum lectures. Never “unavailable” (it is available, thinly).  
+- ABMT pages are the working list and form — no COP1 disclaimer in the shell. The without-prejudice note stays in the README, Settings → Compare, and `/compare`. Never “unavailable” (it is available, thinly).  
 - Deferred / proprietary captions read as facts, not apologies: *Notifications are in-app in this build.* — no “coming soon”.
 
 ---

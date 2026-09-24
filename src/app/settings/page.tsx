@@ -19,7 +19,7 @@ import { getSessionUser } from "@/server/session";
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
 const TABS = [
-  { id: "demo", label: "Guided path" },
+  { id: "demo", label: "Guided demo paths" },
   { id: "speed", label: "Speed" },
   { id: "desk", label: "Desk" },
   { id: "compare", label: "Compare" },
@@ -78,7 +78,7 @@ export default async function SettingsPage({ searchParams }: Props) {
       {tab === "demo" ? (
         <section className="space-y-4">
           <div>
-            <h2 className="text-lg font-semibold">Guided path</h2>
+            <h2 className="text-lg font-semibold">Guided demo paths</h2>
             <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
               Five steps through the Clearing House. Sign in as each role, then open the page.
             </p>

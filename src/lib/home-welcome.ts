@@ -74,7 +74,7 @@ export function homeWelcomeGetStarted(mode: HomeWelcomeSubmitMode): HomeWelcomeC
       links: [
         { href: "/about", label: "About the Clearing House" },
         { href: "#journeys", label: "The four journeys" },
-        { href: "/settings?tab=demo", label: "Guided path" },
+        { href: "/settings?tab=demo", label: "Guided demo paths" },
       ],
     },
     {

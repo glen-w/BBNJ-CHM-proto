@@ -8,7 +8,6 @@ import { flashFrom } from "@/components/flash";
 import { FilterEmpty, ListFilter } from "@/components/list-filter";
 import { buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { WithoutPrejudiceBanner } from "@/components/without-prejudice";
 import { getDb } from "@/lib/db";
 import { fmtDate, stageLabel } from "@/lib/format";
 import { abmtListCaption, listAudienceFromRoles } from "@/lib/list-captions";
@@ -28,7 +27,6 @@ export default async function AbmtPage({ searchParams }: Props) {
 
   return (
     <AppShell title="ABMT — Part III" flash={flash}>
-      <WithoutPrejudiceBanner />
       <div className="flex flex-wrap items-center justify-end gap-2">
         {can(p, "submit", { domain: "abmt" }) ? (
           <Link href="/abmt/new" className={cn(buttonVariants({ size: "sm" }))}>
@@ -102,7 +100,7 @@ export default async function AbmtPage({ searchParams }: Props) {
       <AboutPanel title="About this workflow">
         <p>
           A proposal moves from draft to submitted to published. Submission issues a receipt. The first publication issues a public record id
-          (<code>BBNJ-ABMT-YYYY-NNNNN</code>). Without prejudice to COP1.
+          (<code>BBNJ-ABMT-YYYY-NNNNN</code>).
         </p>
       </AboutPanel>
     </AppShell>

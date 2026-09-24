@@ -13,7 +13,6 @@ import { PublishButton } from "@/components/publish-button";
 import { Timeline } from "@/components/timeline";
 import { TreatyCiteDrawer } from "@/components/treaty-cite-drawer";
 import { VersionHistory } from "@/components/version-history";
-import { WithoutPrejudiceBanner } from "@/components/without-prejudice";
 import { getDb } from "@/lib/db";
 import { fmtDate } from "@/lib/format";
 import { literatureBrowseHref } from "@/lib/research-lane";
@@ -48,7 +47,6 @@ export default async function AbmtProposalPage({ params, searchParams }: Props) 
 
   return (
     <AppShell title={`ABMT proposal — ${proposal.title}`} flash={flash}>
-      <WithoutPrejudiceBanner />
       {isaCaption ? (
         <p className="rounded-md border border-caution-line bg-caution/40 px-3 py-2 text-xs text-caution-foreground">
           This Clarion-Clipperton Zone example does not displace or undermine International Seabed Authority processes under UNCLOS or the

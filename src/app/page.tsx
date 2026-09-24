@@ -75,7 +75,7 @@ export default async function HomePage({ searchParams }: Props) {
           href="/abmt"
           count={journeys.abmt}
           rail="Proposal → receipt → publish"
-          about="A proposal moves from draft to submitted to published, with a receipt and a public record id. Without prejudice to COP1."
+          about="A proposal moves from draft to submitted to published, with a receipt and a public record id."
         />
       </section>
 

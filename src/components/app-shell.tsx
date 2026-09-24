@@ -19,7 +19,7 @@ import { latestVisibleEvent, notificationsFor, unreadCount } from "@/server/quer
 import { isResearchLaneEnabled } from "@/server/research";
 import { getSessionUser } from "@/server/session";
 
-// Journeys are entry points into the shared rails, not competing brands (VISUAL-CHARTER.md §1.2, §4).
+// Journeys are entry points into the shared rails, not competing brands (docs/VISUAL-CHARTER.md §1.2, §4).
 const journeys: { href: string; label: string; caption: string; enabled: boolean }[] = [
   { href: "/mgr", label: "MGR", caption: "Marine Genetic Resources", enabled: true },
   { href: "/eia", label: "EIA", caption: "Environmental Impact Assessment", enabled: true },

@@ -1,3 +1,6 @@
+Type: GUIDE
+Authority: WCAG gap analysis for this prototype. Not a conformance certificate and not a behaviour contract.
+
 # Accessibility assessment — UN WCAG 2.1 AA
 
 Assessment of the BBNJ Cl-HM prototype against the [United Nations Web Accessibility Guidelines](https://www.un.org/en/webaccessibility/) and the [Homepage / POUR checklist](https://www.un.org/en/webaccessibility/guidelines/homepage.html).

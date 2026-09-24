@@ -37,7 +37,7 @@ export default async function PreferencesPage({ searchParams }: Props) {
           <fieldset className="space-y-1">
             <legend className="text-sm font-medium">Domains</legend>
             {(["mgr", "eia", "cbtmt", "abmt"] as const).map((d) => (
-              <label key={d} className="mr-4 inline-flex items-center gap-1 text-sm" title={d === "abmt" ? "Area-based management proposals (without prejudice to COP1)" : undefined}>
+              <label key={d} className="mr-4 inline-flex items-center gap-1 text-sm">
                 <input type="checkbox" name="domains" value={d} defaultChecked={sub?.domains.includes(d)} /> {DOMAIN_LABEL[d]}
               </label>
             ))}

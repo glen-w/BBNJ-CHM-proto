@@ -4,7 +4,6 @@ import { AppShell } from "@/components/app-shell";
 import { flashFrom } from "@/components/flash";
 import { Field, KeyFields, SubmitButton, selectClass } from "@/components/forms";
 import { Input } from "@/components/ui/input";
-import { WithoutPrejudiceBanner } from "@/components/without-prejudice";
 import { ConfidentialityTier } from "@/lib/contracts/events";
 import { createAbmtAction } from "@/server/actions";
 import { can, hasRole, isSecretariat, recordRefusal } from "@/server/policy";
@@ -31,7 +30,6 @@ export default async function NewAbmtPage({ searchParams }: Props) {
   }
   return (
     <AppShell title="New ABMT proposal" flash={flash}>
-      <WithoutPrejudiceBanner />
       <form action={createAbmtAction} className="max-w-xl space-y-4 rounded-lg border p-4">
         <KeyFields returnTo="/abmt/new" />
         <Field label="Proposal title" required hint="A title for now. The full content of an area-based measure is for the Conference of the Parties.">

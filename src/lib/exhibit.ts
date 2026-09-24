@@ -23,7 +23,7 @@ export const EXHIBIT_AS_OF = "Session 1 basic functions + PrepCom3 annex paramet
 export const EXHIBIT_LIMITS = [
   "No public web address yet — run it from a copy of this Clearing House, or with Docker",
   "Notifications stay in the Clearing House (no e-mail / SMTP)",
-  "Area-based management proposals are without prejudice to COP1. They record a title and follow publication; the full measure is for the Conference of the Parties",
+  "Area-based management proposals record a title and follow publication; the full measure is for the Conference of the Parties",
   "The offline workbook is a way to submit without a reliable connection (Art 51.5). It is not an accessibility certificate",
   "The masthead can show the Agreement text in six languages. The interface is in English",
   "Related systems are links. This Clearing House does not exchange data with them",

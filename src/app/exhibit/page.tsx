@@ -32,7 +32,7 @@ export default async function ExhibitPage() {
               Full comparison with live links
             </Link>
             <Link href="/settings?tab=demo" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
-              Guided path
+              Guided demo paths
             </Link>
             <Link href="/about" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
               About the Clearing House

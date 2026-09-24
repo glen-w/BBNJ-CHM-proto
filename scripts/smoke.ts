@@ -725,7 +725,7 @@ async function main() {
   // ---------------------------------------------------------------- ABMT thin stub
   p0("ABMT thin stub — draft → submit pending → publish mints BBNJ-ABMT-YYYY-NNNNN; caches equal event-derived values; reconcile clean", () => {
     const k1 = key();
-    const d = abmt.createAbmtProposal(db, party(), { title: "Smoke ABMT proposal (without prejudice)" }, k1);
+    const d = abmt.createAbmtProposal(db, party(), { title: "Smoke ABMT proposal" }, k1);
     assert.equal(d.created, true);
     assert.equal(d.event.domain, "abmt");
     assert.equal(d.event.stage, "proposal_stub");
