@@ -58,3 +58,6 @@ HARDENING.md
 CONTRACT-AMENDMENTS.md
 /docs/HOSTING-FLY-VS-RAILWAY.md
 /docs/HOSTING-RUNBOOK.md
+
+# Local watch / assessment run logs
+assessments/
