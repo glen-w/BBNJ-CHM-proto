@@ -40,6 +40,22 @@ Repository: [github.com/glen-w/BBNJ-CHM-proto](https://github.com/glen-w/BBNJ-CH
 
 Caveats stay in docs (and this README), not in product chrome: illustrative Party **XSD** (no real State), cookie logins, ABMT is a stub, notifications are in-app only, Excel is an Art 51.5 **pattern** not a WCAG certificate, PDF export is a stub, literature is a snapshot not a live library.
 
+### What the desk looks like
+
+Three views of a seeded database. Rail counts and minted identifiers follow that seed. Claims that `npm run smoke` and `npm run demo` assert are listed in [`docs/SHIPPED.md`](docs/SHIPPED.md). The files live in [`docs/screenshots/`](docs/screenshots/).
+
+**Home (`/`), public.** Welcome band, Get started (Learn, Search, Submit), and the workflow strip. An anonymous reader’s pending-pack count stays at zero. Journey cards sit below this view.
+
+![Public Clearing House home with the welcome band open, Get started cards, and workflow counts for the public role](docs/screenshots/home-public.webp)
+
+**CBTMT (`/capacity`), public.** Party needs and provider offers in two columns. The list line names the seeded SIDS sequencing pair and says the other needs and offers remain unmatched. Match rows and facilitation notes are further down the page.
+
+![CBTMT list with Party needs on the left and provider offers on the right](docs/screenshots/cbtmt-needs-offers.webp)
+
+**MGR batch, `party.nfp`.** The seeded Polar Front eDNA record (`mgr-southern-edna`): identifier order, pre-collection v1 published, Art 12.2 fields, and the start of **Amend a published pack**.
+
+![Party view of a published MGR batch showing identifier order, the pre-collection stage, Art 12.2 fields, and the amend form](docs/screenshots/mgr-record-party.webp)
+
 ### Evaluation logins (`/login`)
 
 | Username | Who it stands for | What they can do |
@@ -276,6 +292,7 @@ Environment: `DATABASE_PATH` (default `data/chm.sqlite`); `SANDBOX_RESET=1` (or 
 | [`docs/SHIPPED.md`](docs/SHIPPED.md) | Public honesty ledger (what smoke/demo assert) |
 | `/exhibit` | Printable evaluator / EOI one-pager (live route) |
 | [`docs/DEMO-SCRIPT.md`](docs/DEMO-SCRIPT.md) | Presenters / walk-through |
+| [`docs/screenshots/`](docs/screenshots/) | Golden-path views of the seeded desk |
 | [`docs/VISUAL-CHARTER.md`](docs/VISUAL-CHARTER.md) | UI identity |
 | [`docs/ACCESSIBILITY.md`](docs/ACCESSIBILITY.md) | WCAG assessment |
 | `fixtures/bbnj-chm-seed-pack/README.md` | Rich CSV seed pack (Interim mirrors + Demo scenarios) |

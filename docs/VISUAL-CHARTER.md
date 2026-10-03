@@ -61,7 +61,12 @@ This charter governs the Cl-HM desk UI. It is a **team choice** for this prototy
 
 ## 4. Layout & components
 
-- **Shell:** three bands — UN masthead (welcome + treaty-text locale); product/account (emblem · **Clearing House** with subtitle *Biodiversity Beyond National Jurisdiction* · rails · Settings gear · global “Search all Cl-HM records” · bell · role switcher); contextual (**Institutional** tab · journey tabs · labelled **Latest transaction** from the last visible outbox event, public identifiers only). The long Agreement title does not sit in chrome. The ABMT tab is **enabled and quiet**: same weight as the other journeys, no “stub” / “not in this build” badge in the tab itself; the stub nature is stated once, in one sentence, on the ABMT page. STB users also get **STB queue** in the rails (`/stb`).  
+- **Shell:** three bands — UN masthead (welcome + treaty-text locale); product/account (emblem · **Clearing House** with subtitle *Biodiversity Beyond National Jurisdiction* · rails · Settings gear · global “Search all Cl-HM records” · bell · role switcher); contextual (**Institutional** tab · journey tabs · labelled **Latest transaction** from the last visible outbox event, public identifiers only). The long Agreement title does not sit in chrome. The ABMT tab is **enabled and quiet**: same weight as the other journeys, no “stub” / “not in this build” badge in the tab itself; the stub nature is stated once, in one sentence, on the ABMT page. STB users also get **STB queue** in the rails (`/stb`).
+
+![Public Clearing House home with the welcome band open, Get started cards, and workflow counts for the public role](screenshots/home-public.webp)
+
+*Public home. Three chrome bands, welcome still, Get started, and the role-filtered workflow strip.*
+
 - **Institutional (`/institutional`):** Secretariat notices + related-systems links (same list as About). Caption related systems as *related systems*, never as “integrations” or “partners”.
 - **About this desk:** lives at `/about` (footer link + welcome hero jump). Identifier order, comparison highlights, speed-test explanation, related-systems repeat and `/records/<id>` notes — not stacked above journey tables on home. Per-journey “About this workflow” stays on journey cards. Footer is product mark (**Clearing House**) + About link.
 - **Settings (gear):** icon-only in band 2 (after rails, before search). Guided demo paths, speed tests and desk-config placeholders — not in primary nav.  
@@ -70,8 +75,18 @@ This charter governs the Cl-HM desk UI. It is a **team choice** for this prototy
 - **Home cards:** operational launchers (count + short rail + Open); essays behind “About this workflow”. Recently published: title / status / id+date on separate rows.  
 - **Domain accent:** soft left rail (`border-l-2`) on journey cards and mixed-domain feed rows only — not page chrome.  
 - **Icons (Lucide):** labelled only — submit / notify / roles / MGR / EIA / capacity. No icon-only status. Manage / Publish / Audit rails stay text-only.  
-- **Pack / EIA rail:** vertical stage rail with **per-pack** chips; published screening may sit beside draft `draft_eia`.  
-- **CBTMT:** two-column needs↔offers; match as chip, not confetti.  
+- **Pack / EIA rail:** vertical stage rail with **per-pack** chips; published screening may sit beside draft `draft_eia`.
+
+![Party view of a published MGR batch showing identifier order, the pre-collection stage, Art 12.2 fields, and the amend form](screenshots/mgr-record-party.webp)
+
+*MGR batch as the Party. Identifier order, pre-collection v1 published, Art 12.2 fields, and Amend a published pack.*
+
+- **CBTMT:** two-column needs↔offers; match as chip, not confetti.
+
+![CBTMT list with Party needs on the left and provider offers on the right](screenshots/cbtmt-needs-offers.webp)
+
+*CBTMT (`/capacity`). Needs and offers as two columns of published records.*
+
 - **Forms:** clear labels, inline validation, “Download template” as a first-class control on MGR intake.  
 - **Notify:** bell drawer — list, not toast spam.  
 - **Compare (`/compare`) and evaluator exhibit (`/exhibit`):** docs-style pages; **not** linked from the shell — open from `/about`, Settings → Guided demo paths, welcome Learn card, or README / demo script. `/exhibit` is print-friendly (chrome `print:hidden`).
@@ -85,7 +100,8 @@ This charter governs the Cl-HM desk UI. It is a **team choice** for this prototy
 
 | Allow | Forbid |
 |---|---|
-| Simple line icons (Lucide) | Stock ocean panoramas / whale heroes |
+| Simple line icons (Lucide) | Whale heroes |
+| One photographic still, on the home welcome band only (`public/home-welcome-still.jpg`) | Any other photography |
 | Optional tiny diagram for rails | Campaign photography |
 | Flag/country as text codes | Decorative wave SVGs behind content |
 | Empty states with one short sentence | Lottie celebrations on publish |
@@ -127,7 +143,7 @@ UN WCAG 2.1 AA mapping, measured contrast, and remediation status: [`ACCESSIBILI
 - Encode tokens in CSS variables / shadcn theme — in this repo: `src/app/globals.css` (`--canvas`, `--ink`, `--institutional`, `--action`, `--draft`, `--pending`, `--published`, `--danger`, `--domain-mgr|eia|cbtmt|abmt` are mapped onto the shadcn / Tailwind theme; no second theme system).  
 - Status chip and domain badge are shared across pillars (`src/components/chips.tsx`). Domain icons live in `src/components/domain-icons.tsx`.  
 - Do not fork ABSCH CSS; reimplement the *desk* feel in shadcn.  
-- Optional: screenshot golden paths into `docs/screenshots/` (directory not checked in yet).
+- Golden-path screenshots live in [`screenshots/`](screenshots/): public home, CBTMT needs and offers, and a Party MGR batch. The README and [`DEMO-SCRIPT.md`](DEMO-SCRIPT.md) embed the same files. They show a seeded desk. `npm run smoke` and `npm run demo` remain the claim gate ([`SHIPPED.md`](SHIPPED.md)).
 
 ---
 
