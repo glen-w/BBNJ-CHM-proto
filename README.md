@@ -12,6 +12,16 @@ Built for **Party and Secretariat staff, reviewers, and anyone comparing a trans
 
 Repository: [github.com/glen-w/BBNJ-CHM-proto](https://github.com/glen-w/BBNJ-CHM-proto)
 
+<p align="center">
+  <img src="docs/screenshots/readme-home-public.jpg" alt="Clearing House home — public welcome, get started, and workflow counts" width="640" />
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/readme-cbtmt-needs-offers.jpg" alt="CBTMT journey — needs and offers side by side" width="640" />
+  <br />
+  <img src="docs/screenshots/readme-mgr-record-detail.jpg" alt="MGR record — identifiers, stage rail, and Art 12.2 notification content" width="640" />
+</p>
+
 ---
 
 ## In brief
@@ -65,29 +75,6 @@ No passwords. A bad cookie = anonymous public.
 | Audit | Not surfaced on public pages | Append-only transitions + refusal log |
 
 Full table and deep links: `/compare` (functions-first; docs-style page; not in primary nav). Printable one-pager: `/exhibit`. Talk-track: Excel = Art 51.5 pattern · language stub · ABMT without prejudice · literature is a Zotero snapshot · no hosted URL yet — see [`docs/SHIPPED.md`](docs/SHIPPED.md).
-
-### Literature — Zotero stays the library
-
-The Clearing House is not a second bibliography. Papers stay in Zotero. The desk keeps a **published slice**: citation, year, a link (DOI, publisher page, or recording), which journey the paper speaks to, and which seeded ABNJ box the title or abstract mentions. **Open** always leaves the desk.
-
-A reviewer on a splashdown EIA, a Sargasso ABMT stub, or a Polar Front MGR notice should see the papers that discuss *that* place and *that* part of the Agreement. The whole library must not land on every record.
-
-| Surface | What it does |
-|---|---|
-| **Literature** (`/research`) | Browse the snapshot. Filter by journey (MGR, EIA, CBTMT, ABMT). A record’s “Literature” link also narrows by place. |
-| **Related research** | On an MGR, EIA, or ABMT record: published papers tagged with that journey **and** that record’s ABNJ box. No shared place → “No linked research”, not a blank library. |
-| **Settings → Desk** | One switch (`research_lane_enabled`, default on). Off removes the tab and the panels. It does not delete rows. |
-
-**Not this build.** No live Zotero sync. No PDF or file store. Not a pack — no receipt, no B-SBI, no public record id, and not in `/search` (search stays policy-aware over Cl-HM records). “Suggest a paper” is labelled and disabled. Place tags are keyword matches, so a paper that says “Southern Ocean” can attach to the Polar Front demo box. That join is a demo aid, not a gazetteer. CBTMT records have no ABNJ box, so they do not get a related-research panel; their papers are on the Literature desk under CBTMT.
-
-Maintainers refresh the snapshot from a local Zotero database (not at runtime):
-
-```bash
-ZOTERO_SQLITE="/path/to/zotero.sqlite" npx tsx scripts/export-zotero-literature.ts
-npm run db:reset   # dev only — picks up the new CSV
-```
-
-Collection mapping, which item types are kept, and the place-name rules: [`fixtures/bbnj-chm-seed-pack/README.md`](fixtures/bbnj-chm-seed-pack/README.md).
 
 ---
 
