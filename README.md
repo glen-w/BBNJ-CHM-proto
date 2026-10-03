@@ -13,11 +13,13 @@ Built for **Party and Secretariat staff, reviewers, and anyone comparing a trans
 Repository: [github.com/glen-w/BBNJ-CHM-proto](https://github.com/glen-w/BBNJ-CHM-proto)
 
 <p align="center">
-  <img src="public/home-welcome-still.jpg" alt="Clearing House welcome — desk home" width="640" />
+  <img src="docs/screenshots/readme-home-public.jpg" alt="Clearing House home — public welcome, get started, and workflow counts" width="640" />
 </p>
 
 <p align="center">
-  <img src="public/clhm-rails-overview.png" alt="Shared Cl-HM rails: submit, review, publish, notify, audit" width="640" />
+  <img src="docs/screenshots/readme-cbtmt-needs-offers.jpg" alt="CBTMT journey — needs and offers side by side" width="640" />
+  <br />
+  <img src="docs/screenshots/readme-mgr-record-detail.jpg" alt="MGR record — identifiers, stage rail, and Art 12.2 notification content" width="640" />
 </p>
 
 ---
