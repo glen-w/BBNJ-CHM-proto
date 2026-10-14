@@ -10,6 +10,9 @@ import { DOMAIN_LABEL } from "@/lib/format";
 import { literatureBrowseHref } from "@/lib/research-lane";
 import { cn } from "@/lib/utils";
 import { getDb } from "@/lib/db";
+import { CorpusAskPanel } from "@/components/corpus-ask-panel";
+import { ResearchNetworkGraph } from "@/components/research-network-graph";
+import { isAssistOverlaysEnabled, researchGraphForDesk } from "@/server/assist-overlays";
 import { isResearchLaneEnabled, listPublishedResearch, openHrefForResearch } from "@/server/research";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -52,6 +55,8 @@ export default async function LiteraturePage({ searchParams }: Props) {
     if (box && !item.geographies.includes(box)) return false;
     return true;
   });
+  const assistOn = isAssistOverlaysEnabled(db);
+  const graph = assistOn ? researchGraphForDesk(db, items) : null;
 
   return (
     <AppShell title="Library">
@@ -86,6 +91,21 @@ export default async function LiteraturePage({ searchParams }: Props) {
           </Link>
         </p>
       ) : null}
+      {assistOn ? (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <CorpusAskPanel />
+          {graph ? (
+            <details className="rounded-lg border p-4">
+              <summary className="cursor-pointer text-sm font-medium uppercase tracking-wide text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+                Place network
+              </summary>
+              <div className="mt-3">
+                <ResearchNetworkGraph graph={graph} />
+              </div>
+            </details>
+          ) : null}
+        </div>
+      ) : null}
       <ListFilter label="Filter this list" placeholder="Title, author, year…">
         <p className="text-sm text-muted-foreground">
           {items.length} {items.length === 1 ? "paper" : "papers"}
@@ -98,7 +118,7 @@ export default async function LiteraturePage({ searchParams }: Props) {
               <TableRow>
                 <TableHead>Paper</TableHead>
                 <TableHead>Year</TableHead>
-                <TableHead>Journeys</TableHead>
+                <TableHead>Tags</TableHead>
                 <TableHead className="text-right">Open</TableHead>
               </TableRow>
             </TableHeader>

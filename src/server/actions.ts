@@ -26,6 +26,7 @@ import { amendPack, publishPack } from "./packs";
 import { getSubscription, markAllRead, upsertSubscription } from "./queries";
 import { readOnlyDemoEnabled } from "./demo-mode";
 import { resetSandbox } from "./reset";
+import { setAssistOverlaysEnabled } from "./assist-overlays";
 import { setResearchLaneEnabled } from "./research";
 import { getSessionUser, setHomeWelcome, setSessionUser, setTreatyLang } from "./session";
 import { appendSpeedTrials, runSpeedMatrix } from "./speed-lab";
@@ -95,13 +96,15 @@ async function attemptAsync(back: string, fn: () => Promise<Outcome>): Promise<n
 
 export async function loginAction(fd: FormData) {
   const back = returnTo(fd, "/");
-  if (readOnlyDemoEnabled()) {
-    finish({ to: back, notice: "Public demo — published records only. Role switch is off." });
-  }
   const id = str(fd, "userId");
   const user = id ? findUserById(getDb(), id) : undefined;
   await setSessionUser(user && user.active ? user.id : null);
-  finish({ to: back, notice: user ? `Signed in as ${user.username}` : "Signed out" });
+  const notice = user
+    ? readOnlyDemoEnabled()
+      ? `Signed in as ${user.username} — public demo: browse by role; changes are not saved`
+      : `Signed in as ${user.username}`
+    : "Signed out";
+  finish({ to: back, notice });
 }
 
 /** Persist treaty-text language; UI strings stay English. */
@@ -114,6 +117,19 @@ export async function setTreatyLangAction(code: string) {
 export async function setHomeWelcomeAction(formData: FormData) {
   await setHomeWelcome(str(formData, "show") !== "0");
   revalidatePath("/");
+}
+
+/** Local assist & illustrative overlays (VME map, ABMT GFW snapshot, corpus ask, citation graph). */
+export async function setAssistOverlaysAction(fd: FormData) {
+  if (readOnlyDemoEnabled()) {
+    finish({ to: returnTo(fd, "/settings?tab=desk"), error: "Public demo is view-only — desk settings cannot be changed" });
+  }
+  const enabled = str(fd, "enabled") !== "0";
+  setAssistOverlaysEnabled(getDb(), enabled);
+  finish({
+    to: returnTo(fd, "/settings?tab=desk"),
+    notice: enabled ? "Assist and overlays are on for this desk." : "Assist and overlays are off.",
+  });
 }
 
 /** Global related-research lane. One switch for the whole desk. */
@@ -459,6 +475,9 @@ export async function submitAbmtAction(fd: FormData) {
 // ------------------------------------------------------------------ notifications / preferences
 
 export async function markAllReadAction(fd: FormData) {
+  if (readOnlyDemoEnabled()) {
+    finish({ to: returnTo(fd, "/notifications"), error: "Public demo — notification state is not changed" });
+  }
   const p = await getSessionUser();
   markAllRead(getDb(), p);
   finish({ to: returnTo(fd, "/notifications") });
@@ -467,6 +486,7 @@ export async function markAllReadAction(fd: FormData) {
 export async function savePreferencesAction(fd: FormData) {
   const p = await getSessionUser();
   attempt("/preferences", () => {
+    if (readOnlyDemoEnabled()) throw new DomainError("forbidden", "Public demo — preferences are not saved");
     if (p.kind !== "user") throw new DomainError("forbidden", "Sign in to manage subscriptions");
     const db = getDb();
     const existing = getSubscription(db, p);

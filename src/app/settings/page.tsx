@@ -10,7 +10,8 @@ import { buildCompareSections } from "@/lib/compare-rows";
 import { demoUserBeats } from "@/lib/demo-user-beats";
 import { getDb } from "@/lib/db";
 import { cn } from "@/lib/utils";
-import { setResearchLaneAction } from "@/server/actions";
+import { setAssistOverlaysAction, setResearchLaneAction } from "@/server/actions";
+import { isAssistOverlaysEnabled } from "@/server/assist-overlays";
 import { readOnlyDemoEnabled } from "@/server/demo-mode";
 import { findEventByKey } from "@/server/outbox";
 import { can } from "@/server/policy";
@@ -43,6 +44,7 @@ export default async function SettingsPage({ searchParams }: Props) {
   const beats = demoUserBeats({ mgrA: rec("mgr-a"), eia2: rec("eia-2") });
   const canRunSpeed = can(p, "import");
   const researchLaneOn = isResearchLaneEnabled(db);
+  const assistOn = isAssistOverlaysEnabled(db);
   const readOnlyDemo = readOnlyDemoEnabled();
   const compareSections = buildCompareSections({
     mgrA: rec("mgr-a"),
@@ -99,14 +101,12 @@ export default async function SettingsPage({ searchParams }: Props) {
                 </div>
                 <p className="mt-2 text-sm text-muted-foreground">{beat.blurb}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {readOnlyDemo ? null : (
-                    <Link
-                      href={`/login?return=${encodeURIComponent(beat.href)}&user=${beat.login}`}
-                      className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-                    >
-                      Sign in as {beat.login}
-                    </Link>
-                  )}
+                  <Link
+                    href={`/login?return=${encodeURIComponent(beat.href)}&user=${beat.login}`}
+                    className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+                  >
+                    Sign in as {beat.login}
+                  </Link>
                   <Link href={beat.href} className={cn(buttonVariants({ size: "sm" }))}>
                     Open
                   </Link>
@@ -136,6 +136,25 @@ export default async function SettingsPage({ searchParams }: Props) {
             Options for this Clearing House.
           </p>
           <ul className="divide-y rounded-lg border text-sm">
+            <li className="px-4 py-3">
+              <div className="font-medium">Assist &amp; illustrative overlays</div>
+              <p className="mt-1 text-muted-foreground">
+                Optional local demo: RFMO closure sketch on EIA neighbourhood, fishing-effort or ISA CCZ map on a few ABMT stubs, ask over
+                Agreement excerpts and literature, and a facet network on the Library. Off by default.
+              </p>
+              {readOnlyDemo ? (
+                <p className="mt-3 text-xs text-muted-foreground">{assistOn ? "Currently on." : "Currently off."}</p>
+              ) : (
+                <form action={setAssistOverlaysAction} className="mt-3 flex flex-wrap items-center gap-2">
+                  <KeyFields returnTo="/settings?tab=desk" />
+                  <input type="hidden" name="enabled" value={assistOn ? "0" : "1"} />
+                  <SubmitButton size="sm" variant="outline">
+                    {assistOn ? "Turn off" : "Turn on"}
+                  </SubmitButton>
+                  <span className="text-xs text-muted-foreground">{assistOn ? "Currently on." : "Currently off."}</span>
+                </form>
+              )}
+            </li>
             <li className="px-4 py-3">
               <div className="font-medium">Show related research</div>
               <p className="mt-1 text-muted-foreground">

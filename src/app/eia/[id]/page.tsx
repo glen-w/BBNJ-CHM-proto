@@ -11,6 +11,7 @@ import { flashFrom } from "@/components/flash";
 import { Field, KeyFields, SubmitButton, selectClass } from "@/components/forms";
 import { PublishButton } from "@/components/publish-button";
 import { RelatedResearchPanel } from "@/components/related-research-panel";
+import { VmeClosureMap } from "@/components/vme-closure-map";
 import { Timeline } from "@/components/timeline";
 import { TreatyCiteDrawer } from "@/components/treaty-cite-drawer";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,7 @@ import { EIA_STAGE_ORDER, getEiaActivity, packsForActivity } from "@/server/eia"
 import { DEMO_COMMENT_WINDOW_DAYS } from "@/lib/contracts/extensions";
 import { can } from "@/server/policy";
 import { listEiaActivities, recordVisible, timelineOf } from "@/server/queries";
+import { isAssistOverlaysEnabled, vmeFeaturesForBox } from "@/server/assist-overlays";
 import { isResearchLaneEnabled, listRelatedResearchForPillar } from "@/server/research";
 import { agreementBasisExtrasForRecord, provenanceBadgeForRecord } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
@@ -55,6 +57,8 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
   const provenance = provenanceBadgeForRecord(db, id);
   const researchLaneOn = isResearchLaneEnabled(db);
   const relatedResearch = researchLaneOn ? listRelatedResearchForPillar(db, "eia", activity.abnjBox) : [];
+  const assistOn = isAssistOverlaysEnabled(db);
+  const vmeFeatures = assistOn ? vmeFeaturesForBox(activity.abnjBox) : [];
 
   return (
     <AppShell title={`EIA activity — ${activity.title}`} flash={flash}>
@@ -232,6 +236,14 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
                 ))}
               </ul>
             )}
+            {assistOn ? (
+              <details className="mt-4 border-t pt-3">
+                <summary className="cursor-pointer text-xs font-medium uppercase tracking-wide text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+                  Regional fisheries context (illustrative)
+                </summary>
+                <VmeClosureMap abnjBox={activity.abnjBox} features={vmeFeatures} className="mt-2" />
+              </details>
+            ) : null}
           </div>
         </div>
       </section>

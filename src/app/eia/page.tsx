@@ -13,7 +13,7 @@ import { getDb } from "@/lib/db";
 import { fmtDate, stageLabel } from "@/lib/format";
 import { eiaListCaption, listAudienceFromRoles } from "@/lib/list-captions";
 import { cn } from "@/lib/utils";
-import { can } from "@/server/policy";
+import { can, canSeeStbQueue } from "@/server/policy";
 import { listEiaActivities } from "@/server/queries";
 import { provenanceBadgeForRecord } from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
@@ -45,7 +45,7 @@ export default async function EiaPage({ searchParams }: Props) {
           ) : null}
         </DeskMenu>
         <ExportLinks domain="eia" />
-        {can(p, "comment_stb") ? (
+        {canSeeStbQueue(p) ? (
           <Link href="/stb" className="text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground">
             STB review queue
           </Link>
