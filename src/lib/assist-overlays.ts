@@ -1,5 +1,5 @@
 /**
- * Local assist & illustrative overlays (VME map, corpus ask, citation graph).
+ * Local assist & illustrative overlays (VME map, ABMT GFW fishing-effort snapshot, corpus ask, citation graph).
  * Persisted in `meta.assist_overlays_enabled`. Missing key defaults OFF (roadmap: assist off by default).
  */
 export const ASSIST_OVERLAYS_META_KEY = "assist_overlays_enabled";

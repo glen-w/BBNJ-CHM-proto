@@ -119,7 +119,7 @@ export async function setHomeWelcomeAction(formData: FormData) {
   revalidatePath("/");
 }
 
-/** Local assist & illustrative overlays (VME map, corpus ask, citation graph). */
+/** Local assist & illustrative overlays (VME map, ABMT GFW snapshot, corpus ask, citation graph). */
 export async function setAssistOverlaysAction(fd: FormData) {
   if (readOnlyDemoEnabled()) {
     finish({ to: returnTo(fd, "/settings?tab=desk"), error: "Public demo is view-only — desk settings cannot be changed" });

@@ -10,6 +10,8 @@ import { AbnjBox, ConfidentialityTier, Domain, EiaPublishableStages, SourceChann
 import type { ConfidentialityTier as Confidentiality, SourceChannel as Channel } from "@/lib/contracts/events";
 import { ResearchIfb, ResearchStatus } from "@/lib/contracts/extensions";
 import type { Db } from "@/lib/db";
+import { abmtSeedShowsGfwOverlay } from "@/lib/gfw-overlay";
+import { abmtSeedShowsIsaCczOverlay } from "@/lib/isa-overlay";
 import type { TreatyCite } from "@/lib/treatyCites";
 
 import { parseCsv } from "./parseCsv";
@@ -496,6 +498,16 @@ export function isIsaNotUndermineAbmtRecord(db: Db, recordId: string): boolean {
   const seedKey = seedKeyForRecord(db, recordId);
   if (!seedKey) return false;
   return getSeedPack().abmt.some((a) => a.seedKey === seedKey && a.isaCaption);
+}
+
+/** Whether this ABMT stub is one of the few demo rows with an illustrative GFW fishing-effort disclosure. */
+export function abmtShowsGfwFishingOverlay(db: Db, recordId: string): boolean {
+  return abmtSeedShowsGfwOverlay(seedKeyForRecord(db, recordId));
+}
+
+/** Whether this ABMT stub shows the illustrative ISA Clarion-Clipperton Zone map disclosure. */
+export function abmtShowsIsaCczOverlay(db: Db, recordId: string): boolean {
+  return abmtSeedShowsIsaCczOverlay(seedKeyForRecord(db, recordId));
 }
 
 /** @deprecated Prefer isIsaNotUndermineAbmtRecord. */

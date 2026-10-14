@@ -7,7 +7,7 @@ import type { ResearchItem } from "@/lib/contracts/extensions";
 import type { Db } from "@/lib/db";
 import { buildResearchGraph, type ResearchGraph } from "@/lib/research-graph";
 import { featuresForAbnjBox, parseVmeGeoJson, type VmeFeatureCollection } from "@/lib/rfmo-vme";
-import { listPublishedResearch } from "./research";
+import { listPublishedResearch, openHrefForResearch } from "./research";
 
 export function isAssistOverlaysEnabled(db: Db): boolean {
   const row = db.prepare("SELECT value FROM meta WHERE key = ?").get(ASSIST_OVERLAYS_META_KEY) as { value: string } | undefined;
@@ -36,7 +36,7 @@ export function vmeFeaturesForBox(box: AbnjBox) {
 
 export function researchGraphForDesk(db: Db, items?: ResearchItem[]): ResearchGraph {
   const list = items ?? listPublishedResearch(db);
-  return buildResearchGraph(list);
+  return buildResearchGraph(list, { openHref: openHrefForResearch });
 }
 
 export type CorpusChunk = {

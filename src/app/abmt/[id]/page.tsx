@@ -5,6 +5,8 @@ import { AppShell } from "@/components/app-shell";
 import { ChannelBadge, ConfidentialityBadge, DomainBadge, Identifier, ProvenanceBadge, StageChip, TierNote } from "@/components/chips";
 import { MintStepper } from "@/components/mint-stepper";
 import { ProvenanceCaption } from "@/components/provenance-caption";
+import { GfwFishingEffortPanel } from "@/components/gfw-fishing-effort-panel";
+import { IsaCczMapPanel } from "@/components/isa-ccz-map-panel";
 import { RelatedResearchPanel } from "@/components/related-research-panel";
 import { RecordExportLinks } from "@/components/export-links";
 import { flashFrom } from "@/components/flash";
@@ -18,10 +20,16 @@ import { fmtDate } from "@/lib/format";
 import { literatureBrowseHref } from "@/lib/research-lane";
 import { submitAbmtAction } from "@/server/actions";
 import { getAbmtProposal } from "@/server/abmt";
+import { isAssistOverlaysEnabled } from "@/server/assist-overlays";
 import { can } from "@/server/policy";
 import { packsOf, recordVisible, timelineOf } from "@/server/queries";
 import { isResearchLaneEnabled, listRelatedResearchForAbmt } from "@/server/research";
-import { isIsaNotUndermineAbmtRecord, provenanceBadgeForRecord } from "@/server/seed-pack";
+import {
+  abmtShowsGfwFishingOverlay,
+  abmtShowsIsaCczOverlay,
+  isIsaNotUndermineAbmtRecord,
+  provenanceBadgeForRecord,
+} from "@/server/seed-pack";
 import { getSessionUser } from "@/server/session";
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -44,6 +52,9 @@ export default async function AbmtProposalPage({ params, searchParams }: Props) 
   const isaCaption = isIsaNotUndermineAbmtRecord(db, id);
   const researchLaneOn = isResearchLaneEnabled(db);
   const relatedResearch = researchLaneOn ? listRelatedResearchForAbmt(db, proposal) : [];
+  const assistOn = isAssistOverlaysEnabled(db);
+  const showGfwOverlay = assistOn && abmtShowsGfwFishingOverlay(db, id);
+  const showIsaCczOverlay = assistOn && abmtShowsIsaCczOverlay(db, id);
 
   return (
     <AppShell title={`ABMT proposal — ${proposal.title}`} flash={flash}>
@@ -121,6 +132,24 @@ export default async function AbmtProposalPage({ params, searchParams }: Props) 
 
       {researchLaneOn ? (
         <RelatedResearchPanel items={relatedResearch} browseHref={literatureBrowseHref("abmt", proposal.abnjBox)} />
+      ) : null}
+
+      {showGfwOverlay ? (
+        <details className="rounded-lg border p-4">
+          <summary className="cursor-pointer text-xs font-medium uppercase tracking-wide text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+            High-seas fishing effort (illustrative)
+          </summary>
+          <GfwFishingEffortPanel className="mt-3" />
+        </details>
+      ) : null}
+
+      {showIsaCczOverlay ? (
+        <details className="rounded-lg border p-4">
+          <summary className="cursor-pointer text-xs font-medium uppercase tracking-wide text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+            ISA Clarion-Clipperton Zone (illustrative)
+          </summary>
+          <IsaCczMapPanel className="mt-3" />
+        </details>
       ) : null}
 
       <section className="rounded-lg border p-4" id="versions">

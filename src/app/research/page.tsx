@@ -95,10 +95,14 @@ export default async function LiteraturePage({ searchParams }: Props) {
         <div className="grid gap-4 lg:grid-cols-2">
           <CorpusAskPanel />
           {graph ? (
-            <div>
-              <h2 className="mb-2 text-sm font-medium uppercase tracking-wide text-muted-foreground">Facet network</h2>
-              <ResearchNetworkGraph graph={graph} />
-            </div>
+            <details className="rounded-lg border p-4">
+              <summary className="cursor-pointer text-sm font-medium uppercase tracking-wide text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+                Place network
+              </summary>
+              <div className="mt-3">
+                <ResearchNetworkGraph graph={graph} />
+              </div>
+            </details>
           ) : null}
         </div>
       ) : null}

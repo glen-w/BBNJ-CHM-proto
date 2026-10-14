@@ -139,8 +139,8 @@ export default async function SettingsPage({ searchParams }: Props) {
             <li className="px-4 py-3">
               <div className="font-medium">Assist &amp; illustrative overlays</div>
               <p className="mt-1 text-muted-foreground">
-                Optional local demo: RFMO closure sketch on EIA neighbourhood, ask over Agreement excerpts and literature, and a facet
-                network on the Library. Off by default.
+                Optional local demo: RFMO closure sketch on EIA neighbourhood, fishing-effort or ISA CCZ map on a few ABMT stubs, ask over
+                Agreement excerpts and literature, and a facet network on the Library. Off by default.
               </p>
               {readOnlyDemo ? (
                 <p className="mt-3 text-xs text-muted-foreground">{assistOn ? "Currently on." : "Currently off."}</p>

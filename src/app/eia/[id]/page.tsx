@@ -237,10 +237,12 @@ export default async function EiaActivityPage({ params, searchParams }: Props) {
               </ul>
             )}
             {assistOn ? (
-              <div className="mt-4 border-t pt-3">
-                <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Regional fisheries context (illustrative)</h3>
+              <details className="mt-4 border-t pt-3">
+                <summary className="cursor-pointer text-xs font-medium uppercase tracking-wide text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+                  Regional fisheries context (illustrative)
+                </summary>
                 <VmeClosureMap abnjBox={activity.abnjBox} features={vmeFeatures} className="mt-2" />
-              </div>
+              </details>
             ) : null}
           </div>
         </div>
