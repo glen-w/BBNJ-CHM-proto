@@ -24,6 +24,7 @@ import { importEiaScreeningExcel, importMgrExcel } from "./import";
 import { addMgrPack, amendMgrPack, MGR_AMENDABLE_STAGES, saveMgrDraft, submitPreCollection } from "./mgr";
 import { amendPack, publishPack } from "./packs";
 import { getSubscription, markAllRead, upsertSubscription } from "./queries";
+import { readOnlyDemoEnabled } from "./demo-mode";
 import { resetSandbox } from "./reset";
 import { setResearchLaneEnabled } from "./research";
 import { getSessionUser, setHomeWelcome, setSessionUser, setTreatyLang } from "./session";
@@ -93,10 +94,14 @@ async function attemptAsync(back: string, fn: () => Promise<Outcome>): Promise<n
 // ------------------------------------------------------------------ session
 
 export async function loginAction(fd: FormData) {
+  const back = returnTo(fd, "/");
+  if (readOnlyDemoEnabled()) {
+    finish({ to: back, notice: "Public demo — published records only. Role switch is off." });
+  }
   const id = str(fd, "userId");
   const user = id ? findUserById(getDb(), id) : undefined;
   await setSessionUser(user && user.active ? user.id : null);
-  finish({ to: returnTo(fd, "/"), notice: user ? `Signed in as ${user.username}` : "Signed out" });
+  finish({ to: back, notice: user ? `Signed in as ${user.username}` : "Signed out" });
 }
 
 /** Persist treaty-text language; UI strings stay English. */
@@ -113,6 +118,9 @@ export async function setHomeWelcomeAction(formData: FormData) {
 
 /** Global related-research lane. One switch for the whole desk. */
 export async function setResearchLaneAction(fd: FormData) {
+  if (readOnlyDemoEnabled()) {
+    finish({ to: returnTo(fd, "/settings?tab=desk"), error: "Public demo is view-only — desk settings cannot be changed" });
+  }
   const enabled = str(fd, "enabled") !== "0";
   setResearchLaneEnabled(getDb(), enabled);
   finish({

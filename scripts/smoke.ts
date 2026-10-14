@@ -424,6 +424,7 @@ async function main() {
   const digest = await import("../src/server/digest");
   const exporter = await import("../src/server/export");
   const resetMod = await import("../src/server/reset");
+  const demoMod = await import("../src/server/demo-mode");
   const count = (sql: string, ...params: unknown[]) => (db.prepare(sql).get(...params) as { n: number }).n;
   const anon = () => policy.anonymous();
   const otherParty = (): import("../src/server/policy").Principal => ({
@@ -676,6 +677,11 @@ async function main() {
   });
 
   // ---------------------------------------------------------------- P0-8 sandbox reset
+  p0("read-only demo — off unless READ_ONLY_DEMO=1", () => {
+    assert.equal(demoMod.readOnlyDemoEnabled({}), false);
+    assert.equal(demoMod.readOnlyDemoEnabled({ READ_ONLY_DEMO: "1" }), true);
+  });
+
   p0("sandbox reset — refused for non-secretariat, refused unless SANDBOX_RESET=1 outside production, gate helper", () => {
     assert.equal(resetMod.sandboxResetEnabled({ SANDBOX_RESET: "1", NODE_ENV: "development" }), true);
     assert.equal(resetMod.sandboxResetEnabled({ SANDBOX_RESET: "1", NODE_ENV: "production" }), false);

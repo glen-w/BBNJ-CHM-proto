@@ -68,6 +68,15 @@ describe("can()", () => {
     expect(can(principalFor(secretariatUser), "submit", { ownerUserId: OTHER_PARTY.id })).toBe(true);
   });
 
+  it("refuses every action when READ_ONLY_DEMO=1", () => {
+    const ro = { READ_ONLY_DEMO: "1" };
+    for (const action of ALL_ACTIONS) {
+      expect(can(principalFor(secretariatUser), action, undefined, ro)).toBe(false);
+      expect(can(principalFor(partyUser), action, undefined, ro)).toBe(false);
+    }
+    expect(can(principalFor(secretariatUser), "publish", undefined, {})).toBe(true);
+  });
+
   it("gates publish/import/STB by role", () => {
     expect(can(principalFor(secretariatUser), "publish")).toBe(true);
     expect(can(principalFor(secretariatUser), "import")).toBe(true);
@@ -129,6 +138,25 @@ describe("cookie + refusal log I/O", () => {
     expect(principalFromCookie(h.db, partyUser.id).kind).toBe("anonymous");
     h.db.prepare("UPDATE users SET active = 1 WHERE username = 'party.nfp'").run();
     expect(principalFromCookie(h.db, partyUser.id).kind).toBe("user");
+  });
+
+  it("ignores cookies when READ_ONLY_DEMO=1", () => {
+    h = createHarness();
+    expect(principalFromCookie(h.db, secretariatUser.id, { READ_ONLY_DEMO: "1" }).kind).toBe("anonymous");
+    expect(principalFromCookie(h.db, secretariatUser.id, {}).kind).toBe("user");
+  });
+
+  it("requireCan refuses secretariat publish when READ_ONLY_DEMO=1", () => {
+    h = createHarness();
+    const sec = principalFor(secretariatUser);
+    const prev = process.env.READ_ONLY_DEMO;
+    process.env.READ_ONLY_DEMO = "1";
+    try {
+      expectDomainCode(() => requireCan(sec, "publish"), "forbidden");
+    } finally {
+      if (prev === undefined) delete process.env.READ_ONLY_DEMO;
+      else process.env.READ_ONLY_DEMO = prev;
+    }
   });
 
   it("requireCan records a refusal then throws; only Secretariat can list the log", () => {

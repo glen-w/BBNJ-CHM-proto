@@ -15,6 +15,8 @@ npm run smoke         # 36 tests expected to pass (two may report `skip` if an o
 SANDBOX_RESET=1 npm run dev     # http://localhost:3000 — the env var shows the Secretariat's Reset database button
 ```
 
+**Webinar split:** you share screen from a local (or private) session with all five logins. Attendees on the hosted URL get `READ_ONLY_DEMO=1` — published public-tier rows only; role switch and mutations are refused. Do not set `READ_ONLY_DEMO` on the machine you present from.
+
 After a pull, if start fails with `SchemaVersionError`, run `npm run db:reset` (Docker: `docker compose down -v` then `up --build`).
 
 or `docker compose up --build` (seeds on first start; `docker compose down -v` if you have a v5 or older volume).

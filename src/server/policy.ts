@@ -7,8 +7,11 @@
 import { getDb, type Db } from "@/lib/db";
 import type { ActorRole, ConfidentialityTier, PublishStatus, User } from "@/lib/contracts/events";
 import type { AccessRefusal, Principal } from "@/lib/contracts/extensions";
+import { readOnlyDemoEnabled } from "./demo-mode";
 import { DomainError } from "./errors";
 import { findUserById } from "./users";
+
+type Env = Record<string, string | undefined>;
 
 export type { Principal };
 
@@ -50,7 +53,8 @@ export function principalFor(user: User): Principal {
 }
 
 /** Missing, malformed, unknown or inactive → anonymous public principal. Never throws. */
-export function principalFromCookie(db: Db, raw: string | undefined | null): Principal {
+export function principalFromCookie(db: Db, raw: string | undefined | null, env: Env = process.env): Principal {
+  if (readOnlyDemoEnabled(env)) return anonymous();
   if (!raw || !UUID.test(raw)) return anonymous();
   const user = findUserById(db, raw);
   if (!user || !user.active) return anonymous();
@@ -87,7 +91,8 @@ export type ActionSubject = {
   recordKind?: string;
 };
 
-export function can(p: Principal, action: Action, subject?: ActionSubject): boolean {
+export function can(p: Principal, action: Action, subject?: ActionSubject, env: Env = process.env): boolean {
+  if (readOnlyDemoEnabled(env)) return false;
   if (p.kind === "anonymous") return false;
   switch (action) {
     case "submit":
@@ -232,8 +237,8 @@ export function recordRefusal(p: Principal, action: Action | string, ctx: Refusa
 }
 
 /** Authorise or record-and-throw. Every domain mutation and gated read goes through here. */
-export function requireCan(p: Principal, action: Action, subject?: ActionSubject, ctx: RefusalContext = {}): void {
-  if (!can(p, action, subject)) {
+export function requireCan(p: Principal, action: Action, subject?: ActionSubject, ctx: RefusalContext = {}, env: Env = process.env): void {
+  if (!can(p, action, subject, env)) {
     const reason =
       subject && subject.ownerUserId != null && p.kind === "user" && hasRole(p, "party")
         ? `Not permitted: ${action} — record owned by another Party`

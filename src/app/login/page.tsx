@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { AppShell } from "@/components/app-shell";
 import { roleLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -6,6 +8,7 @@ import { flashFrom } from "@/components/flash";
 import { SubmitButton } from "@/components/forms";
 import { getDb } from "@/lib/db";
 import { loginAction } from "@/server/actions";
+import { readOnlyDemoEnabled } from "@/server/demo-mode";
 import { getSessionUser } from "@/server/session";
 import { listUsers } from "@/server/users";
 
@@ -29,19 +32,27 @@ export default async function LoginPage({ searchParams }: Props) {
   const hintUser = typeof sp.user === "string" ? sp.user : undefined;
   const p = await getSessionUser();
   const users = listUsers(getDb());
+  const readOnlyDemo = readOnlyDemoEnabled();
 
   return (
     <AppShell title="Sign in" flash={flash}>
-      <p className="max-w-3xl text-sm text-muted-foreground">
-        Choose a role to continue.
-        {p.kind === "user" ? (
-          <>
-            {" "}
-            Currently <span className="font-mono">{p.user.username}</span>.
-          </>
-        ) : null}
-      </p>
-      <div className="grid gap-4 sm:grid-cols-2">
+      {readOnlyDemo ? (
+        <p className="max-w-3xl text-sm text-muted-foreground">
+          This hosted desk is view-only for the webinar. Browse published records from the{" "}
+          <Link href="/" className="underline">home page</Link>.
+        </p>
+      ) : (
+        <>
+          <p className="max-w-3xl text-sm text-muted-foreground">
+            Choose a role to continue.
+            {p.kind === "user" ? (
+              <>
+                {" "}
+                Currently <span className="font-mono">{p.user.username}</span>.
+              </>
+            ) : null}
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2">
         {users.map((u) => (
           <form
             key={u.id}
@@ -71,7 +82,9 @@ export default async function LoginPage({ searchParams }: Props) {
             </SubmitButton>
           </form>
         ))}
-      </div>
+          </div>
+        </>
+      )}
     </AppShell>
   );
 }

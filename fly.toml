@@ -15,6 +15,7 @@ primary_region = "cdg"
 [env]
   DATABASE_PATH = "/app/data/chm.sqlite"
   SANDBOX_RESET = "force"
+  READ_ONLY_DEMO = "1"
   SANDBOX_BASIC_USER = "bbnj"
   PORT = "3000"
   HOSTNAME = "0.0.0.0"

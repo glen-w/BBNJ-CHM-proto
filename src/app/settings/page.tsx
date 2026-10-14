@@ -11,6 +11,7 @@ import { demoUserBeats } from "@/lib/demo-user-beats";
 import { getDb } from "@/lib/db";
 import { cn } from "@/lib/utils";
 import { setResearchLaneAction } from "@/server/actions";
+import { readOnlyDemoEnabled } from "@/server/demo-mode";
 import { findEventByKey } from "@/server/outbox";
 import { can } from "@/server/policy";
 import { isResearchLaneEnabled } from "@/server/research";
@@ -42,6 +43,7 @@ export default async function SettingsPage({ searchParams }: Props) {
   const beats = demoUserBeats({ mgrA: rec("mgr-a"), eia2: rec("eia-2") });
   const canRunSpeed = can(p, "import");
   const researchLaneOn = isResearchLaneEnabled(db);
+  const readOnlyDemo = readOnlyDemoEnabled();
   const compareSections = buildCompareSections({
     mgrA: rec("mgr-a"),
     mgrD: rec("mgr-d"),
@@ -97,12 +99,14 @@ export default async function SettingsPage({ searchParams }: Props) {
                 </div>
                 <p className="mt-2 text-sm text-muted-foreground">{beat.blurb}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <Link
-                    href={`/login?return=${encodeURIComponent(beat.href)}&user=${beat.login}`}
-                    className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-                  >
-                    Sign in as {beat.login}
-                  </Link>
+                  {readOnlyDemo ? null : (
+                    <Link
+                      href={`/login?return=${encodeURIComponent(beat.href)}&user=${beat.login}`}
+                      className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+                    >
+                      Sign in as {beat.login}
+                    </Link>
+                  )}
                   <Link href={beat.href} className={cn(buttonVariants({ size: "sm" }))}>
                     Open
                   </Link>
@@ -137,14 +141,18 @@ export default async function SettingsPage({ searchParams }: Props) {
               <p className="mt-1 text-muted-foreground">
                 Shows or hides the Library and the related-research panels on records. When hidden, those links are gone.
               </p>
-              <form action={setResearchLaneAction} className="mt-3 flex flex-wrap items-center gap-2">
-                <KeyFields returnTo="/settings?tab=desk" />
-                <input type="hidden" name="enabled" value={researchLaneOn ? "0" : "1"} />
-                <SubmitButton size="sm" variant="outline">
-                  {researchLaneOn ? "Turn off" : "Turn on"}
-                </SubmitButton>
-                <span className="text-xs text-muted-foreground">{researchLaneOn ? "Currently shown." : "Currently hidden."}</span>
-              </form>
+              {readOnlyDemo ? (
+                <p className="mt-3 text-xs text-muted-foreground">{researchLaneOn ? "Currently shown." : "Currently hidden."}</p>
+              ) : (
+                <form action={setResearchLaneAction} className="mt-3 flex flex-wrap items-center gap-2">
+                  <KeyFields returnTo="/settings?tab=desk" />
+                  <input type="hidden" name="enabled" value={researchLaneOn ? "0" : "1"} />
+                  <SubmitButton size="sm" variant="outline">
+                    {researchLaneOn ? "Turn off" : "Turn on"}
+                  </SubmitButton>
+                  <span className="text-xs text-muted-foreground">{researchLaneOn ? "Currently shown." : "Currently hidden."}</span>
+                </form>
+              )}
             </li>
             <li className="px-4 py-3">
               <div className="font-medium">UI language</div>
