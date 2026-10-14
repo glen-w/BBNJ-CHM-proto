@@ -7,6 +7,8 @@ export type ResearchGraphNode = {
   year?: number;
   href?: string;
   hint?: string;
+  /** Seeded ABNJ place keywords on this paper (used for cluster labels). */
+  places: string[];
 };
 
 export type ResearchGraphLink = {
@@ -58,6 +60,7 @@ export function buildResearchGraph(items: ResearchItem[], opts: BuildResearchGra
     year: item.year,
     href: opts.openHref?.(item),
     hint: item.citation ?? item.geographies.join(" · "),
+    places: [...item.geographies],
   }));
 
   const degree = new Map<string, number>();

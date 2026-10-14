@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-/** Opens a native <details> when the URL hash matches its id (home About link, footer). */
+/** Opens a native <details> when the URL hash matches its id. */
 export function OpenDetailsOnHash({ id }: { id: string }) {
   useEffect(() => {
     const el = document.getElementById(id);

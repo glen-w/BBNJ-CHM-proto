@@ -174,12 +174,6 @@ export default async function SettingsPage({ searchParams }: Props) {
               )}
             </li>
             <li className="px-4 py-3">
-              <div className="font-medium">UI language</div>
-              <p className="mt-1 text-muted-foreground">
-                The footer links open the Agreement text in six languages. The interface is in English.
-              </p>
-            </li>
-            <li className="px-4 py-3">
               <div className="font-medium">Notification channels</div>
               <p className="mt-1 text-muted-foreground">Notifications appear in the Clearing House. E-mail is not included.</p>
             </li>

@@ -1,17 +1,14 @@
 import { Bell, Search, Settings, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { cookies } from "next/headers";
 
 import { DomainBadge, StatusChip } from "@/components/chips";
 import { FlashBanner, type Flash } from "@/components/flash";
-import { LanguageControl } from "@/components/language-control";
 import { AllNav, CoreNav, LibraryNav, RailsNav } from "@/components/shell-nav";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getDb } from "@/lib/db";
 import { fmtDate, fmtRelative, kindLabel, roleLabel, stageLabel } from "@/lib/format";
-import { TREATY_LANG_COOKIE, treatyLangOf } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 import { logoutAction } from "@/server/actions";
 import { readOnlyDemoEnabled } from "@/server/demo-mode";
@@ -45,8 +42,6 @@ export async function AppShell({
   const role = actorRoleOf(principal);
   const roleName = roleLabel(role);
   const username = principal.kind === "user" ? principal.user.username : "anonymous";
-  const store = await cookies();
-  const treatyLang = treatyLangOf(store.get(TREATY_LANG_COOKIE)?.value);
 
   const railItems = [...(canSeeStbQueue(principal) ? [{ href: "/stb", label: "STB queue" }] : [])];
   const researchLaneEnabled = isResearchLaneEnabled(db);
@@ -224,16 +219,6 @@ export async function AppShell({
         ) : null}
         {children}
       </main>
-      <footer className="border-t print:hidden">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-1 px-6 py-2 text-xs text-muted-foreground">
-          <div dir={treatyLang.code === "ar" ? "rtl" : "ltr"}>
-            <LanguageControl active={treatyLang.code} />
-          </div>
-          <Link href="/about" className="underline underline-offset-2 hover:text-institutional">
-            About the Clearing House
-          </Link>
-        </div>
-      </footer>
     </div>
   );
 }

@@ -88,7 +88,7 @@ export function CorpusAskPanel({ className }: { className?: string }) {
           <Button type="button" size="sm" disabled={loading || !question.trim()} onClick={() => void onAsk()}>
             {loading ? "Asking…" : "Ask"}
           </Button>
-          <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Local assist · optional Paperful URL</span>
+          <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Local assist</span>
         </div>
         {error ? <p className="mt-2 text-sm text-danger">{error}</p> : null}
         {result ? (
