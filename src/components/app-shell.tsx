@@ -61,22 +61,9 @@ export async function AppShell({
         Skip to content
       </a>
 
-      {/* Band 1 — UN masthead (welcome + treaty-text locale). Scrolls away with the page. */}
-      <div className="border-b border-institutional/40 bg-muted/40 print:hidden">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-1 px-6 py-1">
-          <p className="text-xs text-muted-foreground">Welcome to the United Nations</p>
-          <div
-            className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground"
-            dir={treatyLang.code === "ar" ? "rtl" : "ltr"}
-          >
-            <LanguageControl active={treatyLang.code} />
-          </div>
-        </div>
-      </div>
-
       {/* Logo bar + desk tabs stay visible while scrolling. */}
       <div className="sticky top-0 z-30 print:hidden">
-        {/* Band 2 — product mark · rails · account. */}
+        {/* Band 1 — product mark · rails · account. */}
         <header className="border-b bg-card">
           <div className="mx-auto flex w-full max-w-6xl items-center gap-x-3 px-6 py-2">
             <Link
@@ -174,7 +161,7 @@ export async function AppShell({
           </div>
         </header>
 
-        {/* Band 3 — desk tabs · journeys · search · latest transaction. */}
+        {/* Band 2 — desk tabs · journeys · search · latest transaction. */}
         <div className="border-b bg-card">
           <div className="mx-auto flex w-full max-w-6xl items-center px-6">
             <AllNav />
@@ -238,7 +225,10 @@ export async function AppShell({
         {children}
       </main>
       <footer className="border-t print:hidden">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-end gap-x-6 gap-y-1 px-6 py-2 text-xs text-muted-foreground">
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-1 px-6 py-2 text-xs text-muted-foreground">
+          <div dir={treatyLang.code === "ar" ? "rtl" : "ltr"}>
+            <LanguageControl active={treatyLang.code} />
+          </div>
           <Link href="/about" className="underline underline-offset-2 hover:text-institutional">
             About the Clearing House
           </Link>
