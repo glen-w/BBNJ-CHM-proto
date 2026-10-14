@@ -37,9 +37,9 @@ export function relatedSystemsLinks() {
   ];
 }
 
-export function RelatedSystemsList() {
+export function RelatedSystemsList({ bullets = false }: { bullets?: boolean }) {
   return (
-    <ul className="flex flex-wrap gap-x-3 gap-y-1">
+    <ul className={bullets ? "list-disc space-y-1.5 pl-5 text-sm" : "flex flex-wrap gap-x-3 gap-y-1"}>
       {relatedSystemsLinks().map((r) => (
         <li key={r.href}>
           <a href={r.href} rel="noopener noreferrer" target="_blank" className="underline underline-offset-2 hover:text-institutional">

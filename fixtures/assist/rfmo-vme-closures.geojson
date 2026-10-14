@@ -1,0 +1,106 @@
+{
+  "type": "FeatureCollection",
+  "name": "Illustrative RFMO VME / bottom-fishing closures (demo only)",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "layerId": "neafc",
+        "rfmo": "NEAFC",
+        "label": "Illustrative VME closure — NE Atlantic (demo)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-25, 58],
+            [-8, 58],
+            [-8, 52],
+            [-25, 52],
+            [-25, 58]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layerId": "nafo",
+        "rfmo": "NAFO",
+        "label": "Illustrative bottom-fishing closure — NW Atlantic ABNJ (demo)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-50, 48],
+            [-38, 48],
+            [-38, 42],
+            [-50, 42],
+            [-50, 48]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layerId": "sprfmo",
+        "rfmo": "SPRFMO",
+        "label": "Illustrative VME area — South Pacific (demo)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-175, -35],
+            [-165, -35],
+            [-165, -42],
+            [-175, -42],
+            [-175, -35]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layerId": "siofa",
+        "rfmo": "SIOFA",
+        "label": "Illustrative VME closure — Indian Ocean (demo)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [65, -8],
+            [78, -8],
+            [78, -18],
+            [65, -18],
+            [65, -8]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layerId": "ccamlr",
+        "rfmo": "CCAMLR",
+        "label": "Illustrative bottom-fishing closure — Southern Ocean (demo)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-10, -58],
+            [20, -58],
+            [20, -65],
+            [-10, -65],
+            [-10, -58]
+          ]
+        ]
+      }
+    }
+  ]
+}

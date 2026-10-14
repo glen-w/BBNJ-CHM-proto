@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { AppShell } from "@/components/app-shell";
 import { roleLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -36,23 +34,17 @@ export default async function LoginPage({ searchParams }: Props) {
 
   return (
     <AppShell title="Sign in" flash={flash}>
-      {readOnlyDemo ? (
-        <p className="max-w-3xl text-sm text-muted-foreground">
-          This hosted desk is view-only for the webinar. Browse published records from the{" "}
-          <Link href="/" className="underline">home page</Link>.
-        </p>
-      ) : (
-        <>
-          <p className="max-w-3xl text-sm text-muted-foreground">
-            Choose a role to continue.
-            {p.kind === "user" ? (
-              <>
-                {" "}
-                Currently <span className="font-mono">{p.user.username}</span>.
-              </>
-            ) : null}
-          </p>
-          <div className="grid gap-4 sm:grid-cols-2">
+      <p className="max-w-3xl text-sm text-muted-foreground">
+        Choose a role to continue.
+        {readOnlyDemo ? " This is a public demo: each login shows that role’s view; nothing you submit is saved." : null}
+        {p.kind === "user" ? (
+          <>
+            {" "}
+            Currently <span className="font-mono">{p.user.username}</span>.
+          </>
+        ) : null}
+      </p>
+      <div className="grid gap-4 sm:grid-cols-2">
         {users.map((u) => (
           <form
             key={u.id}
@@ -82,9 +74,7 @@ export default async function LoginPage({ searchParams }: Props) {
             </SubmitButton>
           </form>
         ))}
-          </div>
-        </>
-      )}
+      </div>
     </AppShell>
   );
 }

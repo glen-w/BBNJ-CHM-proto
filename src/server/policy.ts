@@ -7,7 +7,7 @@
 import { getDb, type Db } from "@/lib/db";
 import type { ActorRole, ConfidentialityTier, PublishStatus, User } from "@/lib/contracts/events";
 import type { AccessRefusal, Principal } from "@/lib/contracts/extensions";
-import { readOnlyDemoEnabled } from "./demo-mode";
+import { readOnlyDemoBlocksAction, readOnlyDemoEnabled } from "./demo-mode";
 import { DomainError } from "./errors";
 import { findUserById } from "./users";
 
@@ -53,8 +53,7 @@ export function principalFor(user: User): Principal {
 }
 
 /** Missing, malformed, unknown or inactive → anonymous public principal. Never throws. */
-export function principalFromCookie(db: Db, raw: string | undefined | null, env: Env = process.env): Principal {
-  if (readOnlyDemoEnabled(env)) return anonymous();
+export function principalFromCookie(db: Db, raw: string | undefined | null): Principal {
   if (!raw || !UUID.test(raw)) return anonymous();
   const user = findUserById(db, raw);
   if (!user || !user.active) return anonymous();
@@ -63,6 +62,11 @@ export function principalFromCookie(db: Db, raw: string | undefined | null, env:
 
 export function hasRole(p: Principal, role: ActorRole): boolean {
   return p.kind === "user" && p.user.roles.includes(role);
+}
+
+/** STB queue nav: comment permission, or STB role on a write-locked public demo. */
+export function canSeeStbQueue(p: Principal, env: Env = process.env): boolean {
+  return can(p, "comment_stb", undefined, env) || (readOnlyDemoEnabled(env) && hasRole(p, "stb"));
 }
 
 export function userId(p: Principal): string | undefined {
@@ -92,7 +96,7 @@ export type ActionSubject = {
 };
 
 export function can(p: Principal, action: Action, subject?: ActionSubject, env: Env = process.env): boolean {
-  if (readOnlyDemoEnabled(env)) return false;
+  if (readOnlyDemoEnabled(env) && readOnlyDemoBlocksAction(action)) return false;
   if (p.kind === "anonymous") return false;
   switch (action) {
     case "submit":

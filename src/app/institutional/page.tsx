@@ -22,7 +22,7 @@ export default async function InstitutionalPage({ searchParams }: Props) {
 
       <section className="rounded-lg border bg-card p-5">
         <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-muted-foreground">Related systems</h2>
-        <RelatedSystemsList />
+        <RelatedSystemsList bullets />
       </section>
 
       <AboutPanel title="About institutional links">

@@ -7,6 +7,7 @@ import {
   actorRoleOf,
   anonymous,
   can,
+  canSeeStbQueue,
   hasRole,
   isSecretariat,
   listRefusals,
@@ -68,13 +69,18 @@ describe("can()", () => {
     expect(can(principalFor(secretariatUser), "submit", { ownerUserId: OTHER_PARTY.id })).toBe(true);
   });
 
-  it("refuses every action when READ_ONLY_DEMO=1", () => {
+  it("refuses writes but keeps role reads when READ_ONLY_DEMO=1", () => {
     const ro = { READ_ONLY_DEMO: "1" };
-    for (const action of ALL_ACTIONS) {
-      expect(can(principalFor(secretariatUser), action, undefined, ro)).toBe(false);
-      expect(can(principalFor(partyUser), action, undefined, ro)).toBe(false);
-    }
-    expect(can(principalFor(secretariatUser), "publish", undefined, {})).toBe(true);
+    const sec = principalFor(secretariatUser);
+    const stb = principalFor(stbUser);
+    expect(can(sec, "publish", undefined, ro)).toBe(false);
+    expect(can(sec, "import", undefined, ro)).toBe(false);
+    expect(can(sec, "view_full_audit", undefined, ro)).toBe(true);
+    expect(can(sec, "export_full", undefined, ro)).toBe(true);
+    expect(can(stb, "comment_stb", undefined, ro)).toBe(false);
+    expect(canSeeStbQueue(stb, ro)).toBe(true);
+    expect(can(principalFor(partyUser), "submit", undefined, ro)).toBe(false);
+    expect(can(sec, "publish", undefined, {})).toBe(true);
   });
 
   it("gates publish/import/STB by role", () => {
@@ -140,10 +146,9 @@ describe("cookie + refusal log I/O", () => {
     expect(principalFromCookie(h.db, partyUser.id).kind).toBe("user");
   });
 
-  it("ignores cookies when READ_ONLY_DEMO=1", () => {
+  it("still honours cookies when READ_ONLY_DEMO=1", () => {
     h = createHarness();
-    expect(principalFromCookie(h.db, secretariatUser.id, { READ_ONLY_DEMO: "1" }).kind).toBe("anonymous");
-    expect(principalFromCookie(h.db, secretariatUser.id, {}).kind).toBe("user");
+    expect(principalFromCookie(h.db, secretariatUser.id).kind).toBe("user");
   });
 
   it("requireCan refuses secretariat publish when READ_ONLY_DEMO=1", () => {

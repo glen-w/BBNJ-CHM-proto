@@ -15,7 +15,7 @@ import { TREATY_LANG_COOKIE, treatyLangOf } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 import { logoutAction } from "@/server/actions";
 import { readOnlyDemoEnabled } from "@/server/demo-mode";
-import { actorRoleOf, can } from "@/server/policy";
+import { actorRoleOf, canSeeStbQueue } from "@/server/policy";
 import { latestVisibleEvent, notificationsFor, unreadCount } from "@/server/queries";
 import { isResearchLaneEnabled } from "@/server/research";
 import { getSessionUser } from "@/server/session";
@@ -48,7 +48,7 @@ export async function AppShell({
   const store = await cookies();
   const treatyLang = treatyLangOf(store.get(TREATY_LANG_COOKIE)?.value);
 
-  const railItems = [...(can(principal, "comment_stb") ? [{ href: "/stb", label: "STB queue" }] : [])];
+  const railItems = [...(canSeeStbQueue(principal) ? [{ href: "/stb", label: "STB queue" }] : [])];
   const researchLaneEnabled = isResearchLaneEnabled(db);
   const readOnlyDemo = readOnlyDemoEnabled();
 
@@ -148,40 +148,28 @@ export async function AppShell({
                   </div>
                 </details>
               ) : null}
-              {readOnlyDemo ? (
-                <span
-                  className="inline-flex items-center gap-1 rounded border border-line bg-muted px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground"
-                  title="Public demo — published records only"
-                >
+              <Link
+                href="/login"
+                className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "whitespace-nowrap")}
+                title={principal.kind === "user" ? `Signed in as ${username} — switch role` : "Switch role"}
+                aria-label={
+                  principal.kind === "user"
+                    ? `Signed in as ${username}, role ${roleName}. Switch role`
+                    : `Role ${roleName}. Switch role`
+                }
+              >
+                <span className="inline-flex items-center gap-1 rounded border border-line bg-muted px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
                   <User aria-hidden="true" className="size-3 shrink-0" />
-                  public
+                  {roleName}
                 </span>
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "whitespace-nowrap")}
-                    title={principal.kind === "user" ? `Signed in as ${username} — switch role` : "Switch role"}
-                    aria-label={
-                      principal.kind === "user"
-                        ? `Signed in as ${username}, role ${roleName}. Switch role`
-                        : `Role ${roleName}. Switch role`
-                    }
-                  >
-                    <span className="inline-flex items-center gap-1 rounded border border-line bg-muted px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
-                      <User aria-hidden="true" className="size-3 shrink-0" />
-                      {roleName}
-                    </span>
-                  </Link>
-                  {principal.kind === "user" ? (
-                    <form action={logoutAction}>
-                      <button type="submit" className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
-                        Sign out
-                      </button>
-                    </form>
-                  ) : null}
-                </>
-              )}
+              </Link>
+              {principal.kind === "user" ? (
+                <form action={logoutAction}>
+                  <button type="submit" className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
+                    Sign out
+                  </button>
+                </form>
+              ) : null}
             </div>
           </div>
         </header>
@@ -244,7 +232,7 @@ export async function AppShell({
         <FlashBanner flash={flash} />
         {readOnlyDemo ? (
           <p className="rounded-md border border-institutional/40 bg-institutional/5 px-3 py-2 text-sm text-muted-foreground" role="status">
-            Public demo — published records only. Role switch is off.
+            Public demo — switch roles to see each view. Submit, publish, import and other changes are turned off.
           </p>
         ) : null}
         {children}
