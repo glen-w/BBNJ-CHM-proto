@@ -17,7 +17,7 @@ export function IsaCczMapPanel({ className }: { className?: string }) {
       <figcaption className="mt-2 space-y-1 text-xs text-muted-foreground">
         <p>
           Illustrative ISA Clarion-Clipperton Zone exploration and reserved areas map — not operational GIS, not a Party
-          position, and without prejudice to ISA processes under UNCLOS.
+          position, and without prejudice to ISA processes under the Law of the Sea Convention.
         </p>
         <p>
           Source:{" "}
