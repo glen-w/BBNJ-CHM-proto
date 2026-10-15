@@ -154,7 +154,7 @@ export const EXHIBIT_SECTIONS: ExhibitSection[] = [
 ];
 
 export const SEARCH_SUGGESTIONS: { q: string; why: string }[] = [
-  { q: "TEMP", why: "Interim DOALOS MGR mirror" },
+  { q: "TEMP", why: "Ireland Art. 12(2) interim DOALOS mirror" },
   { q: "utilisation", why: "Art 12.8 pack on the Indian Ridge cruise" },
   { q: "mesopelagic", why: "RFMO-gap EIA storyline" },
   { q: "sequencing", why: "SIDS CBTMT need / offer pair" },

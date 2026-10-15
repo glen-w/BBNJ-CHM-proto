@@ -26,6 +26,7 @@ describe("role-aware list captions", () => {
     expect(publicCopy).toMatch(/published, public-tier only/);
     expect(publicCopy).not.toMatch(/pending Sargasso/i);
     expect(publicCopy).not.toMatch(/restricted Polar Front/i);
+    expect(mgrListCaption("operator", 11)).toMatch(/Ireland/);
     expect(mgrListCaption("operator", 11)).toMatch(/pending Sargasso/);
     expect(mgrListCaption("stb", 8)).toMatch(/restricted Polar Front/);
     expect(mgrListCaption("stb", 8)).not.toMatch(/pending Sargasso/);
