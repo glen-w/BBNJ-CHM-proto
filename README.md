@@ -1,10 +1,8 @@
 <img src="public/bbnj-emblem.svg" alt="" width="40" height="40" />
 
-# Clearing House
+# BBNJ Clearing-House Mechanism prototype
 
-Biodiversity Beyond National Jurisdiction
-
-# BBNJ Cl-HM prototype
+*Biodiversity Beyond National Jurisdiction*
 
 A **working prototype** of the BBNJ Agreement’s Clearing-House Mechanism (Cl-HM): one shared set of rails — **submit → review/manage → publish → notify → audit** — walked through marine genetic resources (MGR), environmental impact assessments (EIA), capacity-building / technology transfer (CBTMT), and a thin ABMT stub.
 
