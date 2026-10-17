@@ -28,7 +28,7 @@ Repository: [github.com/glen-w/BBNJ-CHM-proto](https://github.com/glen-w/BBNJ-CH
 |---|---|
 | **What it is** | A working **desk**, not a brochure site: Parties submit structured records; an authorised publisher releases them; subscribers get alerts; every step is auditable. |
 | **Why it exists** | To show what a *transactional* Cl-HM adds beside the interim DOALOS informational set-up (documents, meetings, contacts) — a **design contrast**, not a critique. |
-| **How to try it** | Clone or Docker — **no hosted public URL yet**. Five passwordless logins for local evaluation. |
+| **How to try it** | Clone or Docker locally. Five passwordless logins. Optional shared URL: deploy yourself — see [`docs/HOSTED-DEMO.md`](docs/HOSTED-DEMO.md) (Fly.io template in `fly.toml`). |
 | **What to open first** | [`docs/DEMO-SCRIPT.md`](docs/DEMO-SCRIPT.md) (10‑minute walk-through) · [`docs/ROADMAP.md`](docs/ROADMAP.md) · [`/exhibit`](http://localhost:3000/exhibit) (printable EOI one-pager) · [`/compare`](http://localhost:3000/compare) |
 
 **Hands-on in one line:** `npm ci && npm run db:seed && npm run dev` — or `docker compose up --build` — then sign in at `/login`.
@@ -72,7 +72,7 @@ No passwords. A bad cookie = anonymous public.
 | Notify | None visible on public pages | Outbox → subscriptions → **in-app** digests (no SMTP) |
 | Audit | Not surfaced on public pages | Append-only transitions + refusal log |
 
-Full table and deep links: `/compare` (functions-first; docs-style page; not in primary nav). Printable one-pager: `/exhibit`. Talk-track: Excel = Art 51.5 pattern · language stub · ABMT without prejudice · literature is a Zotero snapshot · no hosted URL yet — see [`docs/SHIPPED.md`](docs/SHIPPED.md).
+Full table and deep links: `/compare` (functions-first; docs-style page; not in primary nav). Printable one-pager: `/exhibit`. Talk-track: Excel = Art 51.5 pattern · language stub · ABMT without prejudice · literature is a Zotero snapshot · optional hosted demo — see [`docs/HOSTED-DEMO.md`](docs/HOSTED-DEMO.md) and [`docs/SHIPPED.md`](docs/SHIPPED.md).
 
 ---
 
@@ -100,6 +100,8 @@ npm run dev        # http://localhost:3000
 ```bash
 docker compose up --build
 ```
+
+**Public demo link (optional):** If you need to serve a live version for reviewers or a webinar audience, use a host such as [Fly.io](https://fly.io) with the repo’s `fly.toml` and [`docs/HOSTED-DEMO.md`](docs/HOSTED-DEMO.md) — set `SANDBOX_BASIC_PASSWORD` before exposing the app, and use `READ_ONLY_DEMO=1` on the shared URL while you present from a local full-write session.
 
 Health: [`/api/health`](http://localhost:3000/api/health). Walk-through: [`docs/DEMO-SCRIPT.md`](docs/DEMO-SCRIPT.md). Unattended: `npm run demo`.
 
@@ -261,6 +263,7 @@ Environment: `DATABASE_PATH` (default `data/chm.sqlite`); `SANDBOX_RESET=1` (or 
 | [`docs/SHIPPED.md`](docs/SHIPPED.md) | Public honesty ledger (what smoke/demo assert) |
 | `/exhibit` | Printable evaluator / EOI one-pager (live route) |
 | [`docs/DEMO-SCRIPT.md`](docs/DEMO-SCRIPT.md) | Presenters / walk-through |
+| [`docs/HOSTED-DEMO.md`](docs/HOSTED-DEMO.md) | Optional Fly.io (or similar) public sandbox |
 | [`docs/VISUAL-CHARTER.md`](docs/VISUAL-CHARTER.md) | UI identity |
 | [`docs/ACCESSIBILITY.md`](docs/ACCESSIBILITY.md) | WCAG assessment |
 | `fixtures/bbnj-chm-seed-pack/README.md` | Rich CSV seed pack (Interim mirrors + Demo scenarios) |
@@ -269,7 +272,7 @@ Internal planning archives (EOI checklists, original `proposal/` pack, hardening
 
 ### Scope notes (short)
 
-- No hosted public URL; no SMTP; ABMT = stub; related-systems links in About this desk = links, not federation.  
+- No project-maintained public URL (self-host per [`docs/HOSTED-DEMO.md`](docs/HOSTED-DEMO.md) if needed); no SMTP; ABMT = stub; related-systems links in About this desk = links, not federation.  
 - Illustrative values (30‑day EIA window, B-SBI shape, “material change”) are labelled implementation choices.  
 - `/cbtmt` redirects to `/capacity`.
 

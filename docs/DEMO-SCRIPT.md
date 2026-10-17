@@ -5,7 +5,7 @@ Authority: Presenter walk-through only. Shipped claims live in `docs/SHIPPED.md`
 
 For product framing, start with [`README.md`](../README.md). The funded path, deployment shape, and testing plan are in [`ROADMAP.md`](ROADMAP.md). Routes below exist in the running desk. The same journey runs unattended as `npm run demo` (17 narrated checkpoints), so every claim below is asserted, not hoped for. Where the two diverge, the *Alignment with `npm run demo`* notes say so.
 
-Presenter notes: notifications are **in-app only** (no e-mail); Art 51.5 is shown as an **offline Excel pattern**, not a WCAG certification; ABMT is a **thin stub without prejudice**; MGR+EIA Excel is the Art 51.5 *pattern*, not a certification; `/exhibit` is the printable EOI one-pager; `/compare` is the full Session-1 table; there is **no hosted public URL** — participants run the clone or the Docker image locally. Public claim ledger: [`SHIPPED.md`](SHIPPED.md). Optional presenter archive after a fresh clone: `npm run internal:restore` (gitignored `internal/` planning docs — not required to run the desk).
+Presenter notes: notifications are **in-app only** (no e-mail); Art 51.5 is shown as an **offline Excel pattern**, not a WCAG certification; ABMT is a **thin stub without prejudice**; MGR+EIA Excel is the Art 51.5 *pattern*, not a certification; `/exhibit` is the printable EOI one-pager; `/compare` is the full Session-1 table; default hands-on is **clone or Docker locally** — an optional shared URL is documented in [`HOSTED-DEMO.md`](HOSTED-DEMO.md). Public claim ledger: [`SHIPPED.md`](SHIPPED.md). Optional presenter archive after a fresh clone: `npm run internal:restore` (gitignored `internal/` planning docs — not required to run the desk).
 
 ## Before the demo
 
@@ -83,7 +83,7 @@ Differences from the live script, on purpose: the unattended run uses the MGR im
 - "Seeds run through the same domain functions as the UI. `npm run smoke` proves the invariants; `npm run demo` proves this script."
 - "Header languages open the official BBNJ page in a new tab; the UI stays English — no machine translation. The masthead shows which treaty-text locale you picked (Arabic RTL on that strip only)."
 - "On a pack page, § Agreement basis lists only the articles for that record's domain and stages. **Latest transaction** in the third chrome band is the latest outbox event your role can see — it moves when you switch role or publish."
-- "Hands-on means clone or `docker compose` plus the five logins — there is no hosted public URL in this release."
+- "Hands-on means clone or `docker compose` plus the five logins — or a self-hosted sandbox if we have shared one; see HOSTED-DEMO.md for Fly.io."
 
 ## Stretch (built)
 

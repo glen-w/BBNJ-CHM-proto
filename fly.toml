@@ -1,11 +1,8 @@
-# Hosted evaluation sandbox (pathway 2). One Machine, one SQLite volume.
-# Custom hostname: https://bbnj-chm.glenwright.earth
+# Optional hosted evaluation sandbox (one Machine, one SQLite volume).
+# Step-by-step: docs/HOSTED-DEMO.md
 #
-# First deploy: `fly apps create bbnj-chm` then
-#   fly secrets set SANDBOX_BASIC_PASSWORD='…'   # required — browser Basic gate
-#   fly deploy
-# Volume is created on first deploy from initial_size (cdg).
-# Share user `bbnj` + that password with webinar/reviewers (not the desk cookies).
+# Quick path: fly apps create <name>  →  fly secrets set SANDBOX_BASIC_PASSWORD='…'  →  fly deploy
+# (Rename `app` below if `bbnj-chm` is taken.) Volume is created on first deploy (initial_size, cdg).
 
 app = "bbnj-chm"
 primary_region = "cdg"
