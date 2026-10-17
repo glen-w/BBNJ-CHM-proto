@@ -31,6 +31,8 @@ export type EiaCsvPack = {
 export type MgrCsvSeed = {
   seedKey: string;
   badge: ProvenanceBadge;
+  /** ISO 3166-1 alpha-2/3 Party code from the CSV (demo XSD or interim mirror e.g. IRL). */
+  partyCode: string;
   title: string;
   locationHint: AbnjBox;
   objectives: string;
@@ -253,9 +255,11 @@ export function getSeedPack(): LoadedSeedPack {
         ]
       : undefined;
     const path = row.status_path ?? "";
+    const partyCode = (row.party_code || "XSD").trim().toUpperCase();
     return {
       seedKey,
       badge: provenanceBySeedKey.get(seedKey) ?? "Demo scenario",
+      partyCode: /^[A-Z]{2,3}$/.test(partyCode) ? partyCode : "XSD",
       title,
       locationHint: asAbnjBox(row.location_hint!),
       objectives,

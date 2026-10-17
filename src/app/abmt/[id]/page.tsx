@@ -60,8 +60,8 @@ export default async function AbmtProposalPage({ params, searchParams }: Props) 
     <AppShell title={`ABMT proposal — ${proposal.title}`} flash={flash}>
       {isaCaption ? (
         <p className="rounded-md border border-caution-line bg-caution/40 px-3 py-2 text-xs text-caution-foreground">
-          This Clarion-Clipperton Zone example does not displace or undermine International Seabed Authority processes under UNCLOS or the
-          Exploration Regulations.
+          This Clarion-Clipperton Zone example does not displace or undermine International Seabed Authority processes under the Law of the Sea
+          Convention or the Exploration Regulations.
         </p>
       ) : null}
       <div className="flex flex-wrap items-center justify-between gap-2">

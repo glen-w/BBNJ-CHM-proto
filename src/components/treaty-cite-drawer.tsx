@@ -97,7 +97,7 @@ export function TreatyCiteDrawer({
             </ul>
           ) : null}
           <p className="mt-6 text-xs text-muted-foreground">
-            Short labels only — open the official BBNJ text via the language control in the footer. UI strings stay English.
+            Short labels only — open the official BBNJ text from the Agreement site. UI strings stay English.
           </p>
         </div>
       </dialog>

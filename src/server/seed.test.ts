@@ -115,6 +115,9 @@ describe("seed I/O", () => {
 
     const interim = getMgrBatch(h.db, ids.rich.mgr.interimTemp)!;
     expect(interim.title).toMatch(/BBNJ-MGR-TEMP-2026-001/);
+    expect(interim.title).toMatch(/Ireland|Celtic Explorer|GO-SHIP/i);
+    expect(interim.partyCode).toBe("IRL");
+    expect(interim.locationHint).toBe("Reykjanes Ridge");
     expect(interim.bSbi).toBeTruthy();
     expect(interim.publicRecordId).toBeTruthy();
     expect(interim.bSbi).not.toBe(interim.publicRecordId);

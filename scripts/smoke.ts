@@ -379,6 +379,9 @@ async function main() {
     const seedPack = await import("../src/server/seed-pack");
     const interim = mgr.getMgrBatch(db, seedResult.rich.mgr.interimTemp)!;
     assert.match(interim.title, /BBNJ-MGR-TEMP-2026-001/);
+    assert.match(interim.title, /Ireland|Celtic Explorer|GO-SHIP/i);
+    assert.equal(interim.partyCode, "IRL");
+    assert.equal(interim.locationHint, "Reykjanes Ridge");
     assert.ok(interim.bSbi);
     assert.ok(interim.publicRecordId);
     assert.notEqual(interim.bSbi, interim.publicRecordId);

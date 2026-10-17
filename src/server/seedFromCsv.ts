@@ -11,6 +11,7 @@ import { addMgrPack, receivePreCollection } from "./mgr";
 import { publishPack } from "./packs";
 import type { Principal } from "./policy";
 import { upsertResearchItem } from "./research";
+import { principalFor } from "./policy";
 import { csvKey, getSeedPack } from "./seed-pack";
 
 export interface RichSeedIds {
@@ -40,7 +41,15 @@ export function seedRichPack(db: Db, party: Principal, secretariat: Principal): 
   // ---- MGR (interim TEMP mirror + geographically varied demo cruises)
   const mgrIds: Record<string, string> = {};
   for (const row of pack.mgr) {
-    const actor = row.sourceChannel === "assisted" ? secretariat : party;
+    // Assisted rows: Secretariat. Other rows: Party submitter; when the CSV
+    // Party code differs from the demo NFP (e.g. Ireland IRL interim mirror),
+    // mint under a same-shape Party principal so channel stays `form`.
+    const actor =
+      row.sourceChannel === "assisted"
+        ? secretariat
+        : party.kind === "user" && row.partyCode !== (party.user.partyCode ?? "XSD")
+          ? principalFor({ ...party.user, partyCode: row.partyCode, displayName: `Party ${row.partyCode} — interim mirror` })
+          : party;
     const channel = row.sourceChannel === "excel" ? "excel" : "form";
     const r = receivePreCollection(
       db,
@@ -60,7 +69,7 @@ export function seedRichPack(db: Db, party: Principal, secretariat: Principal): 
       channel,
       csvKey(row.seedKey),
       {
-        partyCode: "XSD",
+        partyCode: row.partyCode,
         at: row.at,
         summary: row.summary,
         artifactRefs: row.artifactRefs,

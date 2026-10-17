@@ -27,15 +27,11 @@ export default async function InstitutionalPage({ searchParams }: Props) {
 
       <AboutPanel title="About institutional links">
         <p>
-          Links here point to UN BBNJ Agreement interim pages, other MEA portals and reference material. Nothing on this page federates data into
+          Links here point to BBNJ Agreement interim pages, other MEA portals and reference material. Nothing on this page federates data into
           the Clearing-House Mechanism.
         </p>
         <p>
-          Until the Clearing House is fully operational, Parties may use the interim channels cited in each notice (for example{" "}
-          <a href="mailto:doalos@un.org" className="underline underline-offset-2 hover:text-institutional">
-            doalos@un.org
-          </a>
-          ).
+          Until the Clearing House is fully operational, Parties may use the interim channels cited in each notice.
         </p>
       </AboutPanel>
     </AppShell>

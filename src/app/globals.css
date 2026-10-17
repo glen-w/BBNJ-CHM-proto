@@ -88,7 +88,7 @@
   --canvas: oklch(0.985 0.004 250);                 /* cool grey-white, not glare white */
   --ink: oklch(0.22 0.02 260);                      /* deep navy-grey body text */
   --line: oklch(0.90 0.01 250);                     /* soft cool grey borders */
-  --institutional: oklch(0.45 0.10 250);            /* one UN-adjacent blue: links, focus */
+  --institutional: oklch(0.45 0.10 250);            /* institutional blue: links, focus */
   --institutional-foreground: oklch(0.985 0.004 250);
   --action: oklch(0.40 0.11 252);                   /* primary buttons, used sparingly */
   --action-foreground: oklch(0.985 0.004 250);

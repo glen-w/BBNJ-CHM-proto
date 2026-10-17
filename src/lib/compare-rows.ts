@@ -84,7 +84,7 @@ export function buildCompareSections(ctx: CompareContext): CompareSection[] {
           area: "EIA spine",
           interim: `Documents as files on public pages (${asOf})`,
           prototype: "Screening, notice, draft assessment, comments, decision and monitoring. A published screening can sit beside a draft assessment. The Polar Front cable carries a published decision and a monitoring report.",
-          links: [...(ctx.eia2 ? [{ href: `/eia/${ctx.eia2}`, label: "Sediment sampling, CCZ" }] : []), ...(ctx.eia3 ? [{ href: `/eia/${ctx.eia3}`, label: "Coexistence (activity 3)" }] : [])],
+          links: [...(ctx.eia2 ? [{ href: `/eia/${ctx.eia2}`, label: "Sediment sampling, CCZ (demo)" }] : []), ...(ctx.eia3 ? [{ href: `/eia/${ctx.eia3}`, label: "Coexistence (activity 3) (demo)" }] : [])],
         },
         {
           area: "ABMT",

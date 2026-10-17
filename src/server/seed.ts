@@ -91,7 +91,7 @@ export function seedDatabase(db: Db): SeedIds {
     db,
     party,
     {
-      title: "Deep-sea sampling cruise",
+      title: "Deep-sea sampling cruise (demo)",
       locationHint: "Clarion-Clipperton South",
       objectives: "Baseline microbial and meiofaunal diversity of abyssal sediments; reference collection for taxonomy training.",
       methodMeans: "RV Demo Explorer (2,400 t, research vessel, ice class none); box corer, ROV push cores, CTD rosette.",
@@ -127,12 +127,12 @@ export function seedDatabase(db: Db): SeedIds {
     K("mgr-a-post-v2"),
   );
 
-  const b = saveMgrDraft(db, party, { title: "Seamount sponge survey (draft)", locationHint: "Reykjanes Ridge" }, K("mgr-b"));
+  const b = saveMgrDraft(db, party, { title: "Seamount sponge survey (draft) (example)", locationHint: "Reykjanes Ridge" }, K("mgr-b"));
 
   const c = receivePreCollection(
     db,
     secretariat,
-    { title: "Offline-submitted cruise", locationHint: "CCZ", objectives: "Imported from the offline Excel template by the Secretariat." },
+    { title: "Offline-submitted cruise (demo)", locationHint: "CCZ", objectives: "Imported from the offline Excel template by the Secretariat." },
     "excel",
     K("mgr-c"),
     { partyCode: "XSD", at: "2026-09-02T08:00:00.000Z" },
@@ -141,7 +141,7 @@ export function seedDatabase(db: Db): SeedIds {
   const d = receivePreCollection(
     db,
     party,
-    { title: "Restricted cruise", locationHint: "CCZ", confidentiality: "restricted", objectives: "Restricted tier — visible to Secretariat, owner and STB only." },
+    { title: "Restricted cruise (demo)", locationHint: "CCZ", confidentiality: "restricted", objectives: "Restricted tier — visible to Secretariat, owner and STB only." },
     "form",
     K("mgr-d"),
     { at: "2026-09-02T09:00:00.000Z" },
@@ -152,7 +152,7 @@ export function seedDatabase(db: Db): SeedIds {
     db,
     party,
     {
-      title: "Confidential cruise",
+      title: "Confidential cruise (demo)",
       locationHint: "CCZ",
       confidentiality: "confidential",
       objectives: "Confidential tier — visible to Secretariat and the submitting Party only; STB never sees it.",
@@ -174,11 +174,11 @@ export function seedDatabase(db: Db): SeedIds {
   );
 
   // ---- EIA
-  const e1 = createEiaActivity(db, party, { title: "Acoustic survey, Reykjanes Ridge", abnjBox: "Reykjanes Ridge" }, K("eia-1"));
+  const e1 = createEiaActivity(db, party, { title: "Acoustic survey, Reykjanes Ridge (example)", abnjBox: "Reykjanes Ridge" }, K("eia-1"));
   addEiaPack(db, party, e1.activity.id, "screening", "Screening: below threshold, no EIA required (Art 31)", K("eia-1-screening"), { screeningOutcome: "no_eia" });
   publishPack(db, secretariat, { domain: "eia", recordId: e1.activity.id, stage: "screening", at: "2026-08-20T10:00:00.000Z" });
 
-  const e2 = createEiaActivity(db, party, { title: "Sediment sampling, CCZ", abnjBox: "CCZ" }, K("eia-2"));
+  const e2 = createEiaActivity(db, party, { title: "Sediment sampling, CCZ (demo)", abnjBox: "CCZ" }, K("eia-2"));
   addEiaPack(db, party, e2.activity.id, "screening", "Screening: EIA required (Art 31)", K("eia-2-screening"), { screeningOutcome: "eia_required", artifactRefs: EIA_SCREENING_ARTIFACTS });
   publishPack(db, secretariat, { domain: "eia", recordId: e2.activity.id, stage: "screening", at: "2026-08-22T10:00:00.000Z" });
   addEiaPack(db, party, e2.activity.id, "planned_activity_notice", "Public notification of planned activity (Art 32)", K("eia-2-notice"));
@@ -189,22 +189,22 @@ export function seedDatabase(db: Db): SeedIds {
   // P1: explicit comment-window due date (demo value; the Agreement fixes no day count). Idempotent: same value on every run.
   setEiaDueAt(db, party, e2.activity.id, "2026-10-03T10:00:00.000Z");
 
-  const e3 = createEiaActivity(db, party, { title: "Baseline survey, CCZ", abnjBox: "CCZ" }, K("eia-3"));
+  const e3 = createEiaActivity(db, party, { title: "Baseline survey, CCZ (demo)", abnjBox: "CCZ" }, K("eia-3"));
   addEiaPack(db, party, e3.activity.id, "screening", "Screening: EIA required (Art 31)", K("eia-3-screening"), { screeningOutcome: "eia_required" });
   publishPack(db, secretariat, { domain: "eia", recordId: e3.activity.id, stage: "screening", at: "2026-09-04T10:00:00.000Z" });
   addEiaPack(db, party, e3.activity.id, "draft_eia", "Draft EIA — work in progress", K("eia-3-draft"), { status: "draft" });
 
-  const e4 = createEiaActivity(db, party, { title: "Restricted cable-route survey, Reykjanes Ridge", abnjBox: "Reykjanes Ridge", confidentiality: "restricted" }, K("eia-4"));
+  const e4 = createEiaActivity(db, party, { title: "Restricted cable-route survey, Reykjanes Ridge (demo)", abnjBox: "Reykjanes Ridge", confidentiality: "restricted" }, K("eia-4"));
   addEiaPack(db, party, e4.activity.id, "screening", "Screening (restricted tier): EIA required (Art 31)", K("eia-4-screening"), { screeningOutcome: "eia_required" });
   publishPack(db, secretariat, { domain: "eia", recordId: e4.activity.id, stage: "screening", at: "2026-09-04T12:00:00.000Z" });
 
   // ---- CBTMT
-  const need = createCbtmtRecord(db, party, { kind: "need", title: "Taxonomic training for deep-sea samples", themes: ["taxonomy", "genomics"] }, K("cbtmt-need"));
+  const need = createCbtmtRecord(db, party, { kind: "need", title: "Taxonomic training for deep-sea samples (demo)", themes: ["taxonomy", "genomics"] }, K("cbtmt-need"));
   publishPack(db, secretariat, { domain: "cbtmt", recordId: need.record.id, stage: "need_posted", at: "2026-08-28T10:00:00.000Z" });
   const offer = createCbtmtRecord(
     db,
     secretariat,
-    { kind: "offer", title: "Marine genomics lab placements", themes: ["taxonomy"], provider: "Ocean Tech Consortium" },
+    { kind: "offer", title: "Marine genomics lab placements (demo)", themes: ["taxonomy"], provider: "Ocean Tech Consortium" },
     K("cbtmt-offer"),
   );
   publishPack(db, secretariat, { domain: "cbtmt", recordId: offer.record.id, stage: "offer_posted", at: "2026-08-29T10:00:00.000Z" });
@@ -218,7 +218,7 @@ export function seedDatabase(db: Db): SeedIds {
   );
 
   // ---- ABMT (thin stub, Art 51.3(a)(ii); without prejudice to COP1): draft → pending → published on the same rails.
-  const abmt = createAbmtProposal(db, party, { title: "Seamount reference area" }, K("abmt-1"));
+  const abmt = createAbmtProposal(db, party, { title: "Seamount reference area (example)" }, K("abmt-1"));
   submitAbmtProposal(db, party, abmt.proposal.id, K("abmt-1-submit"));
   publishPack(db, secretariat, { domain: "abmt", recordId: abmt.proposal.id, stage: "proposal_stub", at: "2026-09-05T10:00:00.000Z" });
 

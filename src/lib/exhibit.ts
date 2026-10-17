@@ -25,7 +25,6 @@ export const EXHIBIT_LIMITS = [
   "Notifications stay in the Clearing House (no e-mail / SMTP)",
   "Area-based management proposals record a title and follow publication; the full measure is for the Conference of the Parties",
   "The offline workbook is a way to submit without a reliable connection (Art 51.5). It is not an accessibility certificate",
-  "The footer links open the Agreement text in six languages. The interface is in English",
   "Related systems are links. This Clearing House does not exchange data with them",
   "The library lists open-access research and resources, with a citation and a link. It does not store the files",
 ] as const;
@@ -155,7 +154,7 @@ export const EXHIBIT_SECTIONS: ExhibitSection[] = [
 ];
 
 export const SEARCH_SUGGESTIONS: { q: string; why: string }[] = [
-  { q: "TEMP", why: "Interim DOALOS MGR mirror" },
+  { q: "TEMP", why: "Ireland Art. 12(2) interim DOALOS mirror" },
   { q: "utilisation", why: "Art 12.8 pack on the Indian Ridge cruise" },
   { q: "mesopelagic", why: "RFMO-gap EIA storyline" },
   { q: "sequencing", why: "SIDS CBTMT need / offer pair" },

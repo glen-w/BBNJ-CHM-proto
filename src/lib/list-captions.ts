@@ -20,7 +20,7 @@ const proposals = (n: number) => `${n} proposal${n === 1 ? "" : "s"} visible to 
 export function mgrListCaption(audience: ListAudience, n: number): string {
   const head = records(n);
   if (audience === "operator") {
-    return `${head} — including an interim DOALOS mirror, a pending Sargasso transect, an assisted Tonga-Kermadec notice, utilisation on the Indian Ridge cruise, and a restricted Polar Front eDNA batch.`;
+    return `${head} — including Ireland’s interim DOALOS Art. 12(2) mirror (TEMP-2026-001), a pending Sargasso transect, an assisted Tonga-Kermadec notice, utilisation on the Indian Ridge cruise, and a restricted Polar Front eDNA batch.`;
   }
   if (audience === "stb") {
     return `${head} — published rows including the Indian Ridge utilisation cruise, the assisted Tonga-Kermadec notice, and the restricted Polar Front eDNA batch. Pending packs stay with the owner or Secretariat.`;

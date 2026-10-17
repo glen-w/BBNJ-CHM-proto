@@ -94,7 +94,7 @@ export default async function AuditPage({ searchParams }: Props) {
         <>
           <section className="rounded-lg border" id="refusals">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2">
-              <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Refusal log — every authorisation that was denied</h2>
+              <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Refusal log</h2>
               <span className="text-xs text-muted-foreground">{refusals.length} shown (newest first) · Secretariat only</span>
             </div>
             {refusals.length === 0 ? (

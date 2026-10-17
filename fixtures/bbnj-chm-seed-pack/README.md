@@ -14,7 +14,7 @@ The image copies `fixtures/` so Compose / production start sees the same pack. S
 
 | URL | Role in seed |
 |---|---|
-| https://www.un.org/bbnjagreement/en/mgr-notifications/bbnj-mgr-temp-2026-001 | MGR batch `mgr-interim-temp-001` |
+| https://www.un.org/bbnjagreement/en/mgr-notifications/bbnj-mgr-temp-2026-001 | MGR batch `mgr-interim-temp-001` — Ireland Art. 12(2) (GO-SHIP AR7E / RV Celtic Explorer; 16 July 2026) |
 | https://www.un.org/bbnjagreement/en/Information-sharing/CBTMT | CBTMT themes + related_systems |
 | https://www.un.org/bbnjagreement/en/focal-points-formal-communications | Secretariat notice / related link |
 | https://www.un.org/bbnjagreement/en/notification-2026-001 | Notif 2026-001 (focal points; 10 Feb 2026) |
@@ -23,7 +23,7 @@ The image copies `fixtures/` so Compose / production start sees the same pack. S
 
 | Domain | Seed key | What it shows |
 |---|---|---|
-| MGR | `mgr-interim-temp-001` | Interim (DOALOS) TEMP mirror; real B-SBI + public id |
+| MGR | `mgr-interim-temp-001` | Interim (DOALOS) Ireland TEMP-2026-001 mirror (Party IRL; Reykjanes); real B-SBI + public id |
 | MGR | `mgr-genomics-pacific` | Published pre + post collection |
 | MGR | `mgr-hydrothermal-indian` | Central Indian Ridge; **utilisation** (Art 12.8) |
 | MGR | `mgr-sargasso-pending` | Pending only — B-SBI, no public id |
