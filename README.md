@@ -14,8 +14,8 @@ Repository: [github.com/glen-w/BBNJ-CHM-proto](https://github.com/glen-w/BBNJ-CH
   <img src="docs/screenshots/readme-home-public.jpg" alt="Clearing House home — public welcome, get started, and workflow counts" width="640" style="display:block;margin:0 auto 1rem;" />
   <img src="docs/screenshots/readme-cbtmt-needs-offers.jpg" alt="CBTMT journey — needs and offers side by side" width="640" style="display:block;margin:0 auto 1rem;" />
   <img src="docs/screenshots/readme-mgr-record-detail.jpg" alt="MGR record — identifiers, stage rail, and Art 12.2 notification content" width="640" style="display:block;margin:0 auto 1rem;" />
-  <img src="docs/screenshots/readme-research-ask.jpg" alt="Library — Ask the corpus over Agreement excerpts and literature, with cited local assist" width="640" style="display:block;margin:0 auto 1rem;" />
-  <img src="docs/screenshots/readme-abmt-assist-overlays.jpg" alt="ABMT stubs — illustrative Global Fishing Watch and ISA CCZ assist overlays (collapsibles open)" width="640" style="display:block;margin:0 auto;" />
+  <img src="docs/screenshots/readme-research-ask.jpg" alt="Library — Ask the corpus (Agreement only) beside the place network, with cited local assist" width="640" style="display:block;margin:0 auto 1rem;" />
+  <img src="docs/screenshots/readme-abmt-assist-overlays.jpg" alt="ABMT CCZ stub — identifiers, status, and illustrative ISA Clarion-Clipperton Zone overlay (collapsible open)" width="640" style="display:block;margin:0 auto;" />
 </p>
 
 ---
