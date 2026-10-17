@@ -50,6 +50,13 @@ next-env.d.ts
 # local agent / IDE notes and internal planning (not part of the product)
 .cursor/
 /internal/
+
+# presenter / walk-through notes (local only — never commit)
+/docs/DEMO-SCRIPT.md
+/docs/presenter/
+/presenter/
+**/WEBINAR*.md
+**/*PHONE-CARD*.md
 /context/
 /proposal/
 IMPLEMENTATION-PLAN.md

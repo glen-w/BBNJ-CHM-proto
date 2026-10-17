@@ -1,7 +1,7 @@
 /**
  * demo.ts — the unattended 10-minute demo path, as code.
  *
- * Runs the docs/DEMO-SCRIPT.md journey end to end against a temporary database,
+ * Runs the golden-path desk journey end to end against a temporary database,
  * printing a narrated checkpoint per step and asserting the observable claims.
  * Never touches data/chm.sqlite.
  *

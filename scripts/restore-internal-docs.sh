@@ -30,7 +30,7 @@ FILES=(
   proposal/old/schemas/events.ts
 )
 
-mkdir -p "$ARCHIVE/context" "$ARCHIVE/proposal/schemas" "$ARCHIVE/proposal/old/schemas"
+mkdir -p "$ARCHIVE/context" "$ARCHIVE/proposal/schemas" "$ARCHIVE/proposal/old/schemas" "$ARCHIVE/presenter"
 
 restored=0
 missing=0
@@ -45,12 +45,19 @@ for f in "${FILES[@]}"; do
   fi
 done
 
+if git show "$SOURCE_REF:docs/DEMO-SCRIPT.md" >"$ARCHIVE/presenter/DEMO-SCRIPT.md" 2>/dev/null; then
+  echo "  $ARCHIVE/presenter/DEMO-SCRIPT.md (from docs/DEMO-SCRIPT.md)"
+  restored=$((restored + 1))
+else
+  echo "  skip (not in $SOURCE_REF): docs/DEMO-SCRIPT.md → presenter/" >&2
+fi
+
 cat >"$ARCHIVE/README.md" <<'EOF'
 # Internal planning archive (gitignored)
 
 Planning, EOI checklists, contract-amendment notes and the original `proposal/` pack. **Not part of the product** — kept locally for future development and presenter prep.
 
-The public repo documents the running desk in the root `README.md` and in `docs/` (`DEMO-SCRIPT.md`, `VISUAL-CHARTER.md`, `ACCESSIBILITY.md`, `SHIPPED.md`, `ROADMAP.md`).
+The public repo documents the running desk in the root `README.md` and in `docs/` (`VISUAL-CHARTER.md`, `ACCESSIBILITY.md`, `SHIPPED.md`, `ROADMAP.md`, `HOSTED-DEMO.md`). Presenter walk-through notes live in `presenter/` (gitignored).
 
 ## Layout
 
@@ -61,6 +68,8 @@ The public repo documents the running desk in the root `README.md` and in `docs/
 | `HARDENING.md` | P0 hardening ledger |
 | `CONTRACT-AMENDMENTS.md` | Contract fold notes (C9 applied in app) |
 | `context/BRIEFING-CHM-deepdive.md` | Background briefing |
+| `presenter/DEMO-SCRIPT.md` | 10-minute walk-through (restored from last tracked `docs/DEMO-SCRIPT.md`) |
+| `presenter/WEBINAR-*.md` | Your local webinar outline / phone card (not in git — copy manually) |
 | `proposal/` | Locked contract pack, planning prompts, old proposals |
 | `proposal/schemas/events.ts` | Historical duplicate of `src/lib/contracts/events.ts` (app copy is authoritative) |
 

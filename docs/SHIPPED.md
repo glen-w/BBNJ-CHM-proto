@@ -35,7 +35,7 @@ A claim is **shipped** only when `npm run smoke` or `npm run demo` asserts it. T
 
 SMTP/SMS · production IdP/OAuth · full UI i18n (treaty-locale stub only) · GIS / map tiles · federation / Solr · ML matchmaking · WCAG certificate · blob/file store · Word templates · ABMT beyond stub · deep ABS/IP tracing · **operational** hosted CHM (self-serve demo sandbox is documented separately) · a traditional-knowledge **content** store.
 
-The desk does show Art 13 TK/FPIC **captions** on an MGR record (flag, provenance, consent status). The knowledge itself is not stored. `npm run smoke` and `npm run demo` do not assert that panel; the presenter script does.
+The desk does show Art 13 TK/FPIC **captions** on an MGR record (flag, provenance, consent status). The knowledge itself is not stored. `npm run smoke` and `npm run demo` do not assert that panel.
 
 ## How to verify
 
@@ -46,4 +46,4 @@ npm run demo             # 17 narrated checkpoints
 npm run db:check         # contracts + reconcile
 ```
 
-Presenter talk-track: in-app notify · Excel = pattern · B-SBI ≠ public id · language stub · ABMT without prejudice · literature = Zotero snapshot, not a second library · functions-first `/compare` · printable `/exhibit` · mention a self-hosted demo URL only if you have deployed one ([`HOSTED-DEMO.md`](HOSTED-DEMO.md)).
+Public framing: in-app notify · Excel = pattern · B-SBI ≠ public id · language stub · ABMT without prejudice · literature = Zotero snapshot, not a second library · functions-first `/compare` · printable `/exhibit` · self-hosted demo only if deployed ([`HOSTED-DEMO.md`](HOSTED-DEMO.md)).

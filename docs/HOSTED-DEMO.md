@@ -15,7 +15,7 @@ If you need a **shared link** for a webinar, reviewer cohort, or short evaluatio
 | **Presenter** (live submit / publish / import) | Your laptop or a **private** deploy | Full writes; **do not** set `READ_ONLY_DEMO=1` |
 | **Participants** (browse each role, no mutations) | Shared public URL | `READ_ONLY_DEMO=1` — five logins still work; writes are refused and logged |
 
-Details and talk-track: [`DEMO-SCRIPT.md`](DEMO-SCRIPT.md).
+Details and talk-track: local `internal/presenter/DEMO-SCRIPT.md` (gitignored; restore via `npm run internal:restore` on a fresh clone).
 
 ---
 

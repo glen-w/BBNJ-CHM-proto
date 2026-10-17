@@ -29,7 +29,7 @@ Repository: [github.com/glen-w/BBNJ-CHM-proto](https://github.com/glen-w/BBNJ-CH
 | **What it is** | A working **desk**, not a brochure site: Parties submit structured records; an authorised publisher releases them; subscribers get alerts; every step is auditable. |
 | **Why it exists** | To show what a *transactional* Cl-HM adds beside the interim DOALOS informational set-up (documents, meetings, contacts) — a **design contrast**, not a critique. |
 | **How to try it** | Clone or Docker locally. Five passwordless logins. Optional shared URL: deploy yourself — see [`docs/HOSTED-DEMO.md`](docs/HOSTED-DEMO.md) (Fly.io template in `fly.toml`). |
-| **What to open first** | [`docs/DEMO-SCRIPT.md`](docs/DEMO-SCRIPT.md) (10‑minute walk-through) · [`docs/ROADMAP.md`](docs/ROADMAP.md) · [`/exhibit`](http://localhost:3000/exhibit) (printable EOI one-pager) · [`/compare`](http://localhost:3000/compare) |
+| **What to open first** | [`docs/ROADMAP.md`](docs/ROADMAP.md) · [`/exhibit`](http://localhost:3000/exhibit) (printable EOI one-pager) · [`/compare`](http://localhost:3000/compare) · `npm run demo` (narrated checkpoints). Presenter walk-through: local `internal/presenter/` (gitignored). |
 
 **Hands-on in one line:** `npm ci && npm run db:seed && npm run dev` — or `docker compose up --build` — then sign in at `/login`.
 
@@ -103,7 +103,7 @@ docker compose up --build
 
 **Public demo link (optional):** If you need to serve a live version for reviewers or a webinar audience, use a host such as [Fly.io](https://fly.io) with the repo’s `fly.toml` and [`docs/HOSTED-DEMO.md`](docs/HOSTED-DEMO.md) — set `SANDBOX_BASIC_PASSWORD` before exposing the app, and use `READ_ONLY_DEMO=1` on the shared URL while you present from a local full-write session.
 
-Health: [`/api/health`](http://localhost:3000/api/health). Walk-through: [`docs/DEMO-SCRIPT.md`](docs/DEMO-SCRIPT.md). Unattended: `npm run demo`.
+Health: [`/api/health`](http://localhost:3000/api/health). Unattended narrated run: `npm run demo` (optional `BASE_URL=http://localhost:3000` for HTTP checks).
 
 > **Schema v7.** After a pull, if start throws `SchemaVersionError`, run `npm run db:reset` (Docker: `docker compose down -v`).
 
@@ -262,13 +262,12 @@ Environment: `DATABASE_PATH` (default `data/chm.sqlite`); `SANDBOX_RESET=1` (or 
 | [`docs/ROADMAP.md`](docs/ROADMAP.md) | Funded path, deployment, testing plan |
 | [`docs/SHIPPED.md`](docs/SHIPPED.md) | Public honesty ledger (what smoke/demo assert) |
 | `/exhibit` | Printable evaluator / EOI one-pager (live route) |
-| [`docs/DEMO-SCRIPT.md`](docs/DEMO-SCRIPT.md) | Presenters / walk-through |
 | [`docs/HOSTED-DEMO.md`](docs/HOSTED-DEMO.md) | Optional Fly.io (or similar) public sandbox |
 | [`docs/VISUAL-CHARTER.md`](docs/VISUAL-CHARTER.md) | UI identity |
 | [`docs/ACCESSIBILITY.md`](docs/ACCESSIBILITY.md) | WCAG assessment |
 | `fixtures/bbnj-chm-seed-pack/README.md` | Rich CSV seed pack (Interim mirrors + Demo scenarios) |
 
-Internal planning archives (EOI checklists, original `proposal/` pack, hardening ledger) live in `internal/` — **gitignored**. After a fresh clone: `npm run internal:restore` (restores the long `SHIPPED-VS-DEFERRED` checklist and related planning notes; not required to run the desk).
+Internal planning archives (EOI checklists, original `proposal/` pack, hardening ledger) and **presenter notes** (`internal/presenter/`, including the walk-through script) live under `internal/` — **gitignored**. After a fresh clone: `npm run internal:restore` (planning docs from git history; presenter script from the last tracked `docs/DEMO-SCRIPT.md` if present). Not required to run the desk.
 
 ### Scope notes (short)
 
